@@ -12,9 +12,13 @@ import {
   Flame,
   Swords,
   Shield,
-  Zap,
+  ArrowRight,
+  Terminal as TerminalIcon,
+  Trophy,
+  HelpCircle,
 } from 'lucide-react'
 import confetti from 'canvas-confetti'
+import { useTheme } from '../../context/ThemeContext'
 
 interface InteractiveLessonViewProps {
   onBackToCourse?: () => void
@@ -22,7 +26,356 @@ interface InteractiveLessonViewProps {
   onNextLesson?: () => void
 }
 
-export const InteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
+/* ========================================================================= */
+/* CLASSIC GAMIFIED INTERACTIVE LESSON VIEW                                  */
+/* ========================================================================= */
+const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
+  onBackToCourse,
+  onPreviousLesson,
+  onNextLesson,
+}) => {
+  const [selectedOption, setSelectedOption] = useState<'A' | 'B' | 'C' | 'D'>('A')
+  const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false)
+  const [quizResult, setQuizResult] = useState<'correct' | 'incorrect' | null>(null)
+  const [copiedCode, setCopiedCode] = useState<boolean>(false)
+
+  const handleCopyCode = () => {
+    const code = `count = 3\n\nwhile count > 0:\n    print("Countdown:", count)\n    count -= 1\n\nprint("Blast off! 🚀")`
+    navigator.clipboard.writeText(code)
+    setCopiedCode(true)
+    setTimeout(() => setCopiedCode(false), 2000)
+  }
+
+  const handleCheckQuiz = () => {
+    setQuizSubmitted(true)
+    if (selectedOption === 'A') {
+      setQuizResult('correct')
+      try {
+        confetti({
+          particleCount: 100,
+          spread: 75,
+          origin: { y: 0.6 },
+          colors: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'],
+        })
+      } catch {
+        /* ignore */
+      }
+    } else {
+      setQuizResult('incorrect')
+    }
+  }
+
+  return (
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
+      {/* 1. TOP BREADCRUMB & BACK BUTTON */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onBackToCourse}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors cursor-pointer py-1.5"
+        >
+          <ArrowLeft className="w-4 h-4 text-slate-600" />
+          <span>Back to Course</span>
+        </button>
+
+        <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
+          <span>Learn</span>
+          <span>/</span>
+          <span>Python Adventure</span>
+          <span>/</span>
+          <span>Chapter 04</span>
+          <span>/</span>
+          <span className="font-bold text-emerald-600">Lesson 03</span>
+        </div>
+      </div>
+
+      {/* 2. MAIN 2-COLUMN LAYOUT */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: Main Lesson (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          {/* A. Hero Lesson Card */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-emerald-500 shadow-sm flex flex-col gap-4 relative overflow-hidden">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Python • Chapter 04
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold flex items-center gap-1">
+                <Trophy className="w-3.5 h-3.5 text-amber-500" />
+                +50 XP
+              </span>
+            </div>
+
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                The While Loop: Repeating with Purpose
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed max-w-2xl">
+                A while loop repeats a block of code as long as a specified test condition evaluates to True. When the condition evaluates to False, the loop stops immediately and program flow resumes.
+              </p>
+            </div>
+
+            {/* Objective Banner */}
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-3 mt-1">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-700 font-bold shrink-0">
+                <Check className="w-4 h-4 stroke-[3]" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs font-bold uppercase text-emerald-800 tracking-wider">
+                  Quest Objective
+                </span>
+                <p className="text-xs text-emerald-700 leading-relaxed">
+                  Understand how while loop conditions work, how countdown variables step down, and how to avoid infinite loops.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* B. Interactive Code Demonstration */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <div className="w-3 h-3 rounded-full bg-emerald-400" />
+                <span className="text-xs font-mono font-bold text-slate-600 ml-2">
+                  countdown.py
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors cursor-pointer shadow-xs"
+              >
+                {copiedCode ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="text-emerald-600">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Copy Code</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Code Body */}
+            <div className="p-6 bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto">
+              <div><span className="text-slate-500"># 1. Initialize counter</span></div>
+              <div><span className="text-purple-400">count</span> = <span className="text-amber-400">3</span></div>
+              <br />
+              <div><span className="text-slate-500"># 2. Run as long as count is greater than 0</span></div>
+              <div><span className="text-rose-400 font-bold">while</span> <span className="text-purple-400">count</span> &gt; <span className="text-amber-400">0</span>:</div>
+              <div className="pl-6"><span className="text-blue-400">print</span>(<span className="text-emerald-300">&quot;Countdown:&quot;</span>, <span className="text-purple-400">count</span>)</div>
+              <div className="pl-6"><span className="text-purple-400">count</span> -= <span className="text-amber-400">1</span>  <span className="text-slate-500"># Decrement counter</span></div>
+              <br />
+              <div><span className="text-blue-400">print</span>(<span className="text-emerald-300">&quot;Blast off! 🚀&quot;</span>)</div>
+            </div>
+
+            {/* Terminal Output */}
+            <div className="p-5 bg-slate-950 border-t border-slate-800 text-slate-300 font-mono text-xs flex flex-col gap-1.5">
+              <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1 mb-1">
+                <TerminalIcon className="w-3 h-3 text-emerald-400" />
+                <span>Console Output</span>
+              </div>
+              <div className="text-emerald-300">Countdown: 3</div>
+              <div className="text-emerald-300">Countdown: 2</div>
+              <div className="text-emerald-300">Countdown: 1</div>
+              <div className="text-white font-bold">Blast off! 🚀</div>
+            </div>
+          </div>
+
+          {/* C. Knowledge Check Quiz */}
+          <div className="bg-white rounded-2xl p-6 sm:p-7 border-2 border-emerald-500/80 shadow-sm flex flex-col gap-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-200 text-purple-700 flex items-center justify-center font-bold">
+                  <HelpCircle className="w-4 h-4" />
+                </div>
+                <h3 className="font-extrabold text-base text-slate-900">
+                  Check Your Knowledge
+                </h3>
+              </div>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Question 1 of 1
+              </span>
+            </div>
+
+            <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
+              What will be the final value stored in variable <code className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-purple-700 text-xs">count</code> when this loop completely finishes executing?
+            </p>
+
+            {/* Options */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                { key: 'A' as const, text: '0 (The condition 0 > 0 terminates)' },
+                { key: 'B' as const, text: '1 (The last printed number)' },
+                { key: 'C' as const, text: '3 (The starting number)' },
+                { key: 'D' as const, text: '-1 (It overshoots zero)' },
+              ].map((opt) => {
+                const isSelected = selectedOption === opt.key
+                return (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => {
+                      setSelectedOption(opt.key)
+                      setQuizSubmitted(false)
+                      setQuizResult(null)
+                    }}
+                    className={`p-4 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-emerald-500 bg-emerald-50/70 shadow-sm scale-[1.01]'
+                        : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
+                        isSelected
+                          ? 'border-emerald-600 bg-emerald-600 text-white'
+                          : 'border-slate-300 bg-white text-slate-600'
+                      }`}
+                    >
+                      {opt.key}
+                    </div>
+                    <span className="text-xs font-bold text-slate-800 leading-snug">
+                      {opt.text}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Submit Button & Feedback */}
+            <div className="flex flex-col gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleCheckQuiz}
+                className="btn-gamified-3d btn-gamified-3d-primary py-2.5 px-6 rounded-xl text-xs font-extrabold text-white cursor-pointer w-full sm:w-auto self-start flex items-center justify-center gap-2"
+              >
+                <span>Check Answer</span>
+                <Check className="w-4 h-4" />
+              </button>
+
+              {quizSubmitted && quizResult === 'correct' && (
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-start gap-2.5 animate-in fade-in duration-200">
+                  <span className="text-base shrink-0">🎉</span>
+                  <div>
+                    <span className="font-bold">Outstanding!</span> In the last iteration, count is 1. It prints 1, then <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded">count -= 1</code> drops it to 0. When the condition <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded">0 &gt; 0</code> is checked, it evaluates to False and the loop cleanly terminates!
+                  </div>
+                </div>
+              )}
+
+              {quizSubmitted && quizResult === 'incorrect' && (
+                <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2.5 animate-in fade-in duration-200">
+                  <span className="text-base shrink-0">💡</span>
+                  <div>
+                    <span className="font-bold">Not quite.</span> Look closely at the decrement step <code className="font-mono bg-rose-100 px-1 py-0.5 rounded">count -= 1</code>. When count is 1, subtracting 1 gives 0. Since <code className="font-mono bg-rose-100 px-1 py-0.5 rounded">0 &gt; 0</code> is false, the loop stops with count set to 0.
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Sidebar Navigation & Lumi Guidance (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          {/* Lumi AI Guidance */}
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-xl shrink-0">
+                🤖
+              </div>
+              <div className="flex flex-col">
+                <h4 className="font-bold text-xs text-slate-900">
+                  Lumi&apos;s Adventure Tips
+                </h4>
+                <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
+                  AI Code Companion
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              &ldquo;Always remember to change the loop variable inside your while loop! If you forget <code className="font-mono text-purple-700 font-bold">count -= 1</code>, count stays 3 forever and your program gets trapped in an infinite loop!&rdquo;
+            </p>
+          </div>
+
+          {/* Lesson Progress Card */}
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-slate-800">
+                Chapter 04 Progress
+              </span>
+              <span className="text-xs font-bold text-emerald-600">
+                75% Completed
+              </span>
+            </div>
+
+            <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-100">
+              <div className="h-full bg-emerald-500 rounded-full" style={{ width: '75%' }} />
+            </div>
+
+            <div className="flex flex-col gap-2 pt-1 text-xs">
+              <div className="flex items-center justify-between text-slate-600">
+                <span className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" /> Lesson 01: For Loops
+                </span>
+                <span className="text-[10px] text-emerald-600 font-bold">Done</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-600">
+                <span className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-500 stroke-[3]" /> Lesson 02: Loop Ranges
+                </span>
+                <span className="text-[10px] text-emerald-600 font-bold">Done</span>
+              </div>
+              <div className="flex items-center justify-between text-emerald-700 font-bold">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" /> Lesson 03: While Loops
+                </span>
+                <span className="text-[10px] font-extrabold text-emerald-600">Active</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-400">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full border border-slate-300" /> Lesson 04: Loop Master
+                </span>
+                <span className="text-[10px]">Next</span>
+              </div>
+            </div>
+
+            {/* Next Lesson / Challenge CTA */}
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={onNextLesson}
+                className="btn-gamified-3d btn-gamified-3d-primary w-full py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Continue to Challenge</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={onPreviousLesson || onBackToCourse}
+                className="w-full py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-center"
+              >
+                Previous Lesson
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ========================================================================= */
+/* GOD OF WAR INTERACTIVE LESSON VIEW (UNCHANGED)                            */
+/* ========================================================================= */
+const GodOfWarInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
   onBackToCourse,
   onPreviousLesson,
   onNextLesson,
@@ -676,4 +1029,12 @@ export const InteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
       </div>
     </div>
   )
+}
+
+export const InteractiveLessonView: React.FC<InteractiveLessonViewProps> = (props) => {
+  const { theme } = useTheme()
+  if (theme === 'classic') {
+    return <ClassicInteractiveLessonView {...props} />
+  }
+  return <GodOfWarInteractiveLessonView {...props} />
 }

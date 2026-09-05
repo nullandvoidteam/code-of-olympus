@@ -120,9 +120,13 @@ export const AppShell: React.FC = () => {
             if (tab !== 'learn') {
               setSelectedCourseId(null)
               setSelectedLessonId(null)
+              setSelectedChallengeId(null)
+              setSelectedQuestId(null)
             } else {
               setSelectedCourseId('python')
-              setSelectedLessonId('ch4-lesson3')
+              setSelectedLessonId(null)
+              setSelectedChallengeId(null)
+              setSelectedQuestId(null)
             }
           }}
           isCollapsed={isSidebarCollapsed}
@@ -147,9 +151,13 @@ export const AppShell: React.FC = () => {
             if (tab !== 'learn') {
               setSelectedCourseId(null)
               setSelectedLessonId(null)
+              setSelectedChallengeId(null)
+              setSelectedQuestId(null)
             } else {
               setSelectedCourseId('python')
-              setSelectedLessonId('ch4-lesson3')
+              setSelectedLessonId(null)
+              setSelectedChallengeId(null)
+              setSelectedQuestId(null)
             }
           }}
           dashboardMode={dashboardMode}
@@ -180,16 +188,26 @@ export const AppShell: React.FC = () => {
             <LearnerDashboard
               onNavigateTab={(tab) => {
                 setActiveTab(tab)
-                if (tab === 'learn') setSelectedCourseId('python')
+                if (tab === 'learn') {
+                  setSelectedCourseId('python')
+                  setSelectedLessonId(null)
+                  setSelectedChallengeId(null)
+                  setSelectedQuestId(null)
+                }
               }}
               onSelectCourse={(courseId) => {
                 setActiveTab('learn')
                 setSelectedCourseId(courseId)
+                setSelectedLessonId(null)
+                setSelectedChallengeId(null)
+                setSelectedQuestId(null)
               }}
               onSelectLesson={(lessonId) => {
                 setActiveTab('learn')
                 setSelectedCourseId('python')
                 setSelectedLessonId(lessonId)
+                setSelectedChallengeId(null)
+                setSelectedQuestId(null)
               }}
             />
           )}

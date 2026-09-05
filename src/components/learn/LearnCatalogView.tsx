@@ -13,6 +13,7 @@ import {
   Swords,
   Compass,
 } from 'lucide-react'
+import { useTheme } from '../../context/ThemeContext'
 
 interface LearnCatalogViewProps {
   onSelectCourse?: (courseId: string) => void
@@ -28,7 +29,336 @@ export type CategoryFilterKey =
   | 'tools'
   | 'career'
 
-export const LearnCatalogView: React.FC<LearnCatalogViewProps> = ({
+/* ========================================================================= */
+/* CLASSIC GAMIFIED LEARN CATALOG VIEW                                       */
+/* ========================================================================= */
+const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
+  onSelectCourse,
+  onOpenLumi,
+}) => {
+  const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const courses = [
+    {
+      id: 'python',
+      title: 'Python Adventure',
+      category: 'programming',
+      difficulty: 'Beginner',
+      hours: '8–10 Hours',
+      chapters: 18,
+      xp: 2400,
+      icon: '🐍',
+      rating: '4.9',
+      students: '12,400+',
+      progress: 78,
+      description: 'Master programming fundamentals by completing quests, solving challenges, and building real projects.',
+      status: 'continue',
+    },
+    {
+      id: 'html-css',
+      title: 'The HTML & CSS Odyssey',
+      category: 'web',
+      difficulty: 'Beginner',
+      hours: '6–8 Hours',
+      chapters: 16,
+      xp: 1800,
+      icon: '🌐',
+      rating: '4.9',
+      students: '18,200+',
+      progress: 100,
+      description: 'Build modern responsive web pages from scratch with semantic HTML5 and modern CSS techniques.',
+      status: 'completed',
+    },
+    {
+      id: 'javascript',
+      title: 'JavaScript Realms',
+      category: 'web',
+      difficulty: 'Intermediate',
+      hours: '10–12 Hours',
+      chapters: 20,
+      xp: 3200,
+      icon: '⚡',
+      rating: '4.8',
+      students: '9,500+',
+      progress: 40,
+      description: 'Unlock interactive programming, DOM manipulation, asynchronous fetching, and modern ES6+ magic.',
+      status: 'continue',
+    },
+    {
+      id: 'react',
+      title: 'React & Frontend Mastery',
+      category: 'web',
+      difficulty: 'Intermediate',
+      hours: '12–14 Hours',
+      chapters: 14,
+      xp: 3600,
+      icon: '⚛️',
+      rating: '4.9',
+      students: '7,100+',
+      progress: 0,
+      description: 'Component architecture, state management, hooks, and scalable frontend single page apps.',
+      status: 'start',
+    },
+    {
+      id: 'sql',
+      title: 'SQL & Data Vaults',
+      category: 'programming',
+      difficulty: 'Beginner',
+      hours: '5–6 Hours',
+      chapters: 10,
+      xp: 1500,
+      icon: '🗄️',
+      rating: '4.7',
+      students: '5,800+',
+      progress: 0,
+      description: 'Querying databases, relational models, joins, group by, and backend data design patterns.',
+      status: 'start',
+    },
+    {
+      id: 'ai',
+      title: 'AI & Prompt Engineering',
+      category: 'ai',
+      difficulty: 'Intermediate',
+      hours: '8–10 Hours',
+      chapters: 12,
+      xp: 2800,
+      icon: '🤖',
+      rating: '4.9',
+      students: '8,300+',
+      progress: 0,
+      description: 'Build generative AI apps, structured prompting, API workflows, and intelligent coding assistants.',
+      status: 'start',
+    },
+  ]
+
+  const filteredCourses = courses.filter((c) => {
+    const matchesCat = activeCategory === 'all' || c.category === activeCategory
+    const matchesSearch =
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCat && matchesSearch
+  })
+
+  return (
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-7 text-left pb-20 select-none animate-in fade-in duration-300 font-sans">
+      {/* 1. HERO BANNER */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-emerald-500 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="flex flex-col gap-2 max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold uppercase tracking-wider self-start">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Coding Quests &amp; Courses</span>
+          </div>
+
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            Choose Your Coding Journey
+          </h1>
+
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Master programming from the ground up with structured adventure paths, interactive editor challenges, and verified project certificates.
+          </p>
+        </div>
+
+        {/* Quick Stats Banner */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-xl">
+              🏆
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-black text-emerald-800">Level 12</span>
+              <span className="text-[10px] text-emerald-600 font-bold uppercase">4,850 XP Earned</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. CONTINUE YOUR QUEST SPOTLIGHT */}
+      <div className="bg-white rounded-3xl p-6 border-2 border-emerald-500 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-3xl shrink-0">
+            🐍
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase font-bold text-rose-500 tracking-wider">
+                Continue Your Quest
+              </span>
+              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                Chapter 04: Loops &amp; Logic
+              </span>
+            </div>
+            <h2 className="text-lg font-black text-slate-900">
+              Python Adventure
+            </h2>
+            <div className="flex items-center gap-3 text-xs text-slate-500">
+              <span>78% complete</span>
+              <span>•</span>
+              <span className="font-semibold text-emerald-600">3 quests remaining</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full md:w-auto flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => onSelectCourse?.('python')}
+            className="btn-gamified-3d btn-gamified-3d-primary py-2.5 px-6 rounded-xl text-xs font-extrabold text-white flex items-center justify-center gap-2 cursor-pointer w-full md:w-auto"
+          >
+            <span>Continue Quest</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* 3. FILTER TABS & SEARCH BAR */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+          {[
+            { key: 'all', label: 'All Courses' },
+            { key: 'programming', label: 'Python & Data' },
+            { key: 'web', label: 'Web & Frontend' },
+            { key: 'ai', label: 'Artificial Intelligence' },
+          ].map((cat) => (
+            <button
+              key={cat.key}
+              type="button"
+              onClick={() => setActiveCategory(cat.key)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                activeCategory === cat.key
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative w-full sm:w-72">
+          <input
+            type="text"
+            placeholder="Search courses..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-200 rounded-full text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white shadow-xs"
+          />
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+        </div>
+      </div>
+
+      {/* 4. COURSES GRID */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredCourses.map((c) => (
+          <div
+            key={c.id}
+            className="bg-white rounded-2xl p-5 border border-slate-200 hover:border-emerald-400 shadow-sm hover:shadow-md transition-all flex flex-col justify-between gap-4 group"
+          >
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-2xl shrink-0 group-hover:scale-105 transition-transform">
+                  {c.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold uppercase tracking-wider">
+                      {c.difficulty}
+                    </span>
+                    <span className="text-xs text-amber-500 font-bold flex items-center gap-0.5">
+                      ★ {c.rating}
+                    </span>
+                  </div>
+                  <h3 className="font-extrabold text-base text-slate-900 mt-1 leading-snug group-hover:text-emerald-700 transition-colors">
+                    {c.title}
+                  </h3>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
+                {c.description}
+              </p>
+
+              {/* Progress or Chapters */}
+              {c.progress > 0 ? (
+                <div className="flex flex-col gap-1.5 pt-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500">{c.chapters} Chapters</span>
+                    <span className="font-bold text-emerald-600">{c.progress}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full"
+                      style={{ width: `${c.progress}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
+                  <span>{c.chapters} Chapters</span>
+                  <span>{c.hours}</span>
+                  <span className="font-bold text-amber-600">+{c.xp} XP</span>
+                </div>
+              )}
+            </div>
+
+            {/* Action CTA */}
+            <div className="pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => onSelectCourse?.(c.id)}
+                className={`w-full py-2 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
+                  c.status === 'completed'
+                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    : 'btn-gamified-3d btn-gamified-3d-primary text-white'
+                }`}
+              >
+                <span>
+                  {c.status === 'completed'
+                    ? 'Review Course'
+                    : c.status === 'continue'
+                    ? 'Continue Quest'
+                    : 'Start Course'}
+                </span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 5. ASK LUMI AI BANNER */}
+      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-2xl shrink-0">
+            🤖
+          </div>
+          <div className="flex flex-col">
+            <h3 className="font-extrabold text-sm text-slate-900">
+              Unsure which path to choose? Ask Lumi AI Mentor
+            </h3>
+            <p className="text-xs text-slate-500">
+              Lumi analyzes your skill level, interests, and past challenges to recommend your next quest.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onOpenLumi}
+          className="btn-gamified-3d btn-gamified-3d-secondary px-5 py-2 rounded-xl text-xs font-bold text-slate-800 shrink-0 cursor-pointer"
+        >
+          <span>Ask Lumi AI</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ========================================================================= */
+/* GOD OF WAR LEARN CATALOG VIEW (UNCHANGED)                                 */
+/* ========================================================================= */
+const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
   onSelectCourse,
   onOpenLumi,
 }) => {
@@ -813,4 +1143,12 @@ export const LearnCatalogView: React.FC<LearnCatalogViewProps> = ({
       </div>
     </div>
   )
+}
+
+export const LearnCatalogView: React.FC<LearnCatalogViewProps> = (props) => {
+  const { theme } = useTheme()
+  if (theme === 'classic') {
+    return <ClassicLearnCatalogView {...props} />
+  }
+  return <GodOfWarLearnCatalogView {...props} />
 }
