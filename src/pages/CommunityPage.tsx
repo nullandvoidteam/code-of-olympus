@@ -1,8 +1,15 @@
 import React from 'react'
 import { ShieldWallFeed } from '../components/crucible/ShieldWallFeed'
-import { Swords } from 'lucide-react'
+import { ClassicCommunityFeed } from '../components/community/ClassicCommunityFeed'
+import { useTheme } from '../context/ThemeContext'
 
 export const CommunityPage: React.FC = () => {
+  const { theme } = useTheme()
+
+  if (theme === 'classic') {
+    return <ClassicCommunityFeed />
+  }
+
   return (
     <div className="w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col gap-8 pb-20 select-none animate-in fade-in duration-300">
       {/* ── Sacred Shield Wall Hero ── */}

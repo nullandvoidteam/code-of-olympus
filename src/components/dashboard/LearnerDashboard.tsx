@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import { useLearningProgress } from '../../lib/learning'
 import { useGamification } from '../../lib/gamification'
 import { useAchievementsAndNotifications } from '../../lib/achievements'
 import { LessonPage } from '../../pages/LessonPage'
 import { CrucibleDashboard } from './crucible/CrucibleDashboard'
+import { AppShellDashboardView } from './AppShellDashboardView'
 import { Loader2 } from 'lucide-react'
 
 interface LearnerDashboardProps {
@@ -18,6 +20,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   onSelectCourse,
   onSelectLesson,
 }) => {
+  const { theme } = useTheme()
   const { user, profile, refreshProfile, loading: authLoading } = useAuth()
   const { courses, learningPaths, resumePoint, overallProgress, refreshProgress, loading: learningLoading } = useLearningProgress(user?.id)
   const { stats, refreshGamification, loading: gamificationLoading } = useGamification(user?.id, profile?.xp, profile?.streak, profile?.level)
@@ -27,7 +30,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null)
 
   const isLoading = authLoading || (Boolean(user?.id) && (learningLoading || gamificationLoading || achievementsLoading))
-  const username = profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Warrior'
+  const username = profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Adventurer'
 
   const handleOpenLesson = (lessonId?: string) => {
     if (onSelectLesson && lessonId) {
@@ -57,6 +60,34 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   }
 
   if (isLoading) {
+    if (theme === 'classic') {
+      return (
+        <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 pb-16">
+          <div className="h-32 rounded-3xl animate-pulse bg-[#faf7f2] border border-[#ece7df]" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 flex flex-col gap-6">
+              <div className="h-64 rounded-3xl animate-pulse bg-white border border-[#ece7df]" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-28 rounded-2xl animate-pulse bg-white border border-[#ece7df]" />
+                ))}
+              </div>
+            </div>
+            <div className="lg:col-span-4 flex flex-col gap-6">
+              <div className="h-64 rounded-3xl animate-pulse bg-white border border-[#ece7df]" />
+              <div className="h-64 rounded-3xl animate-pulse bg-white border border-[#ece7df]" />
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-3 py-6 text-emerald-600">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="font-pixel text-[11px] tracking-wider text-emerald-700 font-bold uppercase">
+              LOADING YOUR QUEST...
+            </span>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 pb-12">
         {/* Crucible loading skeleton */}
@@ -88,6 +119,25 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           </span>
         </div>
       </div>
+    )
+  }
+
+  if (theme === 'classic') {
+    return (
+      <AppShellDashboardView
+        username={username}
+        stats={stats}
+        resumePoint={resumePoint}
+        courses={courses}
+        learningPaths={learningPaths}
+        overallProgress={overallProgress}
+        badges={badges}
+        achievements={achievements}
+        activities={activities}
+        onOpenLesson={handleOpenLesson}
+        onNavigateTab={onNavigateTab}
+        onSelectCourse={onSelectCourse}
+      />
     )
   }
 

@@ -55,9 +55,22 @@ export async function fetchBlogs(includeUnpublished = false, currentUserId?: str
       query = query.eq('is_published', true)
     }
 
-    const { data, error } = await query
+    let { data, error } = await query
 
-    if (error || !data) {
+    if (error) {
+      console.warn('Blogs join error, attempting simple select:', error.message)
+      const fallback = await supabase
+        .from('blogs')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (!fallback.error && fallback.data) {
+        data = fallback.data
+      } else {
+        return []
+      }
+    }
+
+    if (!data) {
       return []
     }
 

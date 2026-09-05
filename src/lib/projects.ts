@@ -375,9 +375,23 @@ export async function fetchShowcases(projectId?: string): Promise<ProjectShowcas
       query = query.eq('project_id', projectId)
     }
 
-    const { data, error } = await query
+    let { data, error } = await query
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      console.warn('Showcases join error, trying simple select:', error.message)
+      const fallback = await supabase
+        .from('project_showcases')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+      if (!fallback.error && fallback.data) {
+        data = fallback.data
+      } else {
+        return []
+      }
+    }
+
+    if (!data || data.length === 0) {
       return []
     }
 

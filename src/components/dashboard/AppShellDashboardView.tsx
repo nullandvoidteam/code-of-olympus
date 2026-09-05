@@ -15,18 +15,45 @@ import {
 import { getTimeGreeting } from '../../lib/timeGreeting'
 import { useAuth } from '../../context/AuthContext'
 
-interface AppShellDashboardViewProps {
-  onNavigateTab: (tab: 'learn' | 'practice' | 'build' | 'community') => void
+import type { GamificationStats } from '../../lib/gamification'
+import type { ResumePoint, CourseProgressSummary, LearningPath, OverallLearnerProgress } from '../../lib/learning'
+import type { BadgeItem, AchievementItem, ActivityItem } from '../../lib/achievements'
+
+export interface AppShellDashboardViewProps {
+  username?: string
+  stats?: GamificationStats
+  resumePoint?: ResumePoint | null
+  courses?: CourseProgressSummary[]
+  learningPaths?: LearningPath[]
+  overallProgress?: OverallLearnerProgress
+  badges?: BadgeItem[]
+  achievements?: AchievementItem[]
+  activities?: ActivityItem[]
+  onOpenLesson?: (lessonId?: string) => void
+  onNavigateTab?: (tab: 'learn' | 'practice' | 'build' | 'community' | 'arcade' | 'dashboard') => void
+  onSelectCourse?: (courseId: string) => void
 }
 
 export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
+  username,
+  stats,
+  resumePoint,
+  courses,
+  learningPaths,
+  overallProgress,
+  badges,
+  achievements,
+  activities,
+  onOpenLesson,
   onNavigateTab,
+  onSelectCourse,
 }) => {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { greeting, emoji } = getTimeGreeting()
-  const userName = user?.user_metadata?.first_name || 'Alex'
+  const userName = username || profile?.full_name || profile?.username || user?.user_metadata?.first_name || user?.user_metadata?.full_name || 'Alex'
 
   const [lumiDismissed, setLumiDismissed] = useState(false)
+  const [activeTabSection, setActiveTabSection] = useState<'path' | 'courses'>('path')
   const [likes, setLikes] = useState({ p1: 124, p2: 98, p3: 87 })
   const [likedMap, setLikedMap] = useState({ p1: false, p2: false, p3: false })
 
@@ -37,6 +64,28 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
       [key]: prev[key] + (likedMap[key] ? -1 : 1),
     }))
   }
+
+  // Calculated Gamified Stats
+  const currentLevel = stats?.level ?? 12
+  const currentXp = stats?.xp ?? 2850
+  const currentStreak = stats?.streak ?? 7
+  const unlockedBadges = badges ? badges.filter((b) => b.isUnlocked).length : 18
+  const buildsCount = activities ? activities.length : 6
+  const baseXp = stats?.currentLevelBaseXp ?? 2500
+  const nextXp = stats?.nextLevelXp ?? 3000
+  const levelRange = nextXp - baseXp
+  const progressInLevel = currentXp - baseXp
+  const levelPct = levelRange > 0 ? Math.min(100, Math.max(0, Math.round((progressInLevel / levelRange) * 100))) : 78
+  const xpToNext = Math.max(0, nextXp - currentXp) || 150
+
+  // Continue Quest Data
+  const courseTitle = resumePoint?.courseTitle || 'Python Adventure'
+  const chapterTitle = resumePoint?.chapterTitle || 'Chapter: Loops & Logic'
+  const lessonDesc = resumePoint?.lessonTitle
+    ? `Continue: ${resumePoint.lessonTitle}`
+    : 'Learn how to repeat actions, control iteration, and build your first interactive loop.'
+  const progressPct = resumePoint?.progressPercent ?? 78
+  const remainingCount = Math.max(1, (overallProgress?.totalLessons ?? 20) - (overallProgress?.completedLessons ?? 17))
 
   // Adventure Path Steps Data
   const pathNodes = [
@@ -51,12 +100,12 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
   ]
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-16 select-none">
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-16 select-none font-sans">
       {/* ========================================================================= */}
       {/* 1. FULL-WIDTH WELCOME HERO GREETING BANNER (DYNAMIC TIME OF DAY)          */}
       {/* ========================================================================= */}
       <div
-        onClick={() => onNavigateTab('learn')}
+        onClick={() => (onNavigateTab ? onNavigateTab('learn') : undefined)}
         className="w-full rounded-3xl overflow-hidden border border-[#ece7df] shadow-xs cursor-pointer hover:shadow-md transition-all relative min-h-[140px] bg-[#faf7f2] flex items-center justify-between p-6 sm:p-7"
       >
         <div className="flex flex-col gap-1.5 z-10 max-w-xl">
@@ -122,30 +171,30 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="text-lg sm:text-xl font-extrabold text-stone-900 tracking-tight">
-                      Python Adventure
+                      {courseTitle}
                     </h2>
                     <span className="px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">
-                      Chapter: Loops & Logic
+                      {chapterTitle}
                     </span>
                   </div>
 
                   <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-xl">
-                    Learn how to repeat actions, control iteration, and build your first interactive loop.
+                    {lessonDesc}
                   </p>
 
-                  {/* Progress bar (78%) */}
+                  {/* Progress bar */}
                   <div className="flex items-center gap-3 mt-3 w-full max-w-md">
                     <div className="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden">
                       <div
                         className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                        style={{ width: '78%' }}
+                        style={{ width: `${progressPct}%` }}
                       />
                     </div>
                     <span className="font-pixel text-[10px] font-bold text-emerald-600 shrink-0">
-                      78%
+                      {progressPct}%
                     </span>
                     <span className="text-[11px] font-medium text-stone-400 shrink-0">
-                      3 quests remaining
+                      {remainingCount} quest{remainingCount !== 1 ? 's' : ''} remaining
                     </span>
                   </div>
                 </div>
@@ -161,8 +210,14 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
             <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
               <button
                 type="button"
-                onClick={() => onNavigateTab('learn')}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-bold font-sans shadow-xs transition-all flex items-center gap-2 cursor-pointer"
+                onClick={() => {
+                  if (onOpenLesson && resumePoint?.lessonId) {
+                    onOpenLesson(resumePoint.lessonId)
+                  } else if (onNavigateTab) {
+                    onNavigateTab('learn')
+                  }
+                }}
+                className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white text-xs font-extrabold shadow-[0_4px_0_#047857] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2 cursor-pointer"
               >
                 <span>Continue Quest</span>
                 <ArrowRight className="w-4 h-4" />
@@ -170,8 +225,14 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
 
               <button
                 type="button"
-                onClick={() => onNavigateTab('learn')}
-                className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold font-sans transition-all cursor-pointer"
+                onClick={() => {
+                  if (onSelectCourse && resumePoint?.courseId) {
+                    onSelectCourse(resumePoint.courseId)
+                  } else if (onNavigateTab) {
+                    onNavigateTab('learn')
+                  }
+                }}
+                className="px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold shadow-[0_2px_0_#CBD5E1] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
               >
                 View Chapter
               </button>
@@ -196,15 +257,15 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
                 </div>
 
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-stone-900 font-pixel">12</span>
+                  <span className="text-2xl font-black text-stone-900 font-pixel">{currentLevel}</span>
                 </div>
 
                 <div className="flex flex-col gap-1">
                   <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-amber-400 rounded-full" style={{ width: '78%' }} />
+                    <div className="h-full bg-amber-400 rounded-full" style={{ width: `${levelPct}%` }} />
                   </div>
                   <span className="text-[10px] text-stone-500 font-medium">
-                    +150 XP to next level
+                    +{xpToNext} XP to next level
                   </span>
                 </div>
               </div>
@@ -219,12 +280,12 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
                 </div>
 
                 <div className="flex items-baseline gap-1 text-2xl font-black text-stone-900 font-pixel">
-                  <span>7</span>
+                  <span>{currentStreak}</span>
                   <span className="text-xs font-sans font-bold text-stone-600">days</span>
                 </div>
 
                 <div className="text-[10px] text-stone-500 font-medium">
-                  Best: 14 days
+                  Best: {Math.max(currentStreak, 14)} days
                 </div>
               </div>
 
@@ -238,7 +299,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
                 </div>
 
                 <div className="text-2xl font-black text-stone-900 font-pixel">
-                  18
+                  {unlockedBadges}
                 </div>
 
                 <div className="text-[10px] text-stone-500 font-medium">
@@ -256,7 +317,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
                 </div>
 
                 <div className="text-2xl font-black text-stone-900 font-pixel">
-                  6
+                  {buildsCount}
                 </div>
 
                 <div className="text-[10px] text-stone-500 font-medium">
@@ -266,72 +327,163 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
             </div>
           </div>
 
-          {/* Section 3: YOUR ADVENTURE PATH */}
+          {/* Section 3: YOUR ADVENTURE PATH & COURSES */}
           <div className="bg-white rounded-3xl p-6 border border-[#ece7df] shadow-xs flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-base text-emerald-600">🗺️</span>
-                <h3 className="font-bold text-base text-stone-900">Your Adventure Path</h3>
+                <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTabSection('path')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      activeTabSection === 'path'
+                        ? 'bg-white text-emerald-700 shadow-xs'
+                        : 'text-stone-500 hover:text-stone-800'
+                    }`}
+                  >
+                    🗺️ Adventure Path
+                  </button>
+                  {courses && courses.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveTabSection('courses')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activeTabSection === 'courses'
+                          ? 'bg-white text-emerald-700 shadow-xs'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      📚 All Courses ({courses.length})
+                    </button>
+                  )}
+                </div>
               </div>
               <span className="text-xs text-stone-500 font-medium">
-                Here&apos;s where you&apos;ve been — and where you&apos;re going.
+                {activeTabSection === 'path'
+                  ? "Here's where you've been — and where you're going."
+                  : 'Explore all available learning tracks and master code.'}
               </span>
             </div>
 
-            {/* Horizontal Node Flow Map */}
-            <div className="relative flex items-center justify-between gap-2 overflow-x-auto py-4 px-2">
-              <div className="absolute left-6 right-6 top-1/2 -translate-y-2.5 h-1 bg-stone-200 z-0" />
-              <div className="absolute left-6 w-[45%] top-1/2 -translate-y-2.5 h-1 bg-emerald-500 z-0 transition-all duration-500" />
+            {/* Content: Adventure Path Map */}
+            {activeTabSection === 'path' ? (
+              <div className="relative flex items-center justify-between gap-2 overflow-x-auto py-4 px-2">
+                <div className="absolute left-6 right-6 top-1/2 -translate-y-2.5 h-1 bg-stone-200 z-0" />
+                <div className="absolute left-6 w-[45%] top-1/2 -translate-y-2.5 h-1 bg-emerald-500 z-0 transition-all duration-500" />
 
-              {pathNodes.map((node) => {
-                const isCompleted = node.status === 'completed'
-                const isCurrent = node.status === 'current'
-                const isLocked = node.status === 'locked'
+                {pathNodes.map((node) => {
+                  const isCompleted = node.status === 'completed'
+                  const isCurrent = node.status === 'current'
+                  const isLocked = node.status === 'locked'
 
-                return (
-                  <div
-                    key={node.id}
-                    onClick={() => !isLocked && onNavigateTab('learn')}
-                    className={`relative z-10 flex flex-col items-center gap-2 transition-transform ${
-                      isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'
-                    }`}
-                  >
+                  return (
                     <div
-                      className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs shadow-xs transition-all ${
-                        isCompleted
-                          ? 'bg-emerald-500 text-white ring-4 ring-emerald-100'
-                          : isCurrent
-                          ? 'bg-white text-emerald-700 border-2 border-emerald-500 ring-4 ring-emerald-300/40'
-                          : 'bg-stone-100 text-stone-400 border border-stone-200'
+                      key={node.id}
+                      onClick={() => !isLocked && onNavigateTab && onNavigateTab('learn')}
+                      className={`relative z-10 flex flex-col items-center gap-2 transition-transform ${
+                        isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'
                       }`}
                     >
-                      {isCompleted ? (
-                        <Check className="w-4 h-4 stroke-[3]" />
-                      ) : isCurrent ? (
-                        <Repeat className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <Lock className="w-3.5 h-3.5 text-stone-400" />
-                      )}
-                    </div>
-
-                    <div className="flex flex-col items-center">
-                      <span
-                        className={`text-[11px] whitespace-nowrap font-medium ${
-                          isCurrent ? 'font-bold text-emerald-700' : isCompleted ? 'font-semibold text-stone-800' : 'text-stone-400'
+                      <div
+                        className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs shadow-xs transition-all ${
+                          isCompleted
+                            ? 'bg-emerald-500 text-white ring-4 ring-emerald-100'
+                            : isCurrent
+                            ? 'bg-white text-emerald-700 border-2 border-emerald-500 ring-4 ring-emerald-300/40'
+                            : 'bg-stone-100 text-stone-400 border border-stone-200'
                         }`}
                       >
-                        {node.title}
-                      </span>
-                      {isCurrent && (
-                        <span className="text-[8px] font-pixel text-emerald-600 font-bold uppercase mt-0.5">
-                          Current
+                        {isCompleted ? (
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        ) : isCurrent ? (
+                          <Repeat className="w-4 h-4 text-emerald-600" />
+                        ) : (
+                          <Lock className="w-3.5 h-3.5 text-stone-400" />
+                        )}
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <span
+                          className={`text-[11px] whitespace-nowrap font-medium ${
+                            isCurrent ? 'font-bold text-emerald-700' : isCompleted ? 'font-semibold text-stone-800' : 'text-stone-400'
+                          }`}
+                        >
+                          {node.title}
                         </span>
-                      )}
+                        {isCurrent && (
+                          <span className="text-[8px] font-pixel text-emerald-600 font-bold uppercase mt-0.5">
+                            Current
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            ) : (
+              /* Content: Available Courses Grid */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                {courses?.map((c) => {
+                  const isPython = c.course.id.includes('python')
+                  const isWeb = c.course.id.includes('web') || c.course.id.includes('html')
+                  const isJs = c.course.id.includes('javascript') || c.course.id.includes('js')
+                  const iconEmoji = isPython ? '🐍' : isWeb ? '🌐' : isJs ? '⚡' : '💻'
+
+                  return (
+                    <div
+                      key={c.course.id}
+                      className="p-4 rounded-2xl border border-stone-200/80 bg-stone-50/50 hover:bg-white hover:shadow-xs transition-all flex flex-col justify-between gap-3"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-xl shrink-0 shadow-2xs">
+                          {iconEmoji}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="font-extrabold text-xs sm:text-sm text-stone-900 truncate">
+                              {c.course.title}
+                            </h4>
+                            <span className="px-2 py-0.2 rounded-md bg-stone-100 text-stone-600 text-[10px] font-bold">
+                              {c.course.difficulty || 'Beginner'}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-stone-500 line-clamp-2 mt-0.5 leading-relaxed font-medium">
+                            {c.course.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-stone-200/60">
+                        <div className="flex items-center gap-2 flex-1 max-w-[140px]">
+                          <div className="flex-1 h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${c.progressPercent}%` }} />
+                          </div>
+                          <span className="font-pixel text-[9px] font-bold text-emerald-700">
+                            {c.progressPercent}%
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (c.nextLesson?.id && onOpenLesson) {
+                              onOpenLesson(c.nextLesson.id)
+                            } else if (onSelectCourse) {
+                              onSelectCourse(c.course.id)
+                            } else if (onNavigateTab) {
+                              onNavigateTab('learn')
+                            }
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white text-[11px] font-extrabold shadow-[0_2px_0_#047857] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                        >
+                          {c.progressPercent > 0 ? 'Continue' : 'Start'}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {/* Section 4: FROM THE COMMUNITY */}
@@ -343,7 +495,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
               </div>
               <button
                 type="button"
-                onClick={() => onNavigateTab('community')}
+                onClick={() => onNavigateTab?.('community')}
                 className="text-xs font-bold text-emerald-600 hover:underline cursor-pointer flex items-center gap-1"
               >
                 <span>Explore Community</span>
@@ -384,7 +536,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => onNavigateTab('build')}
+                    onClick={() => onNavigateTab?.('build')}
                     className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-emerald-50 hover:text-emerald-700 text-stone-600 text-[10.5px] font-bold transition-colors cursor-pointer"
                   >
                     Remix
@@ -424,7 +576,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => onNavigateTab('build')}
+                    onClick={() => onNavigateTab?.('build')}
                     className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-purple-50 hover:text-purple-700 text-stone-600 text-[10.5px] font-bold transition-colors cursor-pointer"
                   >
                     Remix
@@ -464,7 +616,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => onNavigateTab('build')}
+                    onClick={() => onNavigateTab?.('build')}
                     className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-sky-50 hover:text-sky-700 text-stone-600 text-[10.5px] font-bold transition-colors cursor-pointer"
                   >
                     Remix
@@ -532,8 +684,8 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
 
             <button
               type="button"
-              onClick={() => onNavigateTab('practice')}
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-xl text-xs font-bold font-sans flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+              onClick={() => (onNavigateTab ? onNavigateTab('practice') : undefined)}
+              className="w-full py-2.5 bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-[0_4px_0_#047857] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
             >
               <span>Start Quest</span>
               <ArrowRight className="w-4 h-4" />
@@ -549,8 +701,8 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
               </div>
               <button
                 type="button"
-                onClick={() => onNavigateTab('learn')}
-                className="text-xs font-bold text-blue-600 hover:underline cursor-pointer flex items-center gap-1"
+                onClick={() => (onNavigateTab ? onNavigateTab('learn') : undefined)}
+                className="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer flex items-center gap-1"
               >
                 <span>View all achievements</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -615,8 +767,8 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => onNavigateTab('practice')}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold font-sans shadow-xs transition-colors cursor-pointer"
+                  onClick={() => (onNavigateTab ? onNavigateTab('practice') : undefined)}
+                  className="flex-1 py-2.5 bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white rounded-xl text-xs font-extrabold shadow-[0_3px_0_#047857] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
                 >
                   Give Me a Challenge
                 </button>
@@ -624,7 +776,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setLumiDismissed(true)}
-                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl text-xs font-bold font-sans transition-colors cursor-pointer"
+                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl text-xs font-bold shadow-[0_2px_0_#CBD5E1] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
                 >
                   Maybe Later
                 </button>

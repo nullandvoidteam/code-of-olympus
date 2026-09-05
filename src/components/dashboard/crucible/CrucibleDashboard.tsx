@@ -9,6 +9,7 @@ import { RageGauge } from './RageGauge'
 import { RealmPath } from './RealmPath'
 import { CourseCard } from './CourseCard'
 import { TrophyGrid } from './TrophyGrid'
+import { AppShellDashboardView } from '../AppShellDashboardView'
 
 interface CrucibleDashboardProps {
   username: string
@@ -74,22 +75,42 @@ function StatPillar({ icon: Icon, label, value, color, subLabel, glow }: {
   )
 }
 
-export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = ({
-  username,
-  stats,
-  resumePoint,
-  courses,
-  learningPaths,
-  overallProgress,
-  badges,
-  achievements,
-  activities,
-  onOpenLesson,
-  onNavigateTab,
-  onSelectCourse,
-}) => {
+export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
+  const {
+    username,
+    stats,
+    resumePoint,
+    courses,
+    learningPaths,
+    overallProgress,
+    badges,
+    achievements,
+    activities,
+    onOpenLesson,
+    onNavigateTab,
+    onSelectCourse,
+  } = props
   const { theme } = useTheme()
   const [activeSection, setActiveSection] = useState<'sagas' | 'realms' | 'trophies'>('sagas')
+
+  if ((theme as string) === 'classic') {
+    return (
+      <AppShellDashboardView
+        username={username}
+        stats={stats}
+        resumePoint={resumePoint}
+        courses={courses}
+        learningPaths={learningPaths}
+        overallProgress={overallProgress}
+        badges={badges}
+        achievements={achievements}
+        activities={activities}
+        onOpenLesson={onOpenLesson}
+        onNavigateTab={onNavigateTab}
+        onSelectCourse={onSelectCourse}
+      />
+    )
+  }
 
   return (
     <div

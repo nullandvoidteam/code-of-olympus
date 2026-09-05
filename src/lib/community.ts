@@ -64,22 +64,10 @@ export async function fetchCommunityFeed(
       .from('community_posts')
       .select(`
         *,
-        profile:profiles!user_id (
+        profile:profiles (
           full_name,
           username,
           role
-        ),
-        project_showcase:project_showcases (
-          id,
-          title,
-          description,
-          live_url,
-          preview_url,
-          project:projects (
-            id,
-            title,
-            category
-          )
         )
       `)
       .order('created_at', { ascending: false })
@@ -92,15 +80,42 @@ export async function fetchCommunityFeed(
       query = query.eq('post_type', postTypeFilter)
     }
 
-    const { data, error } = await query
+    let { data, error } = await query
 
+    // Fallback if join failed
     if (error) {
-      console.error('Error fetching community feed:', error)
-      return []
+      console.warn('Community posts join error, trying simple select:', error.message)
+      const fallback = await supabase
+        .from('community_posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (!fallback.error && fallback.data) {
+        data = fallback.data
+      } else {
+        console.error('Error fetching community feed:', fallback.error || error)
+        return []
+      }
     }
 
     if (!data || data.length === 0) {
       return []
+    }
+
+    // Fetch showcases for any posts with project_build_id
+    const showcaseIds = (data || []).map((item) => item.project_build_id).filter(Boolean) as string[]
+    const showcasesMap = new Map<string, any>()
+    if (showcaseIds.length > 0) {
+      try {
+        const { data: scData } = await supabase
+          .from('project_showcases')
+          .select('*')
+          .in('id', showcaseIds)
+        if (scData) {
+          scData.forEach((sc) => showcasesMap.set(sc.id, sc))
+        }
+      } catch (err) {
+        console.warn('Error fetching attached showcases:', err)
+      }
     }
 
     // Fetch likes, comments, and following info in parallel
@@ -154,6 +169,16 @@ export async function fetchCommunityFeed(
             preview_url: item.project_showcase.preview_url,
             project_title: item.project_showcase.project?.title || 'Coding Project',
             project_category: item.project_showcase.project?.category || 'Web',
+          }
+        : showcasesMap.get(item.project_build_id)
+        ? {
+            id: showcasesMap.get(item.project_build_id).id,
+            title: showcasesMap.get(item.project_build_id).title,
+            description: showcasesMap.get(item.project_build_id).description,
+            live_url: showcasesMap.get(item.project_build_id).live_url,
+            preview_url: showcasesMap.get(item.project_build_id).preview_url,
+            project_title: 'Coding Project',
+            project_category: 'Project',
           }
         : undefined,
     }))
