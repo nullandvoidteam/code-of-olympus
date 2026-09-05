@@ -7,7 +7,17 @@ import { LessonPage } from '../../pages/LessonPage'
 import { CrucibleDashboard } from './crucible/CrucibleDashboard'
 import { Loader2 } from 'lucide-react'
 
-export const LearnerDashboard: React.FC = () => {
+interface LearnerDashboardProps {
+  onNavigateTab?: (tab: 'learn' | 'practice' | 'build' | 'community' | 'arcade' | 'dashboard') => void
+  onSelectCourse?: (courseId: string) => void
+  onSelectLesson?: (lessonId: string) => void
+}
+
+export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
+  onNavigateTab,
+  onSelectCourse,
+  onSelectLesson,
+}) => {
   const { user, profile, refreshProfile, loading: authLoading } = useAuth()
   const { courses, learningPaths, resumePoint, overallProgress, refreshProgress, loading: learningLoading } = useLearningProgress(user?.id)
   const { stats, refreshGamification, loading: gamificationLoading } = useGamification(user?.id, profile?.xp, profile?.streak, profile?.level)
@@ -20,6 +30,10 @@ export const LearnerDashboard: React.FC = () => {
   const username = profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Warrior'
 
   const handleOpenLesson = (lessonId?: string) => {
+    if (onSelectLesson && lessonId) {
+      onSelectLesson(lessonId)
+      return
+    }
     if (lessonId) setActiveLessonId(lessonId)
   }
 
@@ -69,7 +83,7 @@ export const LearnerDashboard: React.FC = () => {
           style={{ color: '#FF3D00' }}
         >
           <Loader2 className="w-5 h-5 animate-spin" />
-          <span style={{ fontFamily: 'Press Start 2P, monospace', fontSize: '9px', color: '#57534e' }}>
+          <span style={{ fontFamily: "'Cinzel', serif", fontSize: '11px', letterSpacing: '0.2em', color: '#DC2626', fontWeight: 700 }}>
             FORGING YOUR SAGA...
           </span>
         </div>
@@ -89,6 +103,8 @@ export const LearnerDashboard: React.FC = () => {
       achievements={achievements}
       activities={activities}
       onOpenLesson={handleOpenLesson}
+      onNavigateTab={onNavigateTab}
+      onSelectCourse={onSelectCourse}
     />
   )
 }

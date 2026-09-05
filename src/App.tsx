@@ -60,7 +60,7 @@ const MainApp: React.FC = () => {
 
   // 3. Authenticated -> Check Onboarding for Students
   const hasOnboarded = localStorage.getItem(`onboarded_${user.id}`) === 'true' || hasCompletedOnboarding
-  
+
   if (!hasOnboarded && !isAdmin) {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: '#070505' }}>
@@ -76,7 +76,7 @@ const MainApp: React.FC = () => {
   if (isAdmin) {
     return <AdminShell />
   }
-  
+
   return <AppShell />
 }
 

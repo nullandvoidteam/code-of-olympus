@@ -15,24 +15,17 @@ const BLADE_W = 38
 const BLADE_H = 110
 
 export const BladeOfChaosCursor: React.FC = () => {
-  const [pos, setPos] = useState({ x: -300, y: -300 })
+  const containerRef = useRef<HTMLDivElement>(null)
   const [state, setCursorState] = useState<CursorState>('idle')
-  const animRef = useRef<number | null>(null)
-  const targetPos = useRef({ x: -300, y: -300 })
-  const currentPos = useRef({ x: -300, y: -300 })
-
-  // Smooth interpolation — blade glides toward the pointer
-  const animate = useCallback(() => {
-    const lerp = 0.16
-    currentPos.current.x += (targetPos.current.x - currentPos.current.x) * lerp
-    currentPos.current.y += (targetPos.current.y - currentPos.current.y) * lerp
-    setPos({ x: currentPos.current.x, y: currentPos.current.y })
-    animRef.current = requestAnimationFrame(animate)
-  }, [])
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      targetPos.current = { x: e.clientX, y: e.clientY }
+      if (containerRef.current) {
+        containerRef.current.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`
+        if (containerRef.current.style.opacity !== '1') {
+          containerRef.current.style.opacity = '1'
+        }
+      }
     }
 
     const onEnterInteractive = () => setCursorState('hover')
@@ -53,10 +46,9 @@ export const BladeOfChaosCursor: React.FC = () => {
         })
     }
 
-    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mousemove', onMove, { passive: true })
     window.addEventListener('mousedown', onMouseDown)
     window.addEventListener('mouseup', onMouseUp)
-    animRef.current = requestAnimationFrame(animate)
 
     attachHoverListeners()
     const observer = new MutationObserver(attachHoverListeners)
@@ -66,18 +58,14 @@ export const BladeOfChaosCursor: React.FC = () => {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mousedown', onMouseDown)
       window.removeEventListener('mouseup', onMouseUp)
-      if (animRef.current) cancelAnimationFrame(animRef.current)
       observer.disconnect()
     }
-  }, [animate])
+  }, [])
 
   // State-driven transforms
-  // Idle: tip points down-right at ~-45deg (blade pointing toward cursor hotspot)
-  // Hover: tilts to ~-30deg, grows, glow intensifies
-  // Click: stabs straight down at -60deg, snaps large
   const rotation = state === 'click' ? -65 : state === 'hover' ? -30 : -45
-  const scale    = state === 'click' ? 1.45 : state === 'hover' ? 1.3 : 1.0
-  const dur      = state === 'click' ? '65ms' : '200ms'
+  const scale    = state === 'click' ? 1.35 : state === 'hover' ? 1.2 : 1.0
+  const dur      = state === 'click' ? '70ms' : '150ms'
 
   // Divine glow color shifts with state
   const glowColor = state === 'click'
@@ -88,23 +76,28 @@ export const BladeOfChaosCursor: React.FC = () => {
 
   return (
     <div
+      ref={containerRef}
       aria-hidden="true"
       style={{
         position: 'fixed',
-        left: pos.x,
-        top: pos.y,
-        width: BLADE_W,
-        height: BLADE_H,
-        // Anchor: tip of the blade sits exactly at the cursor hotspot (x: 19, y: 2)
-        transform: `translate(-${BLADE_W * 0.5}px, -2px) rotate(${rotation}deg) scale(${scale})`,
-        transformOrigin: `${BLADE_W * 0.5}px 2px`,
-        transition: `transform ${dur} cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+        top: 0,
+        left: 0,
         pointerEvents: 'none',
         zIndex: 99999,
-        filter: `drop-shadow(${glowColor})`,
-        willChange: 'transform, left, top',
+        opacity: 0,
+        willChange: 'transform',
       }}
     >
+      <div
+        style={{
+          width: BLADE_W,
+          height: BLADE_H,
+          transformOrigin: '19px 2px',
+          transform: `translate(-19px, -2px) rotate(${rotation}deg) scale(${scale})`,
+          transition: `transform ${dur} cubic-bezier(0.25, 0.46, 0.45, 0.94)`,
+          filter: `drop-shadow(${glowColor})`,
+        }}
+      >
       <svg
         viewBox="0 0 38 110"
         width={BLADE_W}
@@ -408,6 +401,7 @@ export const BladeOfChaosCursor: React.FC = () => {
           style={{ transition: 'all 0.2s ease' }}
         />
       </svg>
+      </div>
     </div>
   )
 }

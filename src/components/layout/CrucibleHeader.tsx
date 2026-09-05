@@ -15,16 +15,6 @@ interface CrucibleHeaderProps {
   courseDetailTitle?: string | null
 }
 
-/* ── Nav definitions — mythic rename layer over existing NavItemKey values ── */
-const NAV_ITEMS: { key: NavItemKey; label: string; mythicLabel: string }[] = [
-  { key: 'dashboard', label: 'Dashboard', mythicLabel: 'Bastion' },
-  { key: 'learn',     label: 'Learn',     mythicLabel: 'Realms' },
-  { key: 'practice',  label: 'Practice',  mythicLabel: 'Trials' },
-  { key: 'build',     label: 'Build',     mythicLabel: 'The Forge' },
-  { key: 'arcade',    label: 'Arcade',    mythicLabel: 'The Arena' },
-  { key: 'community', label: 'Community', mythicLabel: 'Shield-Wall' },
-]
-
 /* ── Omega SVG icon ── */
 const OmegaIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -122,13 +112,13 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
   return (
     <header
       id="crucible-header"
-      className="h-20 px-8 flex items-center justify-between sticky top-0 z-50 select-none"
+      className="h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 select-none w-full"
       style={{
-        background: 'rgba(7,5,5,0.90)',
+        background: 'rgba(7,5,5,0.92)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(42,20,20,0.9)',
-        boxShadow: '0 1px 0 rgba(220,38,38,0.08), 0 4px 32px rgba(7,5,5,0.8)',
+        boxShadow: '0 1px 0 rgba(220,38,38,0.08), 0 4px 24px rgba(7,5,5,0.8)',
       }}
     >
       {/* ════════════════════════════════════
@@ -155,33 +145,14 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
       </div>
 
       {/* ════════════════════════════════════
-          CENTER — Navigation Tabs
+          CENTER — Context Location (if applicable)
       ════════════════════════════════════ */}
-      <nav className="hidden lg:flex items-center gap-1">
-        {NAV_ITEMS.map(({ key, mythicLabel }) => {
-          const isActive = activeTab === key
-          return (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onSelectTab(key)}
-              className={cn(
-                'relative px-4 py-2 text-[11px] font-semibold tracking-[0.12em] uppercase transition-all duration-200',
-                isActive
-                  ? 'text-red-400 nav-tab-active'
-                  : 'text-slate-400 hover:text-red-300'
-              )}
-              style={{ fontFamily: "'Cinzel', serif" }}
-            >
-              {mythicLabel}
-              {/* Hover amber glow underline */}
-              {!isActive && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-px bg-amber-500/50 transition-all duration-200 group-hover:w-4/5" />
-              )}
-            </button>
-          )
-        })}
-      </nav>
+      {courseDetailTitle && (
+        <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 border border-red-950/60 text-xs font-semibold text-stone-300">
+          <span className="text-red-500">⚔</span>
+          <span style={{ fontFamily: "'Cinzel', serif" }}>{courseDetailTitle}</span>
+        </div>
+      )}
 
       {/* ════════════════════════════════════
           RIGHT — Player HUD Status

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Sword, Star, Flame, Trophy, Zap } from 'lucide-react'
+import { Sword, Star, Flame, Trophy, Zap, Shield, Sparkles } from 'lucide-react'
 import type { GamificationStats } from '../../../lib/gamification'
 import type { ResumePoint, CourseProgressSummary, LearningPath, OverallLearnerProgress } from '../../../lib/learning'
 import type { BadgeItem, AchievementItem, ActivityItem } from '../../../lib/achievements'
@@ -20,36 +20,52 @@ interface CrucibleDashboardProps {
   achievements: AchievementItem[]
   activities: ActivityItem[]
   onOpenLesson: (lessonId?: string) => void
+  onNavigateTab?: (tab: 'learn' | 'practice' | 'build' | 'community' | 'arcade' | 'dashboard') => void
+  onSelectCourse?: (courseId: string) => void
 }
 
-// Stat pillar data
-function StatPillar({ icon: Icon, label, value, color, subLabel }: {
+// God of War Stat Pillar
+function StatPillar({ icon: Icon, label, value, color, subLabel, glow }: {
   icon: React.ElementType
   label: string
   value: string | number
   color: string
   subLabel?: string
+  glow?: string
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-2xl"
+    <div
+      className="flex flex-col items-center gap-2 p-4 rounded-2xl relative overflow-hidden transition-all duration-300 hover:translate-y-[-2px]"
       style={{
-        background: 'linear-gradient(145deg, #130909 0%, #0E0A0A 100%)',
-        border: '1px solid #3D1C1C',
+        background: 'linear-gradient(145deg, #120A0A 0%, #080404 100%)',
+        border: '1px solid rgba(61, 28, 28, 0.9)',
+        boxShadow: `0 4px 20px rgba(7,5,5,0.7), 0 0 16px ${glow || 'rgba(220,38,38,0.06)'}`,
       }}
     >
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-        style={{ background: `${color}15`, border: `1px solid ${color}33` }}
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center relative"
+        style={{
+          background: `${color}18`,
+          border: `1px solid ${color}40`,
+          boxShadow: `0 0 12px ${color}22`,
+        }}
       >
         <Icon className="w-5 h-5" style={{ color }} />
       </div>
-      <span className="font-black tabular-nums text-xl" style={{ color: '#f1f5f9', fontFamily: 'Georgia, serif' }}>
+      <span
+        className="font-bold tabular-nums text-2xl tracking-wide"
+        style={{ color: '#F1E5E5', fontFamily: "'Cinzel', serif" }}
+      >
         {value}
       </span>
-      <span className="font-black uppercase text-center" style={{ color, fontSize: '8px', fontFamily: 'Press Start 2P, monospace', lineHeight: 1.6 }}>
+      <span
+        className="font-bold uppercase tracking-[0.2em] text-center"
+        style={{ color, fontSize: '10px', fontFamily: "'Cinzel', serif" }}
+      >
         {label}
       </span>
       {subLabel && (
-        <span className="text-center" style={{ color: '#57534e', fontSize: '9px' }}>
+        <span className="text-center font-medium" style={{ color: '#8A7A7A', fontSize: '11px', fontFamily: "'Inter', sans-serif" }}>
           {subLabel}
         </span>
       )}
@@ -68,106 +84,158 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = ({
   achievements,
   activities,
   onOpenLesson,
+  onNavigateTab,
+  onSelectCourse,
 }) => {
   const [activeSection, setActiveSection] = useState<'sagas' | 'realms' | 'trophies'>('sagas')
 
   return (
-    <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 pb-12"
-      style={{ fontFamily: '"Mulish", system-ui, sans-serif' }}
+    <div
+      className="w-full max-w-6xl mx-auto flex flex-col gap-6 pb-12 select-none"
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
     >
-
-      {/* ── HERO BANNER ───────────────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-2xl px-6 py-5"
+      {/* ── HERO BANNER (GOD OF WAR SANCTUARY) ───────────────────── */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 sm:p-7 shadow-2xl"
         style={{
-          background: 'linear-gradient(135deg, #0E0A0A 0%, #1a0808 40%, #120606 100%)',
-          border: '1px solid #3D1C1C',
-          boxShadow: '0 0 40px rgba(220, 38, 38, 0.08)',
+          background: 'linear-gradient(135deg, #110808 0%, #1a0a0a 45%, #0c0505 100%)',
+          border: '1px solid rgba(80, 30, 30, 0.85)',
+          boxShadow: '0 8px 36px rgba(7,5,5,0.9), 0 0 45px rgba(220,38,38,0.12)',
         }}
       >
-        {/* Background rune decorations */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.04]">
-          <div className="absolute top-0 right-8 text-8xl font-black text-red-600" style={{ fontFamily: 'Georgia' }}>
+        {/* Background Runic Watermark & Nordic Glyphs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.06] flex items-center justify-between px-10">
+          <span className="text-9xl font-black text-red-600" style={{ fontFamily: "'Cinzel Decorative', serif" }}>
+            Ω
+          </span>
+          <span className="text-8xl font-black text-amber-500" style={{ fontFamily: "'Cinzel', serif" }}>
+            ᛟ
+          </span>
+          <span className="text-9xl font-black text-red-600" style={{ fontFamily: "'Cinzel Decorative', serif" }}>
             ᚱ
-          </div>
-          <div className="absolute bottom-0 left-12 text-7xl font-black text-red-600" style={{ fontFamily: 'Georgia' }}>
-            ᚢ
-          </div>
+          </span>
         </div>
 
-        {/* Ember glow */}
-        <div className="absolute top-0 right-0 w-64 h-32 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at top right, rgba(255,61,0,0.1) 0%, transparent 70%)' }}
+        {/* Ember radial glows */}
+        <div
+          className="absolute top-0 right-0 w-80 h-40 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at top right, rgba(255,61,0,0.14) 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute bottom-0 left-1/3 w-64 h-32 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.1) 0%, transparent 70%)' }}
         />
 
-        <div className="relative z-10 flex items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-black uppercase tracking-widest"
-                style={{ color: '#FF3D00', fontSize: '9px', fontFamily: 'Press Start 2P, monospace' }}
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2">
+              <span
+                className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.25em]"
+                style={{
+                  background: 'rgba(220,38,38,0.18)',
+                  border: '1px solid rgba(220,38,38,0.45)',
+                  color: '#EF4444',
+                  fontFamily: "'Cinzel', serif",
+                }}
               >
-                ⚔ THE CRUCIBLE
+                ⚔ BASTION OF WAR
+              </span>
+              <span className="text-stone-600">•</span>
+              <span
+                className="text-[11px] font-semibold uppercase tracking-[0.18em]"
+                style={{ color: '#C59B27', fontFamily: "'Cinzel', serif" }}
+              >
+                LEVEL {stats.level} WARRIOR
               </span>
             </div>
-            <h1 className="font-black uppercase tracking-tight leading-tight"
-              style={{ color: '#f1f5f9', fontFamily: 'Georgia, serif', fontSize: 'clamp(1.25rem, 3vw, 1.75rem)' }}
+
+            <h1
+              className="font-bold uppercase tracking-wide leading-tight text-3xl sm:text-4xl text-transparent bg-clip-text"
+              style={{
+                backgroundImage: 'linear-gradient(135deg, #FFFFFF 0%, #F5E6E6 40%, #D4A373 80%, #C59B27 100%)',
+                fontFamily: "'Cinzel', serif",
+                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))',
+              }}
             >
               Hail, {username}
             </h1>
-            <p className="mt-1 text-sm font-medium" style={{ color: '#78716c' }}>
+
+            <p className="mt-1 text-sm font-medium" style={{ color: '#A89898' }}>
               {resumePoint
-                ? `Your saga continues — ${resumePoint.courseTitle} awaits.`
-                : 'The forge is ready. Your legend begins.'}
+                ? `Your trial awaits in the Realm — continue ${resumePoint.courseTitle}.`
+                : 'The runes are cast. Enter the Crucible and forge your destiny.'}
             </p>
           </div>
 
-          {/* Overall progress orb */}
-          <div className="shrink-0 flex flex-col items-center gap-1 px-5 py-3 rounded-2xl"
+          {/* Overall progress altar orb */}
+          <div
+            className="shrink-0 flex items-center sm:flex-col justify-between sm:justify-center gap-2 px-6 py-4 rounded-2xl relative"
             style={{
-              background: 'rgba(61, 28, 28, 0.4)',
-              border: '1px solid #3D1C1C',
+              background: 'linear-gradient(145deg, rgba(30,12,12,0.8) 0%, rgba(14,6,6,0.9) 100%)',
+              border: '1px solid rgba(80, 30, 30, 0.9)',
+              boxShadow: '0 0 20px rgba(255,61,0,0.12), inset 0 1px 0 rgba(255,255,255,0.06)',
             }}
           >
-            <span className="font-black text-3xl" style={{ color: '#FF3D00', fontFamily: 'Georgia, serif' }}>
-              {overallProgress.progressPercent}%
-            </span>
-            <span style={{ color: '#57534e', fontSize: '9px', fontFamily: 'Press Start 2P, monospace' }}>
-              FORGED
-            </span>
-            <span style={{ color: '#3D1C1C', fontSize: '9px' }}>
-              {overallProgress.completedLessons}/{overallProgress.totalLessons}
+            <div className="flex flex-col items-center">
+              <span
+                className="font-bold text-3xl sm:text-4xl tracking-tight"
+                style={{
+                  color: '#FF3D00',
+                  fontFamily: "'Cinzel', serif",
+                  filter: 'drop-shadow(0 0 12px rgba(255,61,0,0.5))',
+                }}
+              >
+                {overallProgress.progressPercent}%
+              </span>
+              <span
+                className="uppercase tracking-[0.2em] font-bold mt-0.5"
+                style={{ color: '#C59B27', fontSize: '10px', fontFamily: "'Cinzel', serif" }}
+              >
+                FORGED
+              </span>
+            </div>
+            <span
+              className="px-2.5 py-0.5 rounded-full text-[10px] font-bold"
+              style={{ background: 'rgba(61,28,28,0.7)', border: '1px solid #3D1C1C', color: '#A89898' }}
+            >
+              {overallProgress.completedLessons}/{overallProgress.totalLessons} Trials
             </span>
           </div>
         </div>
       </div>
 
-      {/* ── STATS PILLARS + RAGE GAUGE ─────────────────────────────── */}
+      {/* ── STATS PILLARS ────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatPillar
           icon={Flame}
-          label="STREAK"
+          label="FURY STREAK"
           value={stats.streak}
           color="#FF3D00"
+          glow="rgba(255,61,0,0.2)"
           subLabel={`${stats.streak} day${stats.streak !== 1 ? 's' : ''} ablaze`}
         />
         <StatPillar
           icon={Star}
-          label="TOTAL XP"
+          label="HACKSILVER XP"
           value={stats.xp.toLocaleString()}
-          color="#F59E0B"
-          subLabel={`Level ${stats.level}`}
+          color="#F5D060"
+          glow="rgba(245,208,96,0.2)"
+          subLabel={`Total Glory Earned`}
         />
         <StatPillar
           icon={Trophy}
-          label="BADGES"
+          label="TROPHIES"
           value={badges.filter((b) => b.isUnlocked).length}
           color="#DC2626"
-          subLabel={`of ${badges.length} earned`}
+          glow="rgba(220,38,38,0.2)"
+          subLabel={`of ${badges.length} claimed`}
         />
         <StatPillar
           icon={Zap}
-          label="LEVEL"
-          value={stats.level}
-          color="#6366F1"
+          label="ASCENSION"
+          value={`Lvl ${stats.level}`}
+          color="#00E5FF"
+          glow="rgba(0,229,255,0.2)"
           subLabel={`${Math.max(0, stats.nextLevelXp - stats.xp)} XP to next`}
         />
       </div>
@@ -183,100 +251,140 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = ({
         <div className="lg:col-span-2 flex flex-col gap-4">
           <RageGauge stats={stats} />
 
-          {/* Level progress bar */}
-          <div className="rounded-xl p-4"
-            style={{ background: '#150F0F', border: '1px solid #451414' }}
+          {/* Level Ascension Slab */}
+          <div
+            className="rounded-xl p-5 flex flex-col justify-between"
+            style={{
+              background: 'linear-gradient(145deg, #120A0A 0%, #0A0606 100%)',
+              border: '1px solid rgba(61, 28, 28, 0.85)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+            }}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-black uppercase"
-                style={{ color: '#6366F1', fontSize: '9px', fontFamily: 'Press Start 2P, monospace' }}
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-cyan-400" />
+                <span
+                  className="font-bold tracking-[0.18em] uppercase"
+                  style={{ color: '#00E5FF', fontSize: '10px', fontFamily: "'Cinzel', serif" }}
+                >
+                  LEVEL ASCENSION
+                </span>
+              </div>
+              <span
+                className="font-bold uppercase tracking-wider"
+                style={{ color: '#F5D060', fontSize: '11px', fontFamily: "'Cinzel', serif" }}
               >
-                ⬆ LEVEL ASCENSION
-              </span>
-              <span className="font-black" style={{ color: '#F59E0B', fontSize: '11px' }}>
-                LVL {stats.level}
+                TIER {stats.level}
               </span>
             </div>
-            <div className="w-full h-4 rounded-lg overflow-hidden"
-              style={{ background: '#0D0505', border: '1px solid #3D1C1C' }}
+
+            <div
+              className="w-full h-4 rounded-lg overflow-hidden p-[1px]"
+              style={{ background: '#090404', border: '1px solid #3D1C1C' }}
             >
               {(() => {
                 const progressInLevel = stats.xp - stats.currentLevelBaseXp
                 const levelRange = stats.nextLevelXp - stats.currentLevelBaseXp
                 const pct = levelRange > 0 ? Math.min(100, Math.round((progressInLevel / levelRange) * 100)) : 0
                 return (
-                  <div className="h-full rounded-lg transition-all duration-700"
+                  <div
+                    className="h-full rounded-md transition-all duration-700"
                     style={{
                       width: `${pct}%`,
-                      background: 'linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%)',
-                      boxShadow: '0 0 12px rgba(99, 102, 241, 0.5)',
+                      background: 'linear-gradient(90deg, #0284C7 0%, #00E5FF 100%)',
+                      boxShadow: '0 0 12px rgba(0, 229, 255, 0.6)',
                     }}
                   />
                 )
               })()}
             </div>
-            <div className="flex justify-between mt-1">
-              <span style={{ color: '#57534e', fontSize: '9px' }}>
+
+            <div className="flex justify-between items-center mt-2">
+              <span style={{ color: '#8A7A7A', fontSize: '11px', fontFamily: "'Inter', sans-serif" }}>
                 {stats.xp - stats.currentLevelBaseXp} / {stats.nextLevelXp - stats.currentLevelBaseXp} XP
               </span>
-              <span style={{ color: '#6366F1', fontSize: '9px', fontWeight: 700 }}>
-                LVL {stats.level + 1} →
+              <span
+                style={{ color: '#00E5FF', fontSize: '10px', fontFamily: "'Cinzel', serif", fontWeight: 700, letterSpacing: '0.1em' }}
+              >
+                TIER {stats.level + 1} ➔
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── SECTION NAVIGATION ─────────────────────────────────────── */}
-      <div className="flex items-center gap-1 p-1 rounded-xl"
-        style={{ background: '#0E0A0A', border: '1px solid #3D1C1C' }}
+      {/* ── SECTION NAVIGATION TABS ────────────────────────────────── */}
+      <div
+        className="flex items-center gap-2 p-1.5 rounded-xl"
+        style={{
+          background: 'rgba(14, 10, 10, 0.95)',
+          border: '1px solid rgba(61, 28, 28, 0.85)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+        }}
       >
         {([
-          { key: 'sagas', label: '⚔ SAGAS & LABORS', icon: '📜' },
-          { key: 'realms', label: '🌍 NINE REALMS', icon: '🗺' },
-          { key: 'trophies', label: '🏆 VALHALLA', icon: '🏆' },
-        ] as const).map(({ key, label }) => (
+          { key: 'sagas', label: 'SAGAS & LABORS', icon: '⚔' },
+          { key: 'realms', label: 'NINE REALMS', icon: 'ᛟ' },
+          { key: 'trophies', label: 'VALHALLA TROPHIES', icon: '🏆' },
+        ] as const).map(({ key, label, icon }) => (
           <button
             key={key}
             type="button"
             onClick={() => setActiveSection(key)}
-            className="flex-1 py-2.5 px-3 rounded-lg font-black uppercase tracking-wider transition-all duration-200"
+            className="flex-1 py-3 px-4 rounded-lg font-bold uppercase tracking-[0.18em] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             style={{
-              fontFamily: 'Press Start 2P, monospace',
-              fontSize: '8px',
+              fontFamily: "'Cinzel', serif",
+              fontSize: '11px',
               background: activeSection === key
-                ? 'linear-gradient(135deg, #991B1B 0%, #DC2626 100%)'
+                ? 'linear-gradient(135deg, #B91C1C 0%, #DC2626 50%, #991B1B 100%)'
                 : 'transparent',
-              color: activeSection === key ? '#fff' : '#57534e',
-              boxShadow: activeSection === key ? '0 0 16px rgba(220, 38, 38, 0.3)' : 'none',
+              color: activeSection === key ? '#FFFFFF' : '#8A7A7A',
+              border: activeSection === key ? '1px solid rgba(220,38,38,0.5)' : '1px solid transparent',
+              boxShadow: activeSection === key ? '0 0 16px rgba(220, 38, 38, 0.4)' : 'none',
             }}
           >
-            {label}
+            <span>{icon}</span>
+            <span>{label}</span>
           </button>
         ))}
       </div>
 
       {/* ── SAGAS & MYTHIC LABORS (Course Grid) ───────────────────── */}
       {activeSection === 'sagas' && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
-            <Sword className="w-4 h-4" style={{ color: '#FF3D00' }} />
-            <h2 className="font-black uppercase"
-              style={{ color: '#f1f5f9', fontFamily: 'Georgia, serif', fontSize: '1.1rem' }}
+        <div className="flex flex-col gap-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Sword className="w-5 h-5" style={{ color: '#FF3D00' }} />
+              <h2
+                className="font-bold uppercase tracking-wide text-lg text-stone-100"
+                style={{ fontFamily: "'Cinzel', serif" }}
+              >
+                Sagas & Mythic Labors
+              </h2>
+            </div>
+            <span
+              className="font-bold tracking-widest text-[11px] px-3 py-1 rounded-full uppercase"
+              style={{
+                background: 'rgba(61,28,28,0.5)',
+                border: '1px solid #3D1C1C',
+                color: '#C59B27',
+                fontFamily: "'Cinzel', serif",
+              }}
             >
-              Sagas & Mythic Labors
-            </h2>
-            <span className="ml-auto font-black" style={{ color: '#57534e', fontSize: '10px' }}>
               {overallProgress.completedCourses}/{overallProgress.totalCourses} CONQUERED
             </span>
           </div>
 
           {courses.length === 0 ? (
-            <div className="py-12 text-center rounded-2xl"
-              style={{ background: '#0E0A0A', border: '1px solid #1c1010' }}
+            <div
+              className="py-16 text-center rounded-2xl"
+              style={{ background: '#0E0A0A', border: '1px solid #2a1010' }}
             >
-              <p className="font-black uppercase" style={{ color: '#2a1010', fontSize: '9px', fontFamily: 'Press Start 2P, monospace' }}>
-                NO SAGAS PUBLISHED IN THE REALM
+              <p
+                className="font-bold uppercase tracking-[0.2em]"
+                style={{ color: '#8A7A7A', fontSize: '11px', fontFamily: "'Cinzel', serif" }}
+              >
+                NO SAGAS PUBLISHED IN THIS REALM
               </p>
             </div>
           ) : (
@@ -297,7 +405,10 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = ({
       {activeSection === 'realms' && (
         <RealmPath
           islands={learningPaths}
-          onSelectRealm={() => {}}
+          onSelectRealm={(islandId) => {
+            if (onSelectCourse) onSelectCourse(islandId)
+            else if (onNavigateTab) onNavigateTab('learn')
+          }}
         />
       )}
 

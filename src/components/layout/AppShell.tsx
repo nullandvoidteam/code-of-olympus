@@ -3,9 +3,6 @@ import { Sidebar, type NavItemKey } from './Sidebar'
 import { CrucibleHeader } from './CrucibleHeader'
 import { LumiAIFloatingButton } from './LumiAIFloatingButton'
 import { MobileBottomNav } from './MobileBottomNav'
-import { AppShellOverviewView } from '../dashboard/AppShellOverviewView'
-import { AppShellDashboardView } from '../dashboard/AppShellDashboardView'
-import { FirstTimeDashboardView } from '../dashboard/FirstTimeDashboardView'
 import { LearnCatalogView } from '../learn/LearnCatalogView'
 import { CourseDetailView } from '../learn/CourseDetailView'
 import { InteractiveLessonView } from '../learn/InteractiveLessonView'
@@ -20,8 +17,8 @@ import { ProjectIDEView, ProjectIDERightPanel } from '../build/ProjectIDEView'
 import { DwarvenForgeWorkbench } from '../crucible/DwarvenForgeWorkbench'
 import { CommunityPage } from '../../pages/CommunityPage'
 import { TeamArcadePage } from '../../pages/TeamArcadePage'
+import { LearnerDashboard } from '../dashboard/LearnerDashboard'
 import { GameToaster } from '../ui/GameToast'
-import { BladeOfChaosCursor } from '../ui/BladeOfChaosCursor'
 import { AlexPixelAvatar } from '../brand/PixelArtAvatars'
 import {
   Sparkles,
@@ -60,9 +57,6 @@ export const AppShell: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col md:flex-row antialiased" style={{ background: '#070505', color: '#E8D5D5', fontFamily: "'Inter', system-ui, sans-serif" }}>
-      {/* ── GLOBAL BLADE OF CHAOS CURSOR ENGINE ── */}
-      <BladeOfChaosCursor />
-
       {/* ── ATMOSPHERIC BACKGROUND CANVAS (fixed, below everything) ── */}
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
         {/* Layer 1: Nordic mountain pass photo */}
@@ -168,39 +162,24 @@ export const AppShell: React.FC = () => {
           }}
         />
 
-        {/* Dynamic Content Area (Ivory/Cream Canvas with Clean Surfaces) */}
+        {/* Dynamic Content Area (The Crucible Arena) */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           {activeTab === 'dashboard' && (
-            <>
-              {dashboardMode === 'overview' && (
-                <AppShellOverviewView
-                  onNavigateTab={(tab) => {
-                    setActiveTab(tab)
-                    if (tab === 'learn') setSelectedCourseId('python')
-                  }}
-                />
-              )}
-              {dashboardMode === 'headquarters' && (
-                <AppShellDashboardView
-                  onNavigateTab={(tab) => {
-                    setActiveTab(tab)
-                    if (tab === 'learn') setSelectedCourseId('python')
-                  }}
-                />
-              )}
-              {dashboardMode === 'first_time' && (
-                <FirstTimeDashboardView
-                  onNavigateTab={(tab) => {
-                    setActiveTab(tab)
-                    if (tab === 'learn') setSelectedCourseId('python')
-                  }}
-                  onStartFirstQuest={() => {
-                    setActiveTab('learn')
-                    setSelectedCourseId('python')
-                  }}
-                />
-              )}
-            </>
+            <LearnerDashboard
+              onNavigateTab={(tab) => {
+                setActiveTab(tab)
+                if (tab === 'learn') setSelectedCourseId('python')
+              }}
+              onSelectCourse={(courseId) => {
+                setActiveTab('learn')
+                setSelectedCourseId(courseId)
+              }}
+              onSelectLesson={(lessonId) => {
+                setActiveTab('learn')
+                setSelectedCourseId('python')
+                setSelectedLessonId(lessonId)
+              }}
+            />
           )}
 
           {activeTab === 'learn' && (
