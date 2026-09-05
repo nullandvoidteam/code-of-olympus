@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Crucible Design System - Shared Dynamic Tokens & Primitives
  * Dynamically maps to active CSS theme variables while maintaining type-safety
  */
@@ -70,9 +70,25 @@ export function difficultyLabel(d: string): string {
   }
 }
 
-export function relativeTime(dateStr: string): string {
+export function relativeTime(dateStr: string, nowMs: number = Date.now()): string {
   try {
-    const diff = Date.now() - new Date(dateStr).getTime()
+    const targetMs = new Date(dateStr).getTime()
+    if (isNaN(targetMs)) return ''
+    const diff = nowMs - targetMs
+
+    // Future timestamp
+    if (diff < 0) {
+      const remainingSec = Math.floor(-diff / 1000)
+      if (remainingSec < 60) return `in ${remainingSec}s`
+      const m = Math.floor(remainingSec / 60)
+      if (m < 60) return `in ${m}m`
+      const h = Math.floor(m / 60)
+      if (h < 24) return `in ${h}h`
+      const d = Math.floor(h / 24)
+      return `in ${d}d`
+    }
+
+    // Past timestamp
     const s = Math.floor(diff / 1000)
     if (s < 60) return `${s}s ago`
     const m = Math.floor(s / 60)
@@ -80,14 +96,33 @@ export function relativeTime(dateStr: string): string {
     const h = Math.floor(m / 60)
     if (h < 24) return `${h}h ago`
     return `${Math.floor(h / 24)}d ago`
-  } catch { return '' }
+  } catch {
+    return ''
+  }
+}
+
+export function formatDateTime(isoStr: string): string {
+  try {
+    const d = new Date(isoStr)
+    if (isNaN(d.getTime())) return isoStr
+    return d.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return isoStr
+  }
 }
 
 export function formatCountdown(ms: number): string {
   if (ms <= 0) return '00:00:00'
-  const s = Math.floor(ms / 1000)
-  const h = Math.floor(s / 3600)
-  const m = Math.floor((s % 3600) / 60)
-  const sec = s % 60
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+  const totalSeconds = Math.floor(ms / 1000)
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
+

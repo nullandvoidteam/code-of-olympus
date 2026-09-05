@@ -3,6 +3,8 @@ import { ArrowLeft, Crown, Zap, Scale, Timer, Shield, Users, Trophy, Swords } fr
 import {
   useBattleLobby,
   useBattleLeaderboard,
+  deriveBattleEffectiveStatus,
+  finalizeBattleRankings,
   type BattleLeaderboardEntry,
   type ArcadeBattle,
 } from '../../lib/arcade'
@@ -151,12 +153,28 @@ export const BloodArenaBattleView: React.FC<BloodArenaBattleViewProps> = ({ batt
   const { leaderboard } = useBattleLeaderboard(battleId)
   const [selectedExerciseIndex, setSelectedExerciseIndex] = useState(0)
   const [arenaTab, setArenaTab] = useState<'workspace' | 'standings'>('workspace')
+  const [presenceUsers, setPresenceUsers] = useState<any[]>([])
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(t)
   }, [])
+
+  const startMs = battle ? new Date(battle.start_time).getTime() : 0
+  const endMs = battle ? new Date(battle.end_time).getTime() : 0
+  const effStatus = battle
+    ? deriveBattleEffectiveStatus(battle.status, battle.start_time, battle.end_time, now)
+    : 'upcoming'
+  const isConcluded = effStatus === 'ended' || (endMs > 0 && now > endMs)
+
+  // Auto-switch to standings when match concludes & auto-finalize rankings
+  useEffect(() => {
+    if (isConcluded) {
+      setArenaTab('standings')
+      finalizeBattleRankings(battleId)
+    }
+  }, [isConcluded, battleId])
 
   /* ── Loading State ── */
   if (loading) {
@@ -170,8 +188,8 @@ export const BloodArenaBattleView: React.FC<BloodArenaBattleViewProps> = ({ batt
     )
   }
 
-  /* ── Access Denied ── */
-  if (!access?.allowed || !battle) {
+  /* ── Access Denied (only if match is active/upcoming and access barred) ── */
+  if (!battle || (!access?.allowed && !isConcluded)) {
     return (
       <div className="w-full max-w-2xl mx-auto flex flex-col gap-6 py-10 text-center">
         <button type="button" onClick={onExit} className="flex items-center gap-2 text-sm w-fit" style={{ color: C.textSecondary, fontFamily: "'Cinzel', serif" }}>
@@ -191,23 +209,18 @@ export const BloodArenaBattleView: React.FC<BloodArenaBattleViewProps> = ({ batt
     )
   }
 
-  /* ── Countdown / Status ── */
-  const startMs  = new Date(battle.start_time).getTime()
-  const endMs    = new Date(battle.end_time).getTime()
-  const timeLeftMs = endMs - now
-  const msUntilStart = startMs - now
-  const isLive    = battle.effective_status === 'live'
-  const isEnded   = battle.effective_status === 'ended'
-  const isUpcoming = battle.effective_status === 'upcoming'
+  /* ── Countdown / Status (Live derived from now) ── */
+  const timeLeftMs = Math.max(0, endMs - now)
+  const msUntilStart = Math.max(0, startMs - now)
+  const isLive = effStatus === 'live'
+  const isEnded = effStatus === 'ended'
+  const isUpcoming = effStatus === 'upcoming'
   const isCritical = isLive && timeLeftMs < 5 * 60 * 1000
 
-  const { bg: statusBg, color: statusColor, label: statusLabel, pulse: statusPulse } = statusBadgeStyle(battle.effective_status)
+  const { bg: statusBg, color: statusColor, label: statusLabel, pulse: statusPulse } = statusBadgeStyle(effStatus)
   const selectedExercise = exercises[selectedExerciseIndex]
   const myTeamId = teamMembers[0]?.team_id
 
-  // Pull collab presence from workspace hook indirectly via render of BattleCollabWorkspace
-  // We expose presence separately via a shared state lifted below
-  const [presenceUsers, setPresenceUsers] = useState<any[]>([])
 
   return (
     <div className="flex flex-col min-h-screen" style={{ color: C.textPrimary }}>

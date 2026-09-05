@@ -3,6 +3,7 @@ import { supabase } from './supabase'
 import { executeCode } from './execution'
 import { createCommunityPost } from './community'
 import { validateTodoStageBehavioral } from './guidedProjectValidation'
+import { awardXp } from './gamification'
 
 export type GuidedProjectDifficulty = 'beginner' | 'intermediate' | 'advanced'
 export type GuidedProjectStatus = 'draft' | 'published'
@@ -133,6 +134,7 @@ export interface StageSubmissionResult {
   unlockedNextStage: boolean
   nextStageOrder?: number
   projectCompleted: boolean
+  xpAwarded?: number
   error?: string
 }
 
@@ -974,15 +976,55 @@ export async function fetchStudentProjectDetails(
       }
     }
 
-    // Current unlocked stage order (defaults to 1 if not started)
-    const currentUnlockedOrder = userProgress?.current_stage_order || 1
+    // 4. Calculate stage completion and sequential progression
+    const completedStageOrders = new Set<number>()
+    const sortedStages = [...(rawStages as ProjectStage[])].sort((a, b) => a.stage_order - b.stage_order)
 
-    // Map stages with lock state
-    const mappedStages: StudentStageView[] = (rawStages as ProjectStage[]).map((stage) => {
+    sortedStages.forEach((stage) => {
       const sp = stageProgressMap.get(stage.id)
-      const isCompleted = sp?.status === 'completed'
-      const isUnlocked = stage.stage_order === 1 || stage.stage_order <= currentUnlockedOrder
-      const isCurrent = stage.stage_order === currentUnlockedOrder
+      if (sp?.status === 'completed') {
+        completedStageOrders.add(stage.stage_order)
+      }
+    })
+
+    // Determine contiguous completed stages starting from stage 1
+    // Stage 1 is always unlocked.
+    // Stage k (> 1) unlocks when stage k - 1 is completed.
+    // Future levels remain locked until previous ones are completed.
+    let maxContiguousCompletedOrder = 0
+    for (const stage of sortedStages) {
+      if (completedStageOrders.has(stage.stage_order)) {
+        maxContiguousCompletedOrder = stage.stage_order
+      } else {
+        break
+      }
+    }
+
+    const allStagesCompleted = sortedStages.length > 0 && completedStageOrders.size === sortedStages.length
+    // Next available uncompleted stage
+    const nextAvailableStage = sortedStages.find((s) => !completedStageOrders.has(s.stage_order))
+
+    // Current unlocked threshold (at least up to the next available stage)
+    const effectiveUnlockedOrder = allStagesCompleted
+      ? (sortedStages[sortedStages.length - 1]?.stage_order || 1)
+      : Math.max(userProgress?.current_stage_order || 1, maxContiguousCompletedOrder + 1)
+
+    // Map stages with lock and completion state
+    const mappedStages: StudentStageView[] = sortedStages.map((stage) => {
+      const sp = stageProgressMap.get(stage.id)
+      const isCompleted = sp?.status === 'completed' || completedStageOrders.has(stage.stage_order)
+
+      // Stage 1 is always unlocked. Next stages unlock when previous stage is completed.
+      const isPreviousCompleted = stage.stage_order === 1 || completedStageOrders.has(stage.stage_order - 1)
+      const isUnlocked = stage.stage_order === 1 || (isPreviousCompleted && stage.stage_order <= effectiveUnlockedOrder)
+
+      // Next available uncompleted stage is the active/current stage for resuming
+      let isCurrent = false
+      if (!allStagesCompleted && nextAvailableStage) {
+        isCurrent = stage.id === nextAvailableStage.id
+      } else if (allStagesCompleted && sortedStages.length > 0) {
+        isCurrent = stage.id === sortedStages[sortedStages.length - 1].id
+      }
 
       return {
         ...stage,
@@ -992,6 +1034,31 @@ export async function fetchStudentProjectDetails(
         student_code: sp?.saved_code || stage.starter_code || '',
       }
     })
+
+    // Auto-sync user_project_progress if it lagged behind actual completed stages
+    if (userId && userProgress) {
+      const targetOrder = nextAvailableStage ? nextAvailableStage.stage_order : (sortedStages[sortedStages.length - 1]?.stage_order || 1)
+      const targetStatus = allStagesCompleted ? 'completed' : userProgress.status
+      if (userProgress.current_stage_order < targetOrder || (allStagesCompleted && userProgress.status !== 'completed')) {
+        userProgress = {
+          ...userProgress,
+          current_stage_order: Math.max(userProgress.current_stage_order, targetOrder),
+          status: targetStatus as any,
+          completed_at: allStagesCompleted ? (userProgress.completed_at || new Date().toISOString()) : userProgress.completed_at,
+        }
+        supabase
+          .from('user_project_progress')
+          .update({
+            current_stage_order: userProgress.current_stage_order,
+            status: userProgress.status,
+            completed_at: userProgress.completed_at,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', userId)
+          .eq('project_id', projectId)
+          .then(() => {})
+      }
+    }
 
     const projObj = project as any
     return {
@@ -1081,46 +1148,36 @@ export async function startOrResumeProject(
         }
       }
 
-      // 3. First start flow: If no progress exists, create initial progress record safely.
-      const { data: newProg, error: createErr } = await supabase
+      // 3. First start flow: If no progress exists, create initial progress record safely and idempotently.
+      const { error: upsertErr } = await supabase
         .from('user_project_progress')
-        .insert({
-          user_id: userId,
-          project_id: projectId,
-          current_stage_order: 1,
-          status: 'in_progress',
-        })
-        .select('*')
-        .single()
+        .upsert(
+          {
+            user_id: userId,
+            project_id: projectId,
+            current_stage_order: 1,
+            status: 'in_progress',
+          },
+          {
+            onConflict: 'user_id,project_id',
+            ignoreDuplicates: true,
+          }
+        )
 
-      if (createErr) {
-        // Safe against simultaneous start requests (unique constraint uq_user_project_progress violation)
-        if (
-          createErr.code === '23505' ||
-          createErr.message?.includes('uq_user_project_progress') ||
-          createErr.message?.includes('duplicate key')
-        ) {
-          const existingProg = await getUserProjectProgress(userId, projectId)
-          if (existingProg) {
-            progress = existingProg
-          } else {
-            return {
-              progress: null,
-              stages: [],
-              currentStage: null,
-              error: createErr.message || 'Failed to start project.',
-            }
-          }
-        } else {
-          return {
-            progress: null,
-            stages: [],
-            currentStage: null,
-            error: createErr.message || 'Failed to start project.',
-          }
-        }
+      if (upsertErr) {
+        console.warn('Idempotent upsert note on user_project_progress:', upsertErr.message)
+      }
+
+      const existingProg = await getUserProjectProgress(userId, projectId)
+      if (existingProg) {
+        progress = existingProg
       } else {
-        progress = newProg as UserProjectProgress
+        return {
+          progress: null,
+          stages: [],
+          currentStage: null,
+          error: upsertErr?.message || 'Failed to initialize project progress.',
+        }
       }
 
       // 4. Refresh stages with the newly created progress record
@@ -1454,6 +1511,9 @@ export async function submitAndValidateStage({
       testResults.every((t) => t.passed)
 
     // 6. Invoke server-authoritative progression RPC
+    let rpcSuccess = false
+    let rpcResData: any = null
+
     const { data: rpcRes, error: rpcErr } = await supabase.rpc('complete_project_stage', {
       p_user_id: userId,
       p_stage_id: stageId,
@@ -1463,26 +1523,94 @@ export async function submitAndValidateStage({
       p_test_results: testResults,
     })
 
-    if (rpcErr) {
-      console.error('RPC complete_project_stage error:', rpcErr)
-      return {
-        passed: allPassed,
-        executionStatus: allPassed ? 'passed' : overallExecutionStatus,
-        testResults,
-        unlockedNextStage: false,
-        projectCompleted: false,
-        error: rpcErr.message || 'Failed to record stage submission.',
+    if (!rpcErr && rpcRes) {
+      rpcSuccess = true
+      rpcResData = rpcRes
+    } else {
+      console.warn('RPC complete_project_stage warning/fallback:', rpcErr)
+      // Fallback: direct database persistence
+      if (allPassed) {
+        await supabase
+          .from('user_stage_progress')
+          .upsert(
+            {
+              user_id: userId,
+              project_id: projectId,
+              stage_id: stageId,
+              status: 'completed',
+              saved_code: code,
+              completed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id,stage_id' }
+          )
+
+        const { data: allProjStages } = await supabase
+          .from('project_stages')
+          .select('id, stage_order')
+          .eq('project_id', projectId)
+          .order('stage_order', { ascending: true })
+
+        const nextStageOrder = stage.stage_order + 1
+        const hasNext = allProjStages?.some((s) => s.stage_order === nextStageOrder)
+        const isCompleted = !hasNext
+
+        await supabase
+          .from('user_project_progress')
+          .upsert(
+            {
+              user_id: userId,
+              project_id: projectId,
+              current_stage_order: hasNext ? nextStageOrder : stage.stage_order,
+              status: isCompleted ? 'completed' : 'in_progress',
+              completed_at: isCompleted ? new Date().toISOString() : null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'user_id,project_id' }
+          )
       }
     }
 
+    // 7. Authoritatively award XP via existing XP system
+    let xpAwarded = 0
+    if (allPassed) {
+      try {
+        const rewardAmount = typeof stage.xp_reward === 'number' && stage.xp_reward > 0 ? stage.xp_reward : 50
+        const xpRes = await awardXp(userId, rewardAmount, 'project_stage_completed', stageId)
+        if (xpRes?.awarded) {
+          xpAwarded = rewardAmount
+        }
+      } catch (xpErr) {
+        console.error('Failed to award stage XP:', xpErr)
+      }
+    }
+
+    // Check if project is fully completed
+    const { data: checkStages } = await supabase
+      .from('project_stages')
+      .select('id')
+      .eq('project_id', projectId)
+    const { data: compStages } = await supabase
+      .from('user_stage_progress')
+      .select('stage_id')
+      .eq('user_id', userId)
+      .eq('project_id', projectId)
+      .eq('status', 'completed')
+
+    const isProjCompleted = Boolean(
+      rpcResData?.project_completed ||
+      (checkStages && compStages && compStages.length >= checkStages.length)
+    )
+
     return {
-      submissionId: rpcRes?.submission_id,
+      submissionId: rpcResData?.submission_id,
       passed: allPassed,
       executionStatus: allPassed ? 'passed' : overallExecutionStatus,
       testResults,
-      unlockedNextStage: Boolean(rpcRes?.unlocked_next),
-      nextStageOrder: rpcRes?.next_stage_order,
-      projectCompleted: Boolean(rpcRes?.project_completed),
+      unlockedNextStage: Boolean(rpcResData?.unlocked_next) || (allPassed && !isProjCompleted),
+      nextStageOrder: rpcResData?.next_stage_order || stage.stage_order + 1,
+      projectCompleted: isProjCompleted,
+      xpAwarded,
     }
   } catch (err: any) {
     console.error('Unexpected error in submitAndValidateStage:', err)

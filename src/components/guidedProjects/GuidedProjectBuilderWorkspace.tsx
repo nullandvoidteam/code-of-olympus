@@ -56,7 +56,7 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
   projectId,
   onBack,
 }) => {
-  const { user } = useAuth()
+  const { user, refreshProfile } = useAuth()
   const userId = user?.id
 
   // Workspace State
@@ -123,10 +123,17 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
         }
         setStages(res.stages)
 
+        // Mark projectCompleted if all stages are completed or project status is completed
+        const allCompleted = res.stages.length > 0 && res.stages.every((s) => s.is_completed)
+        if (allCompleted || res.progress?.status === 'completed') {
+          setProjectCompleted(true)
+        }
+
         // Set initial active stage only if not already actively working on a stage
         setActiveStage((prevActive) => {
           if (prevActive && res.stages.some((s) => s.id === prevActive.id)) {
-            return prevActive
+            const updated = res.stages.find((s) => s.id === prevActive.id)
+            return updated || prevActive
           }
           const current = res.currentStage || res.stages.find((s) => s.is_current) || res.stages[0]
           const guide = getStageGuide(projectId, current.stage_order, current.title, current.instructions)
@@ -335,9 +342,38 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
           origin: { y: 0.7 },
         })
 
+        // Immediately update active stage as completed
+        setActiveStage((prev) => (prev ? { ...prev, is_completed: true } : prev))
+
+        // Immediately unlock next stage and mark current stage as completed in stages list
+        setStages((prevStages) =>
+          prevStages.map((st) => {
+            if (st.id === activeStage.id) {
+              return { ...st, is_completed: true, student_code: code }
+            }
+            if (st.stage_order === activeStage.stage_order + 1) {
+              return { ...st, is_unlocked: true }
+            }
+            return st
+          })
+        )
+
+        // Refresh user profile so updated XP is reflected in the top nav
+        if (refreshProfile) {
+          refreshProfile()
+        }
+
+        // Show XP toast if XP was awarded
+        if (res.xpAwarded && res.xpAwarded > 0) {
+          toast.success(`+${res.xpAwarded} XP Earned! ⭐`, {
+            icon: '⚡',
+            duration: 3000,
+          })
+        }
+
         // Refresh stages & progression state without full reload
         const refreshed = await startOrResumeProject(projectId, userId)
-        if (refreshed.stages) {
+        if (refreshed.stages && refreshed.stages.length > 0) {
           setStages(refreshed.stages)
         }
 
@@ -351,6 +387,7 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
           awardProjectRewards(userId, projectId).then((rewardRes) => {
             if (rewardRes.success) {
               setEarnedRewards(rewardRes)
+              if (refreshProfile) refreshProfile()
             }
           })
         } else {
@@ -374,7 +411,16 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
   const handleNextStage = () => {
     if (!activeStage) return
     const nextStage = stages.find((s) => s.stage_order === activeStage.stage_order + 1)
-    if (nextStage && nextStage.is_unlocked) {
+    if (nextStage) {
+      // Auto-save current stage first
+      if (code !== activeStage.student_code) {
+        handleSaveCode(code, false)
+      }
+
+      setStages((prev) =>
+        prev.map((s) => (s.id === nextStage.id ? { ...s, is_unlocked: true } : s))
+      )
+
       const guide = getStageGuide(projectId, nextStage.stage_order, nextStage.title, nextStage.instructions)
       const savedDraft = userId ? localStorage.getItem(`draft_${userId}_${projectId}_${nextStage.id}`) : null
       const nextCode =
@@ -384,7 +430,10 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
         nextStage.starter_code ||
         ''
 
-      setActiveStage(nextStage)
+      setActiveStage({
+        ...nextStage,
+        is_unlocked: true,
+      })
       setCode(nextCode)
       setSubmissionResult(null)
       setTerminalOutput(null)
@@ -446,8 +495,9 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
     }
   }
 
-  const hasNextUnlockedStage = Boolean(
-    stages.find((s) => s.stage_order === activeStage.stage_order + 1)?.is_unlocked
+  const nextStage = stages.find((s) => s.stage_order === activeStage.stage_order + 1)
+  const canGoNextStage = Boolean(
+    nextStage && (nextStage.is_unlocked || activeStage.is_completed || submissionResult?.passed)
   )
 
   return (
@@ -829,11 +879,11 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
 
               <div className="flex items-center gap-2.5">
                 {/* Advance to next stage CTA button (when passed) */}
-                {hasNextUnlockedStage && (
+                {canGoNextStage && (
                   <button
                     type="button"
                     onClick={handleNextStage}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-pixel uppercase text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-pixel uppercase text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs animate-pulse"
                   >
                     <span>Next Stage</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -916,14 +966,14 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
                 </button>
               </div>
 
-              {submissionResult?.unlockedNextStage && (
+              {canGoNextStage && (
                 <button
                   type="button"
                   onClick={handleNextStage}
                   className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-pixel uppercase text-[10px] font-bold shadow-xs transition-all cursor-pointer"
                 >
                   <span>Advance to Stage {activeStage.stage_order + 1}</span>
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -960,6 +1010,16 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
                               }/${submissionResult.testResults.length} PASSED`}
                         </span>
                       </div>
+                      {submissionResult.passed && canGoNextStage && (
+                        <button
+                          type="button"
+                          onClick={handleNextStage}
+                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-pixel uppercase font-bold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                        >
+                          <span>Next Stage</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
 
                     {/* Test Case Breakdown */}

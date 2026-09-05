@@ -379,12 +379,16 @@ export async function fetchTeamRegisteredFestIds(teamId: string): Promise<string
   }
 }
 
-export function computeEffectiveFestStatus(startTimeStr: string, endTimeStr: string): ArcadeFestStatus {
-  const now = Date.now()
+export function computeEffectiveFestStatus(
+  startTimeStr: string,
+  endTimeStr: string,
+  nowMs: number = Date.now()
+): ArcadeFestStatus {
   const start = new Date(startTimeStr).getTime()
   const end = new Date(endTimeStr).getTime()
-  if (now < start) return 'upcoming'
-  if (now <= end) return 'live'
+  if (isNaN(start) || isNaN(end)) return 'upcoming'
+  if (nowMs < start) return 'upcoming'
+  if (nowMs <= end) return 'live'
   return 'ended'
 }
 
@@ -1032,14 +1036,15 @@ export interface BattleValidationResult {
 export function deriveBattleEffectiveStatus(
   status: ArcadeBattleStatus,
   startTimeStr: string,
-  endTimeStr: string
+  endTimeStr: string,
+  nowMs: number = Date.now()
 ): ArcadeBattleStatus {
   if (status === 'draft') return 'draft'
-  const now = Date.now()
   const startMs = new Date(startTimeStr).getTime()
   const endMs = new Date(endTimeStr).getTime()
-  if (now < startMs) return 'upcoming'
-  if (now >= startMs && now <= endMs) return 'live'
+  if (isNaN(startMs) || isNaN(endMs)) return status
+  if (nowMs < startMs) return 'upcoming'
+  if (nowMs <= endMs) return 'live'
   return 'ended'
 }
 
@@ -1906,6 +1911,13 @@ export function useStudentBattles(userId?: string) {
 
   useEffect(() => {
     reload()
+  }, [reload])
+
+  // Refresh when window/tab is focused or reopened
+  useEffect(() => {
+    const handleFocus = () => reload()
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
   }, [reload])
 
   // Realtime subscriptions

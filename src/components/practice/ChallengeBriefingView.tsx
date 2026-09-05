@@ -272,7 +272,11 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setLumiOpen(true)}
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('open-lumi', {
+                      detail: { prompt: 'Can you give me a concise hint for the Reverse the String challenge?' }
+                    }))
+                  }}
                   className="w-full px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold cursor-pointer transition-colors"
                 >
                   Ask Lumi instead
