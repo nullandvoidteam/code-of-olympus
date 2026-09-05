@@ -14,6 +14,7 @@ export interface Challenge {
   language?: string
   instructions?: string
   sample_input?: string
+  question_type?: string
   order_index?: number
   hints?: string[]
   solution_explanation?: string
@@ -129,12 +130,13 @@ export async function createAdminChallenge(challengeData: Partial<Challenge>): P
       title: challengeData.title,
       slug,
       description: challengeData.description || challengeData.instructions || '',
-      difficulty: challengeData.difficulty || 'Beginner',
-      category: challengeData.category || 'JavaScript',
+      difficulty: challengeData.difficulty || 'Medium',
+      category: challengeData.category || (challengeData.language === 'python' ? 'Python' : 'JavaScript'),
       course_id: challengeData.course_id || null,
       lesson_id: challengeData.lesson_id || null,
       starter_code: challengeData.starter_code || '',
       language: (challengeData.language || 'javascript').toLowerCase(),
+      question_type: challengeData.question_type || 'code',
       instructions: challengeData.instructions || challengeData.description || '',
       sample_input: challengeData.sample_input || '',
       hints: challengeData.hints || [],
@@ -332,3 +334,49 @@ export function useChallenges(userId?: string, category?: string, difficulty?: s
     refreshChallenges: loadData,
   }
 }
+
+export async function fetchArcadeEligibleQuestions(params?: {
+  language?: string
+  difficulty?: string
+  publishedOnly?: boolean
+}): Promise<Challenge[]> {
+  try {
+    let query = supabase
+      .from('challenges')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (params?.publishedOnly !== false) {
+      query = query.eq('is_published', true)
+    }
+
+    if (params?.language && params.language !== 'all' && params.language !== 'any') {
+      query = query.ilike('language', params.language)
+    }
+
+    if (params?.difficulty && params.difficulty !== 'all' && params.difficulty !== 'any') {
+      const d = params.difficulty.toLowerCase()
+      if (d === 'easy') {
+        query = query.in('difficulty', ['Easy', 'Beginner', 'easy', 'beginner'])
+      } else if (d === 'medium') {
+        query = query.in('difficulty', ['Medium', 'Intermediate', 'medium', 'intermediate'])
+      } else if (d === 'hard') {
+        query = query.in('difficulty', ['Hard', 'Advanced', 'hard', 'advanced'])
+      } else {
+        query = query.ilike('difficulty', params.difficulty)
+      }
+    }
+
+    const { data, error } = await query
+
+    if (error || !data) {
+      return []
+    }
+
+    return data as Challenge[]
+  } catch (err) {
+    console.error('Error fetching arcade eligible questions:', err)
+    return []
+  }
+}
+

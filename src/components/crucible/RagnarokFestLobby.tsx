@@ -67,10 +67,11 @@ export const ClanProfileCard: React.FC<ClanProfileCardProps> = ({ team, members,
       </div>
 
       {/* War Chest Metrics */}
-      <div className="grid grid-cols-2 gap-px" style={{ background: C.border }}>
+      <div className="grid grid-cols-3 gap-px" style={{ background: C.border }}>
         {[
           { label: 'Total Hacksilver', value: `ᚱ ${totalXp.toLocaleString()} XP`, icon: <Star className="w-3.5 h-3.5" />, color: C.gold },
-          { label: 'Clan Members', value: `${members.length} Warriors`, icon: <Users className="w-3.5 h-3.5" />, color: C.frost },
+          { label: 'Turf Holdings', value: `${team.turf_count ?? 1} 🏰`, icon: <Shield className="w-3.5 h-3.5" />, color: C.crimson },
+          { label: 'Clan Warriors', value: `${members.length} Warriors`, icon: <Users className="w-3.5 h-3.5" />, color: C.frost },
         ].map(m => (
           <div key={m.label} className="flex flex-col items-center gap-1 py-4"
             style={{ background: C.bgCard }}>
