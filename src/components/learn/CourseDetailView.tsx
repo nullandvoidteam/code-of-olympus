@@ -14,10 +14,15 @@ import {
   Zap,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { COURSE_CATALOG } from '../../lib/courseData'
+import { getCourseProgress } from '../../lib/courseProgress'
+import type { CourseProgress } from '../../lib/courseProgress'
+import { useAuth } from '../../context/AuthContext'
 import { SpiderNetDecal } from '../ui/SpiderNetDecal'
 import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
 interface CourseDetailViewProps {
+  courseId: string
   onBackToCourses: () => void
   onStartQuest?: () => void
   onSelectLesson?: (lessonId: string) => void
@@ -28,10 +33,25 @@ interface CourseDetailViewProps {
 /* CLASSIC THEME IMPLEMENTATION (Matches Screenshot 1 Exactly)               */
 /* ========================================================================= */
 const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
+  courseId,
   onBackToCourses,
   onStartQuest,
   onOpenLumi,
 }) => {
+  const course = COURSE_CATALOG.find(c => c.id === courseId) || COURSE_CATALOG[0]
+  const { user } = useAuth()
+  const [progress, setProgress] = React.useState<CourseProgress | null>(null)
+
+  React.useEffect(() => {
+    if (user) {
+      getCourseProgress(user.id).then(map => {
+        if (map[course.id]) {
+          setProgress(map[course.id])
+        }
+      })
+    }
+  }, [user, course.id])
+
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
       {/* 1. TOP BREADCRUMB & BACK BUTTON */}
@@ -48,9 +68,9 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
         <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
           <span>Learn</span>
           <span>/</span>
-          <span>Python</span>
+          <span className="capitalize">{course.category}</span>
           <span>/</span>
-          <span className="text-slate-800 font-bold">Python Adventure</span>
+          <span className="text-slate-800 font-bold">{course.title}</span>
         </div>
       </div>
 
@@ -62,39 +82,39 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 font-bold text-[11px] tracking-wide flex items-center gap-1.5 uppercase font-mono">
                 <span className="w-2 h-2 rounded-full bg-sky-500" />
-                PYTHON • BEGINNER
+                {course.category} • {course.difficulty}
               </span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
-              Python Adventure
+              {course.title}
             </h1>
 
             <p className="text-sm text-slate-600 leading-relaxed max-w-xl font-normal">
-              Master programming fundamentals by completing quests, solving challenges, and building real projects.
+              {course.description}
             </p>
 
             <div className="flex items-center gap-3 text-xs pt-1 flex-wrap">
               <div className="flex items-center gap-1 text-amber-500 font-bold">
                 <span>★★★★★</span>
-                <span className="text-slate-800 font-bold ml-1">4.9</span>
+                <span className="text-slate-800 font-bold ml-1">{course.rating}</span>
               </div>
               <span className="text-slate-300">•</span>
-              <span className="text-slate-500 font-medium">12,400+ adventurers</span>
+              <span className="text-slate-500 font-medium">{course.students} adventurers</span>
             </div>
 
             <div className="flex items-center gap-3 flex-wrap pt-1 text-xs font-medium">
               <span className="flex items-center gap-1.5 text-slate-600">
-                <BookOpen className="w-3.5 h-3.5 text-slate-400" /> 18 Chapters
+                <BookOpen className="w-3.5 h-3.5 text-slate-400" /> {course.chapters} Chapters
               </span>
               <span className="flex items-center gap-1.5 text-slate-600">
-                <Clock className="w-3.5 h-3.5 text-slate-400" /> 8–10 Hours
+                <Clock className="w-3.5 h-3.5 text-slate-400" /> {course.hours}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold">
-                Beginner
+                {course.difficulty}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold text-[11px] flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-amber-500" /> +2,400 XP
+                <Sparkles className="w-3 h-3 text-amber-500" /> +{course.xp.toLocaleString()} XP
               </span>
             </div>
 
@@ -128,11 +148,11 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-amber-800">COURSE REWARD</span>
-                  <span className="text-xs font-extrabold text-slate-800">+2,400 XP • Python Explorer</span>
+                  <span className="text-xs font-extrabold text-slate-800">+{course.xp.toLocaleString()} XP • {course.rewardTitle}</span>
                 </div>
               </div>
               <div className="w-10 h-10 rounded-xl bg-white border border-emerald-200 shadow-sm flex items-center justify-center text-xl">
-                🐍
+                {course.icon}
               </div>
             </div>
 
@@ -559,13 +579,32 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
   )
 }
 
-const GodOfWarCourseDetailView: React.FC<CourseDetailViewProps> = (props) => {
-  const { onBackToCourses, onStartQuest, onSelectLesson, onOpenLumi } = props
+/* ========================================================================= */
+/* GOD OF WAR MYTHIC LEARN CATALOG VIEW                                      */
+/* ========================================================================= */
+const MythicCourseDetailView: React.FC<CourseDetailViewProps> = ({
+  courseId,
+  onBackToCourses,
+  onStartQuest,
+  onSelectLesson,
+  onOpenLumi,
+}) => {
+  const course = COURSE_CATALOG.find(c => c.id === courseId) || COURSE_CATALOG[0]
+  const { user } = useAuth()
+  const [progress, setProgress] = React.useState<CourseProgress | null>(null)
+
+  React.useEffect(() => {
+    if (user) {
+      getCourseProgress(user.id).then(map => {
+        if (map[course.id]) {
+          setProgress(map[course.id])
+        }
+      })
+    }
+  }, [user, course.id])
+
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
-      {/* ========================================================================= */}
-      {/* 1. TOP BREADCRUMB & BACK BUTTON                                            */}
-      {/* ========================================================================= */}
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -1251,6 +1290,17 @@ const GodOfWarCourseDetailView: React.FC<CourseDetailViewProps> = (props) => {
   )
 }
 
+export const CourseDetailView: React.FC<CourseDetailViewProps> = (props) => {
+  const { theme } = useTheme()
+
+  if (theme === 'gow') {
+    return <MythicCourseDetailView {...props} />
+  }
+
+  return <ClassicCourseDetailView {...props} />
+}
+
+
 /* ========================================================================= */
 /* SPIDER-MAN COURSE DETAIL VIEW                                             */
 /* ========================================================================= */
@@ -1419,23 +1469,21 @@ const SpiderManCourseDetailView: React.FC<CourseDetailViewProps> = ({
                 onClick={() => {
                   if (ch.status !== 'locked') onSelectLesson?.(ch.num)
                 }}
-                className={`p-3.5 rounded-xl border flex items-center justify-between transition-all ${
-                  ch.status === 'completed'
+                className={`p-3.5 rounded-xl border flex items-center justify-between transition-all ${ch.status === 'completed'
                     ? 'bg-[#101730] border-emerald-500/40 text-slate-300 hover:border-emerald-400 cursor-pointer'
                     : ch.status === 'current'
-                    ? 'bg-gradient-to-r from-[#182346] to-[#101730] border-[#00F0FF] text-white shadow-[0_0_12px_rgba(0,240,255,0.25)] cursor-pointer'
-                    : 'bg-[#0B1021]/50 border-[#2A3A65]/50 text-slate-500 opacity-60'
-                }`}
+                      ? 'bg-gradient-to-r from-[#182346] to-[#101730] border-[#00F0FF] text-white shadow-[0_0_12px_rgba(0,240,255,0.25)] cursor-pointer'
+                      : 'bg-[#0B1021]/50 border-[#2A3A65]/50 text-slate-500 opacity-60'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border ${
-                      ch.status === 'completed'
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border ${ch.status === 'completed'
                         ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500'
                         : ch.status === 'current'
-                        ? 'bg-[#00F0FF]/20 text-[#00F0FF] border-[#00F0FF] animate-pulse'
-                        : 'bg-[#151E3A] text-slate-500 border-[#2A3A65]'
-                    }`}
+                          ? 'bg-[#00F0FF]/20 text-[#00F0FF] border-[#00F0FF] animate-pulse'
+                          : 'bg-[#151E3A] text-slate-500 border-[#2A3A65]'
+                      }`}
                   >
                     {ch.status === 'completed' ? '✓' : ch.num}
                   </div>

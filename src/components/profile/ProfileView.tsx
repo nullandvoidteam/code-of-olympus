@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAchievementsAndNotifications, claimAchievement, type BadgeItem, type AchievementItem } from '../../lib/achievements';
 import { useLearningProgress } from '../../lib/learning';
+import { supabase } from '../../lib/supabase';
 import { cn } from '../../lib/utils';
 import * as LucideIcons from 'lucide-react';
 import {
@@ -16,6 +17,7 @@ import {
   Award,
   Target,
   Trophy,
+  Globe,
   CheckCircle2,
   Lock,
   Star,
@@ -106,6 +108,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [editDailyGoalXp, setEditDailyGoalXp] = useState(50);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+
+  // Global rank state
+  const [globalRank, setGlobalRank] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchGlobalRank = async () => {
+      if (!profile || typeof profile.xp !== 'number') return;
+      
+      try {
+        // Count how many users have MORE xp than the current user
+        const { count, error } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .gt('xp', profile.xp);
+          
+        if (!error && count !== null) {
+          // Rank is count of people ahead + 1
+          setGlobalRank(count + 1);
+        }
+      } catch (err) {
+        console.error('Error fetching global rank:', err);
+      }
+    };
+    
+    fetchGlobalRank();
+  }, [profile?.xp]);
 
   // Keep subtab in sync if prop changes
   React.useEffect(() => {
@@ -447,7 +475,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           {/* Quick Stats Metric Cards Row */}
           <div
             className={cn(
-              'grid grid-cols-2 sm:grid-cols-4 border-t divide-x sm:divide-x transition-colors duration-300',
+              'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 border-t divide-x sm:divide-x transition-colors duration-300',
               isClassic ? 'border-[#ece7df] divide-[#ece7df] bg-[#faf8f5]/60' : 'border-white/10 divide-white/10 bg-black/20'
             )}
           >
@@ -521,6 +549,28 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Achievements</p>
                 <p className="text-lg sm:text-xl font-black font-mono leading-tight">
                   {claimedAchievements.length} / {achievements.length}
+                </p>
+              </div>
+            </div>
+
+            {/* Stat 5: Global Rank */}
+            <div className="p-3.5 sm:p-4 flex items-center gap-3">
+              <div
+                className={cn(
+                  'w-10 h-10 rounded-xl flex items-center justify-center shrink-0',
+                  isClassic ? 'bg-indigo-100 text-indigo-700' : 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30'
+                )}
+              >
+                <Globe className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider opacity-60">Global Rank</p>
+                <p className="text-lg sm:text-xl font-black font-mono leading-tight flex items-center gap-2">
+                  {globalRank !== null ? (
+                    `#${globalRank.toLocaleString()}`
+                  ) : (
+                    <Loader2 className="w-4 h-4 animate-spin opacity-50" />
+                  )}
                 </p>
               </div>
             </div>
