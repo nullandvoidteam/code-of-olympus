@@ -1,807 +1,240 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   ArrowRight,
-  Check,
-  Lock,
-  Star,
-  Clock,
-  Heart,
-  Sparkles,
   Flame,
-  Award,
-  Layers,
-  Repeat,
+  Zap,
+  Shield,
+  Target,
+  Trophy,
+  Star
 } from 'lucide-react'
 import { getTimeGreeting } from '../../lib/timeGreeting'
 import { useAuth } from '../../context/AuthContext'
+import * as LucideIcons from 'lucide-react'
 
 import type { GamificationStats } from '../../lib/gamification'
-import type { ResumePoint, CourseProgressSummary, LearningPath, OverallLearnerProgress } from '../../lib/learning'
-import type { BadgeItem, AchievementItem, ActivityItem } from '../../lib/achievements'
+import type { AchievementItem, BadgeItem } from '../../lib/achievements'
 
 export interface AppShellDashboardViewProps {
   username?: string
   stats?: GamificationStats
-  resumePoint?: ResumePoint | null
-  courses?: CourseProgressSummary[]
-  learningPaths?: LearningPath[]
-  overallProgress?: OverallLearnerProgress
-  badges?: BadgeItem[]
   achievements?: AchievementItem[]
-  activities?: ActivityItem[]
-  onOpenLesson?: (lessonId?: string) => void
-  onNavigateTab?: (tab: 'learn' | 'practice' | 'build' | 'community' | 'arcade' | 'dashboard') => void
-  onSelectCourse?: (courseId: string) => void
+  badges?: BadgeItem[]
+  onNavigateTab?: (tab: 'learn' | 'practice' | 'build' | 'community' | 'arcade' | 'dashboard' | 'profile' | 'quests' | 'achievements') => void
+  [key: string]: any // To accept other props passed by LearnerDashboard that we are ignoring for now
 }
 
 export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
-  username,
   stats,
-  resumePoint,
-  courses,
-  learningPaths,
-  overallProgress,
-  badges,
-  achievements,
-  activities,
-  onOpenLesson,
+  achievements = [],
   onNavigateTab,
-  onSelectCourse,
 }) => {
-  const { user, profile } = useAuth()
-  const { greeting, emoji } = getTimeGreeting()
-  const userName = username || profile?.full_name || profile?.username || user?.user_metadata?.first_name || user?.user_metadata?.full_name || 'Alex'
-
-  const [lumiDismissed, setLumiDismissed] = useState(false)
-  const [activeTabSection, setActiveTabSection] = useState<'path' | 'courses'>('path')
-  const [likes, setLikes] = useState({ p1: 124, p2: 98, p3: 87 })
-  const [likedMap, setLikedMap] = useState({ p1: false, p2: false, p3: false })
-
-  const handleToggleLike = (key: 'p1' | 'p2' | 'p3') => {
-    setLikedMap((prev) => ({ ...prev, [key]: !prev[key] }))
-    setLikes((prev) => ({
-      ...prev,
-      [key]: prev[key] + (likedMap[key] ? -1 : 1),
-    }))
-  }
-
   // Calculated Gamified Stats
-  const currentLevel = stats?.level ?? 12
-  const currentXp = stats?.xp ?? 2850
-  const currentStreak = stats?.streak ?? 7
-  const unlockedBadges = badges ? badges.filter((b) => b.isUnlocked).length : 18
-  const buildsCount = activities ? activities.length : 6
-  const baseXp = stats?.currentLevelBaseXp ?? 2500
-  const nextXp = stats?.nextLevelXp ?? 3000
+  const currentLevel = stats?.level ?? 1
+  const currentXp = stats?.xp ?? 0
+  const currentStreak = stats?.streak ?? 0
+  
+  const dailyGoalXp = stats?.dailyGoalXp ?? 50
+  const dailyXpEarned = stats?.dailyXpEarned ?? 0
+  const dailyGoalPercent = Math.min(100, Math.max(0, Math.round((dailyXpEarned / dailyGoalXp) * 100)))
+
+  const baseXp = stats?.currentLevelBaseXp ?? 0
+  const nextXp = stats?.nextLevelXp ?? 1000
   const levelRange = nextXp - baseXp
   const progressInLevel = currentXp - baseXp
-  const levelPct = levelRange > 0 ? Math.min(100, Math.max(0, Math.round((progressInLevel / levelRange) * 100))) : 78
-  const xpToNext = Math.max(0, nextXp - currentXp) || 150
+  const levelPct = levelRange > 0 ? Math.min(100, Math.max(0, Math.round((progressInLevel / levelRange) * 100))) : 0
+  const xpToNext = Math.max(0, nextXp - currentXp)
 
-  // Continue Quest Data
-  const courseTitle = resumePoint?.courseTitle || 'Python Adventure'
-  const chapterTitle = resumePoint?.chapterTitle || 'Chapter: Loops & Logic'
-  const lessonDesc = resumePoint?.lessonTitle
-    ? `Continue: ${resumePoint.lessonTitle}`
-    : 'Learn how to repeat actions, control iteration, and build your first interactive loop.'
-  const progressPct = resumePoint?.progressPercent ?? 78
-  const remainingCount = Math.max(1, (overallProgress?.totalLessons ?? 20) - (overallProgress?.completedLessons ?? 17))
-
-  // Adventure Path Steps Data
-  const pathNodes = [
-    { id: '1', title: 'Python Basics', status: 'completed' },
-    { id: '2', title: 'Variables', status: 'completed' },
-    { id: '3', title: 'Conditions', status: 'completed' },
-    { id: '4', title: 'Loops', status: 'current' },
-    { id: '5', title: 'Functions', status: 'locked' },
-    { id: '6', title: 'Projects', status: 'locked' },
-    { id: '7', title: 'JavaScript', status: 'locked' },
-    { id: '8', title: 'AI', status: 'locked' },
-  ]
+  // Recent Unlocked Achievements
+  const recentAchievements = [...achievements]
+    .filter(a => a.isUnlocked || a.isClaimed)
+    .reverse()
+    .slice(0, 2)
 
   return (
-    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-16 select-none font-sans">
-      {/* ========================================================================= */}
-      {/* 1. FULL-WIDTH WELCOME HERO GREETING BANNER (DYNAMIC TIME OF DAY)          */}
-      {/* ========================================================================= */}
-      <div
-        onClick={() => (onNavigateTab ? onNavigateTab('learn') : undefined)}
-        className="w-full rounded-3xl overflow-hidden border border-[#ece7df] shadow-xs cursor-pointer hover:shadow-md transition-all relative min-h-[140px] bg-[#faf7f2] flex items-center justify-between p-6 sm:p-7"
-      >
-        <div className="flex flex-col gap-1.5 z-10 max-w-xl">
-          <div className="flex items-center gap-1.5 text-emerald-700 font-pixel text-[10px] font-bold tracking-wider uppercase">
-            <span className="text-amber-400">✦</span>
-            <span>YOUR CODING ADVENTURE</span>
-            <span className="text-amber-400">✦</span>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight flex items-center gap-2">
-            <span>{greeting}, {userName}</span>
-            <span className="text-2xl sm:text-3xl inline-block transition-transform hover:rotate-12 cursor-default">{emoji}</span>
-          </h1>
-
-          <p className="text-xs sm:text-sm text-stone-600 font-medium">
-            Ready for your next quest?
-          </p>
+    <div className="w-full max-w-6xl mx-auto flex flex-col gap-8 pb-16 animate-in fade-in" style={{ fontFamily: 'var(--theme-font-main, sans-serif)' }}>
+      
+      {/* ── HERO GAMIFIED BANNER ── */}
+      <div className="relative w-full rounded-[2rem] overflow-hidden shadow-sm border" style={{ background: 'var(--theme-surface-card)', borderColor: 'var(--theme-border-default)' }}>
+        
+        {/* Abstract Illustration Background */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+           <svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+             <path d="M0 200V150C50 140 100 130 150 140C200 150 250 170 300 160C350 150 400 110 450 100C500 90 550 110 600 120C650 130 700 110 750 90C800 70 800 200 800 200H0Z" fill="var(--theme-accent-primary)"/>
+             <path d="M0 200V170C80 180 160 190 240 180C320 170 400 140 480 130C560 120 640 130 720 150C800 170 800 200 800 200H0Z" fill="var(--theme-accent-secondary)" opacity="0.5"/>
+             <circle cx="650" cy="60" r="30" fill="var(--theme-accent-secondary)" opacity="0.4"/>
+           </svg>
         </div>
 
-        {/* Right illustration */}
-        <div className="absolute right-0 top-0 bottom-0 w-3/5 hidden md:flex items-center justify-end overflow-hidden pointer-events-none">
-          <img
-            src="/extracted/hero2_art_clean.png"
-            alt=""
-            className="h-full w-auto object-contain object-right"
-          />
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-10 gap-8">
+          <div className="flex flex-col max-w-lg">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4 shadow-sm w-fit" 
+                 style={{ background: 'var(--theme-bg-subtle)', color: 'var(--theme-accent-secondary)', borderColor: 'var(--theme-accent-secondary)', borderWidth: '1px' }}>
+              <SparklesIcon className="w-3.5 h-3.5" /> Adventure Awaits
+            </div>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4" style={{ fontFamily: 'var(--theme-font-heading)', color: 'var(--theme-text-primary)' }}>
+              Ready for your next quest?
+            </h1>
+            <p className="text-lg opacity-80" style={{ color: 'var(--theme-text-secondary)' }}>
+              Sharpen your skills and earn daily rewards.
+            </p>
+          </div>
+          
+          {/* Main Stat Badges */}
+          <div className="flex gap-4 self-stretch items-center">
+            <div className="flex flex-col items-center justify-center p-6 rounded-3xl border shadow-sm backdrop-blur-md"
+                 style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'var(--theme-border-subtle)' }}>
+              <div className="p-3 rounded-full mb-3 shadow-inner" style={{ background: 'var(--theme-bg-canvas)', color: 'var(--theme-accent-secondary)' }}>
+                <Zap className="w-8 h-8" />
+              </div>
+              <p className="text-3xl font-black" style={{ color: 'var(--theme-text-primary)' }}>{currentXp}</p>
+              <p className="text-xs font-bold uppercase tracking-wider opacity-70 mt-1" style={{ color: 'var(--theme-text-muted)' }}>Total XP</p>
+            </div>
+            <div className="flex flex-col items-center justify-center p-6 rounded-3xl border shadow-sm backdrop-blur-md"
+                 style={{ background: 'rgba(255,255,255,0.05)', borderColor: 'var(--theme-border-subtle)' }}>
+              <div className="p-3 rounded-full mb-3 shadow-inner" style={{ background: 'var(--theme-bg-canvas)', color: 'var(--theme-accent-primary)' }}>
+                <Flame className="w-8 h-8" />
+              </div>
+              <p className="text-3xl font-black" style={{ color: 'var(--theme-text-primary)' }}>{currentStreak}</p>
+              <p className="text-xs font-bold uppercase tracking-wider opacity-70 mt-1" style={{ color: 'var(--theme-text-muted)' }}>Day Streak</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 2. MAIN 2-COLUMN GRID (8 COLS LEFT / 4 COLS RIGHT) AS SHOWN IN IMAGE 2     */}
-      {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* ===================================================================== */}
-        {/* LEFT COLUMN (8 Cols): Continue Quest, Progress, Path, Community        */}
-        {/* ===================================================================== */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-          {/* Priority #1: Large Premium CURRENT QUEST Card */}
-          <div className="bg-white rounded-3xl p-6 border-2 border-emerald-400/80 shadow-[0_4px_24px_rgba(16,185,129,0.08)] flex flex-col justify-between gap-5 relative overflow-hidden">
-            {/* Header Row */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-base text-rose-500">🚩</span>
-                <span className="font-pixel text-[11px] font-bold text-stone-800 uppercase tracking-wider">
-                  CONTINUE YOUR QUEST
-                </span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* ── LEFT COLUMN ── */}
+        <div className="lg:col-span-7 flex flex-col gap-8">
+          
+          {/* Journey Progress */}
+          <div className="p-8 rounded-[2rem] border shadow-sm" style={{ background: 'var(--theme-surface-card)', borderColor: 'var(--theme-border-default)' }}>
+            <div className="flex justify-between items-end mb-6">
+              <div>
+                <h2 className="text-2xl font-black" style={{ fontFamily: 'var(--theme-font-heading)', color: 'var(--theme-text-primary)' }}>Journey to Level {currentLevel + 1}</h2>
+                <p className="text-sm mt-1" style={{ color: 'var(--theme-text-muted)' }}>Earn {xpToNext} more XP to level up!</p>
               </div>
-
-              {/* +120 XP Reward Pill */}
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-pixel font-bold shadow-2xs">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-                <span>+120 XP</span>
+              <div className="text-right">
+                <span className="font-black text-2xl" style={{ color: 'var(--theme-accent-secondary)' }}>{progressInLevel}</span>
+                <span className="font-bold text-sm opacity-60" style={{ color: 'var(--theme-text-muted)' }}> / {levelRange} XP</span>
               </div>
             </div>
-
-            {/* Body content with Title, Chapter, Description & Illustration */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-4 flex-1">
-                <div className="p-1 rounded-2xl shrink-0">
-                  <img src="/extracted/icon_python_snake.png" alt="Python" className="w-11 h-11 object-contain" />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="text-lg sm:text-xl font-extrabold text-stone-900 tracking-tight">
-                      {courseTitle}
-                    </h2>
-                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">
-                      {chapterTitle}
-                    </span>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-xl">
-                    {lessonDesc}
-                  </p>
-
-                  {/* Progress bar */}
-                  <div className="flex items-center gap-3 mt-3 w-full max-w-md">
-                    <div className="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                        style={{ width: `${progressPct}%` }}
-                      />
-                    </div>
-                    <span className="font-pixel text-[10px] font-bold text-emerald-600 shrink-0">
-                      {progressPct}%
-                    </span>
-                    <span className="text-[11px] font-medium text-stone-400 shrink-0">
-                      {remainingCount} quest{remainingCount !== 1 ? 's' : ''} remaining
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: Retro Pixel Terminal Desktop Illustration from Reference */}
-              <div className="hidden sm:flex shrink-0 w-36 h-24 items-center justify-center">
-                <img src="/extracted/quest_terminal_art.png" alt="Terminal" className="w-full h-full object-contain" />
-              </div>
-            </div>
-
-            {/* Action CTAs */}
-            <div className="flex items-center gap-3 pt-2 border-t border-stone-100">
-              <button
-                type="button"
-                onClick={() => {
-                  if (onOpenLesson && resumePoint?.lessonId) {
-                    onOpenLesson(resumePoint.lessonId)
-                  } else if (onNavigateTab) {
-                    onNavigateTab('learn')
-                  }
-                }}
-                className="px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white text-xs font-extrabold shadow-[0_4px_0_#047857] active:translate-y-1 active:shadow-none transition-all flex items-center gap-2 cursor-pointer"
+            <div className="h-4 w-full rounded-full overflow-hidden border p-0.5" style={{ background: 'var(--theme-bg-subtle)', borderColor: 'var(--theme-border-subtle)' }}>
+              <div 
+                className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
+                style={{ width: `${levelPct}%`, background: 'var(--theme-accent-secondary)' }}
               >
-                <span>Continue Quest</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (onSelectCourse && resumePoint?.courseId) {
-                    onSelectCourse(resumePoint.courseId)
-                  } else if (onNavigateTab) {
-                    onNavigateTab('learn')
-                  }
-                }}
-                className="px-4 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold shadow-[0_2px_0_#CBD5E1] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-              >
-                View Chapter
-              </button>
+                <div className="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite] -skew-x-12" />
+              </div>
             </div>
           </div>
 
-          {/* Section 2: YOUR PROGRESS (4-Card Row) */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2 px-1">
-              <span className="text-base">📊</span>
-              <h3 className="font-bold text-base text-stone-900">Your Progress</h3>
+          {/* Today's Quest */}
+          <div className="p-8 rounded-[2rem] border shadow-sm flex flex-col gap-6" style={{ background: 'var(--theme-surface-card)', borderColor: 'var(--theme-border-default)' }}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl" style={{ background: 'var(--theme-bg-subtle)', color: 'var(--theme-accent-primary)' }}>
+                  <Target className="w-6 h-6" />
+                </div>
+                <h2 className="text-2xl font-black" style={{ fontFamily: 'var(--theme-font-heading)', color: 'var(--theme-text-primary)' }}>Today's Quest</h2>
+              </div>
+              {dailyXpEarned >= dailyGoalXp && (
+                <span className="px-4 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5 border shadow-sm"
+                      style={{ background: 'var(--theme-bg-subtle)', color: 'var(--theme-accent-primary)', borderColor: 'var(--theme-accent-primary)' }}>
+                  <Star className="w-3.5 h-3.5" /> Completed
+                </span>
+              )}
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-              {/* Card 01: LEVEL */}
-              <div className="bg-white rounded-2xl p-4 border border-[#ece7df] shadow-xs flex flex-col justify-between gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-pixel text-[9px] font-bold text-stone-400 uppercase">LEVEL</span>
-                  <div className="w-6 h-6 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500">
-                    <Sparkles className="w-3.5 h-3.5 fill-amber-400" />
+            
+            <div className="flex items-center gap-6 p-5 rounded-2xl border" style={{ background: 'var(--theme-bg-canvas)', borderColor: 'var(--theme-border-subtle)' }}>
+              <div className="w-16 h-16 rounded-2xl flex flex-col items-center justify-center shrink-0 shadow-inner" style={{ background: 'var(--theme-surface-card)' }}>
+                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ color: 'var(--theme-text-muted)' }}>Goal</span>
+                <span className="text-xl font-black" style={{ color: 'var(--theme-text-primary)' }}>{dailyGoalXp}</span>
+              </div>
+              <div className="flex-1 flex flex-col gap-2">
+                <h3 className="font-bold text-lg" style={{ color: 'var(--theme-text-primary)' }}>Daily XP Goal</h3>
+                
+                <div className="flex items-center gap-4 mt-2">
+                  <div className="flex-1 h-3 rounded-full overflow-hidden shadow-inner" style={{ background: 'var(--theme-surface-card)' }}>
+                    <div 
+                      className={`h-full rounded-full transition-all duration-1000`}
+                      style={{ width: `${dailyGoalPercent}%`, background: dailyXpEarned >= dailyGoalXp ? 'var(--theme-accent-primary)' : 'var(--theme-accent-secondary)' }}
+                    />
                   </div>
-                </div>
-
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-2xl font-black text-stone-900 font-pixel">{currentLevel}</span>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-amber-400 rounded-full" style={{ width: `${levelPct}%` }} />
-                  </div>
-                  <span className="text-[10px] text-stone-500 font-medium">
-                    +{xpToNext} XP to next level
+                  <span className="text-xs font-bold whitespace-nowrap" style={{ color: 'var(--theme-text-muted)' }}>
+                    {dailyXpEarned} / {dailyGoalXp} XP
                   </span>
                 </div>
               </div>
-
-              {/* Card 02: STREAK */}
-              <div className="bg-white rounded-2xl p-4 border border-[#ece7df] shadow-xs flex flex-col justify-between gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-pixel text-[9px] font-bold text-stone-400 uppercase">STREAK</span>
-                  <div className="w-6 h-6 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-500">
-                    <Flame className="w-3.5 h-3.5 fill-orange-500" />
-                  </div>
-                </div>
-
-                <div className="flex items-baseline gap-1 text-2xl font-black text-stone-900 font-pixel">
-                  <span>{currentStreak}</span>
-                  <span className="text-xs font-sans font-bold text-stone-600">days</span>
-                </div>
-
-                <div className="text-[10px] text-stone-500 font-medium">
-                  Best: {Math.max(currentStreak, 14)} days
-                </div>
-              </div>
-
-              {/* Card 03: BADGES */}
-              <div className="bg-white rounded-2xl p-4 border border-[#ece7df] shadow-xs flex flex-col justify-between gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-pixel text-[9px] font-bold text-stone-400 uppercase">BADGES</span>
-                  <div className="w-6 h-6 rounded-lg bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
-                    <Award className="w-3.5 h-3.5 fill-purple-400 text-purple-600" />
-                  </div>
-                </div>
-
-                <div className="text-2xl font-black text-stone-900 font-pixel">
-                  {unlockedBadges}
-                </div>
-
-                <div className="text-[10px] text-stone-500 font-medium">
-                  3 unlocked this month
-                </div>
-              </div>
-
-              {/* Card 04: BUILDS */}
-              <div className="bg-white rounded-2xl p-4 border border-[#ece7df] shadow-xs flex flex-col justify-between gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-pixel text-[9px] font-bold text-stone-400 uppercase">BUILDS</span>
-                  <div className="w-6 h-6 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600">
-                    <Layers className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-
-                <div className="text-2xl font-black text-stone-900 font-pixel">
-                  {buildsCount}
-                </div>
-
-                <div className="text-[10px] text-stone-500 font-medium">
-                  2 published
-                </div>
-              </div>
             </div>
           </div>
 
-          {/* Section 3: YOUR ADVENTURE PATH & COURSES */}
-          <div className="bg-white rounded-3xl p-6 border border-[#ece7df] shadow-xs flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-xl">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTabSection('path')}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activeTabSection === 'path'
-                        ? 'bg-white text-emerald-700 shadow-xs'
-                        : 'text-stone-500 hover:text-stone-800'
-                    }`}
-                  >
-                    🗺️ Adventure Path
-                  </button>
-                  {courses && courses.length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveTabSection('courses')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                        activeTabSection === 'courses'
-                          ? 'bg-white text-emerald-700 shadow-xs'
-                          : 'text-stone-500 hover:text-stone-800'
-                      }`}
-                    >
-                      📚 All Courses ({courses.length})
-                    </button>
-                  )}
-                </div>
-              </div>
-              <span className="text-xs text-stone-500 font-medium">
-                {activeTabSection === 'path'
-                  ? "Here's where you've been — and where you're going."
-                  : 'Explore all available learning tracks and master code.'}
-              </span>
+        </div>
+        
+        {/* ── RIGHT COLUMN ── */}
+        <div className="lg:col-span-5 flex flex-col gap-8">
+          
+          <div className="p-8 rounded-[2rem] border shadow-sm flex flex-col h-full" style={{ background: 'var(--theme-surface-card)', borderColor: 'var(--theme-border-default)' }}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-black flex items-center gap-3" style={{ fontFamily: 'var(--theme-font-heading)', color: 'var(--theme-text-primary)' }}>
+                <Trophy className="w-6 h-6" style={{ color: 'var(--theme-accent-secondary)' }} /> Recent Achievements
+              </h2>
+              <button 
+                onClick={() => onNavigateTab?.('achievements')}
+                className="text-sm font-bold flex items-center gap-1 group transition-colors"
+                style={{ color: 'var(--theme-text-secondary)' }}
+              >
+                View All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
-
-            {/* Content: Adventure Path Map */}
-            {activeTabSection === 'path' ? (
-              <div className="relative flex items-center justify-between gap-2 overflow-x-auto py-4 px-2">
-                <div className="absolute left-6 right-6 top-1/2 -translate-y-2.5 h-1 bg-stone-200 z-0" />
-                <div className="absolute left-6 w-[45%] top-1/2 -translate-y-2.5 h-1 bg-emerald-500 z-0 transition-all duration-500" />
-
-                {pathNodes.map((node) => {
-                  const isCompleted = node.status === 'completed'
-                  const isCurrent = node.status === 'current'
-                  const isLocked = node.status === 'locked'
-
+            
+            <div className="flex-1 flex flex-col gap-4">
+              {recentAchievements.length > 0 ? (
+                recentAchievements.map((ach) => {
+                  // Map emojis to Lucide icon names if they exist, else default to Star
+                  let iconName = ach.icon
+                  if (iconName.length <= 2) {
+                    const emojiMap: Record<string, string> = { '🚀': 'Rocket', '🔥': 'Flame', '⭐': 'Star', '👑': 'Crown', '🛡️': 'Shield' }
+                    iconName = emojiMap[iconName] || 'Star'
+                  }
+                  // @ts-ignore
+                  const Icon = LucideIcons[iconName] || Star
                   return (
-                    <div
-                      key={node.id}
-                      onClick={() => !isLocked && onNavigateTab && onNavigateTab('learn')}
-                      className={`relative z-10 flex flex-col items-center gap-2 transition-transform ${
-                        isLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'
-                      }`}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs shadow-xs transition-all ${
-                          isCompleted
-                            ? 'bg-emerald-500 text-white ring-4 ring-emerald-100'
-                            : isCurrent
-                            ? 'bg-white text-emerald-700 border-2 border-emerald-500 ring-4 ring-emerald-300/40'
-                            : 'bg-stone-100 text-stone-400 border border-stone-200'
-                        }`}
-                      >
-                        {isCompleted ? (
-                          <Check className="w-4 h-4 stroke-[3]" />
-                        ) : isCurrent ? (
-                          <Repeat className="w-4 h-4 text-emerald-600" />
-                        ) : (
-                          <Lock className="w-3.5 h-3.5 text-stone-400" />
-                        )}
+                    <div key={ach.id} className="p-4 rounded-2xl border flex gap-5 items-center transition-transform hover:-translate-y-1 shadow-sm"
+                         style={{ background: 'var(--theme-bg-canvas)', borderColor: 'var(--theme-border-subtle)' }}>
+                      <div className="w-14 h-14 rounded-xl border flex items-center justify-center shrink-0 shadow-inner"
+                           style={{ background: 'var(--theme-surface-card)', color: 'var(--theme-accent-secondary)', borderColor: 'var(--theme-accent-secondary)' }}>
+                        <Icon className="w-7 h-7" />
                       </div>
-
-                      <div className="flex flex-col items-center">
-                        <span
-                          className={`text-[11px] whitespace-nowrap font-medium ${
-                            isCurrent ? 'font-bold text-emerald-700' : isCompleted ? 'font-semibold text-stone-800' : 'text-stone-400'
-                          }`}
-                        >
-                          {node.title}
-                        </span>
-                        {isCurrent && (
-                          <span className="text-[8px] font-pixel text-emerald-600 font-bold uppercase mt-0.5">
-                            Current
-                          </span>
-                        )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-base truncate mb-1" style={{ color: 'var(--theme-text-primary)' }}>{ach.title}</h4>
+                        <p className="text-xs truncate opacity-80" style={{ color: 'var(--theme-text-secondary)' }}>{ach.description}</p>
                       </div>
                     </div>
                   )
-                })}
-              </div>
-            ) : (
-              /* Content: Available Courses Grid */
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
-                {courses?.map((c) => {
-                  const isPython = c.course.id.includes('python')
-                  const isWeb = c.course.id.includes('web') || c.course.id.includes('html')
-                  const isJs = c.course.id.includes('javascript') || c.course.id.includes('js')
-                  const iconEmoji = isPython ? '🐍' : isWeb ? '🌐' : isJs ? '⚡' : '💻'
-
-                  return (
-                    <div
-                      key={c.course.id}
-                      className="p-4 rounded-2xl border border-stone-200/80 bg-stone-50/50 hover:bg-white hover:shadow-xs transition-all flex flex-col justify-between gap-3"
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-stone-200 flex items-center justify-center text-xl shrink-0 shadow-2xs">
-                          {iconEmoji}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-extrabold text-xs sm:text-sm text-stone-900 truncate">
-                              {c.course.title}
-                            </h4>
-                            <span className="px-2 py-0.2 rounded-md bg-stone-100 text-stone-600 text-[10px] font-bold">
-                              {c.course.difficulty || 'Beginner'}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-stone-500 line-clamp-2 mt-0.5 leading-relaxed font-medium">
-                            {c.course.description}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-stone-200/60">
-                        <div className="flex items-center gap-2 flex-1 max-w-[140px]">
-                          <div className="flex-1 h-1.5 bg-stone-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${c.progressPercent}%` }} />
-                          </div>
-                          <span className="font-pixel text-[9px] font-bold text-emerald-700">
-                            {c.progressPercent}%
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (c.nextLesson?.id && onOpenLesson) {
-                              onOpenLesson(c.nextLesson.id)
-                            } else if (onSelectCourse) {
-                              onSelectCourse(c.course.id)
-                            } else if (onNavigateTab) {
-                              onNavigateTab('learn')
-                            }
-                          }}
-                          className="px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white text-[11px] font-extrabold shadow-[0_2px_0_#047857] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-                        >
-                          {c.progressPercent > 0 ? 'Continue' : 'Start'}
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Section 4: FROM THE COMMUNITY */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <span className="text-base text-purple-600">👥</span>
-                <h3 className="font-bold text-base text-stone-900">From the Community</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => onNavigateTab?.('community')}
-                className="text-xs font-bold text-emerald-600 hover:underline cursor-pointer flex items-center gap-1"
-              >
-                <span>Explore Community</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Project 1: Pixel Weather */}
-              <div className="bg-white rounded-2xl p-3 border border-[#ece7df] shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3 group">
-                <div>
-                  <img src="/extracted/community_weather.png" alt="Pixel Weather" className="w-full h-24 object-cover rounded-xl" />
-                  <h4 className="font-bold text-xs text-stone-900 mt-2.5 group-hover:text-emerald-700 transition-colors">
-                    Pixel Weather
-                  </h4>
-                  <div className="text-[10.5px] text-stone-500 font-medium">By Sarah Chen</div>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[9px] font-bold">
-                      Python
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-sky-800 text-[9px] font-bold">
-                      Web
-                    </span>
+                })
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-center py-10 opacity-60">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'var(--theme-bg-subtle)' }}>
+                    <Trophy className="w-8 h-8" style={{ color: 'var(--theme-text-muted)' }} />
                   </div>
+                  <h4 className="font-bold text-lg" style={{ color: 'var(--theme-text-primary)' }}>No trophies yet</h4>
+                  <p className="text-sm mt-1 max-w-[200px]" style={{ color: 'var(--theme-text-muted)' }}>Complete quests to unlock rewards!</p>
                 </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-stone-100">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleLike('p1')}
-                    className={`flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer ${
-                      likedMap.p1 ? 'text-rose-500' : 'text-stone-400 hover:text-rose-500'
-                    }`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${likedMap.p1 ? 'fill-rose-500' : ''}`} />
-                    <span>{likes.p1}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => onNavigateTab?.('build')}
-                    className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-emerald-50 hover:text-emerald-700 text-stone-600 text-[10.5px] font-bold transition-colors cursor-pointer"
-                  >
-                    Remix
-                  </button>
-                </div>
-              </div>
-
-              {/* Project 2: Space Runner */}
-              <div className="bg-white rounded-2xl p-3 border border-[#ece7df] shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3 group">
-                <div>
-                  <img src="/extracted/community_space.png" alt="Space Runner" className="w-full h-24 object-cover rounded-xl" />
-                  <h4 className="font-bold text-xs text-stone-900 mt-2.5 group-hover:text-purple-700 transition-colors">
-                    Space Runner
-                  </h4>
-                  <div className="text-[10.5px] text-stone-500 font-medium">By Mike Rivera</div>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className="px-2 py-0.5 rounded-md bg-purple-50 border border-purple-200 text-purple-800 text-[9px] font-bold">
-                      Game
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[9px] font-bold">
-                      Python
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-stone-100">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleLike('p2')}
-                    className={`flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer ${
-                      likedMap.p2 ? 'text-rose-500' : 'text-stone-400 hover:text-rose-500'
-                    }`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${likedMap.p2 ? 'fill-rose-500' : ''}`} />
-                    <span>{likes.p2}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => onNavigateTab?.('build')}
-                    className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-purple-50 hover:text-purple-700 text-stone-600 text-[10.5px] font-bold transition-colors cursor-pointer"
-                  >
-                    Remix
-                  </button>
-                </div>
-              </div>
-
-              {/* Project 3: AI Study Buddy */}
-              <div className="bg-white rounded-2xl p-3 border border-[#ece7df] shadow-xs hover:shadow-md transition-all flex flex-col justify-between gap-3 group">
-                <div>
-                  <img src="/extracted/community_ai.png" alt="AI Study Buddy" className="w-full h-24 object-cover rounded-xl" />
-                  <h4 className="font-bold text-xs text-stone-900 mt-2.5 group-hover:text-sky-700 transition-colors">
-                    AI Study Buddy
-                  </h4>
-                  <div className="text-[10.5px] text-stone-500 font-medium">By Priya Sharma</div>
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className="px-2 py-0.5 rounded-md bg-sky-50 border border-sky-200 text-sky-800 text-[9px] font-bold">
-                      AI
-                    </span>
-                    <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-800 text-[9px] font-bold">
-                      Python
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-stone-100">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleLike('p3')}
-                    className={`flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer ${
-                      likedMap.p3 ? 'text-rose-500' : 'text-stone-400 hover:text-rose-500'
-                    }`}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${likedMap.p3 ? 'fill-rose-500' : ''}`} />
-                    <span>{likes.p3}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => onNavigateTab?.('build')}
-                    className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-sky-50 hover:text-sky-700 text-stone-600 text-[10.5px] font-bold transition-colors cursor-pointer"
-                  >
-                    Remix
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
           </div>
+          
         </div>
-
-        {/* ===================================================================== */}
-        {/* RIGHT COLUMN (4 Cols): Today's Quest, Recent Achievements, Lumi       */}
-        {/* ===================================================================== */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          {/* 1. TODAY'S QUEST */}
-          <div className="bg-white rounded-3xl p-6 border border-[#ece7df] shadow-xs flex flex-col justify-between gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🎯</span>
-                  <h3 className="font-bold text-base text-stone-900">Today&apos;s Quest</h3>
-                </div>
-                <span className="text-[10px] font-bold text-orange-600 flex items-center gap-1">
-                  <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 animate-pulse" />
-                  <span>Keeps your 7-day streak alive</span>
-                </span>
-              </div>
-
-              {/* Challenge Details Card */}
-              <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/70 flex flex-col gap-2.5 mt-2">
-                <div className="flex items-center gap-3">
-                  <div className="p-1 rounded-xl shrink-0">
-                    <img src="/extracted/icon_gamepad.png" alt="Gamepad" className="w-10 h-10 object-contain" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs sm:text-sm text-stone-900 leading-tight">
-                      Build a Number Guessing Game
-                    </h4>
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-md bg-sky-100 text-sky-800 text-[9px] font-bold">
-                        Python
-                      </span>
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[9px] font-bold">
-                        Beginner
-                      </span>
-                      <span className="text-[10px] text-stone-400 font-medium flex items-center gap-0.5">
-                        <Clock className="w-3 h-3" /> 20 min
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-2 border-t border-stone-200/60 text-xs">
-                  <div className="flex items-center gap-1 text-[11px] text-stone-600 font-medium">
-                    <span>Difficulty:</span>
-                    <span className="text-amber-500 font-mono text-xs">★★☆☆☆</span>
-                  </div>
-
-                  <div className="font-pixel text-[10px] font-bold text-amber-600">
-                    +80 XP ⭐
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => (onNavigateTab ? onNavigateTab('practice') : undefined)}
-              className="w-full py-2.5 bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-[0_4px_0_#047857] active:translate-y-1 active:shadow-none transition-all cursor-pointer"
-            >
-              <span>Start Quest</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* 2. RECENT ACHIEVEMENTS (2x2 Grid) */}
-          <div className="bg-white rounded-3xl p-6 border border-[#ece7df] shadow-xs flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🏆</span>
-                <h3 className="font-bold text-base text-stone-900">Recent Achievements</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => (onNavigateTab ? onNavigateTab('learn') : undefined)}
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline cursor-pointer flex items-center gap-1"
-              >
-                <span>View all achievements</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              {/* Achievement 1 */}
-              <div className="p-3 rounded-2xl bg-[#faf8f4] border border-[#ece7df] flex items-center gap-2.5">
-                <img src="/extracted/badge_streak.png" alt="7 Day Streak" className="w-8 h-8 object-contain shrink-0" />
-                <div className="min-w-0">
-                  <h4 className="font-bold text-[11px] text-stone-900 truncate">7 Day Streak</h4>
-                  <span className="text-[9.5px] text-stone-400 block truncate">Earned 2 days ago</span>
-                </div>
-              </div>
-
-              {/* Achievement 2 */}
-              <div className="p-3 rounded-2xl bg-[#faf8f4] border border-[#ece7df] flex items-center gap-2.5">
-                <img src="/extracted/badge_bug_hunter.png" alt="Bug Hunter" className="w-8 h-8 object-contain shrink-0" />
-                <div className="min-w-0">
-                  <h4 className="font-bold text-[11px] text-stone-900 truncate">Bug Hunter</h4>
-                  <span className="text-[9.5px] text-stone-400 block truncate">Earned 5 days ago</span>
-                </div>
-              </div>
-
-              {/* Achievement 3 */}
-              <div className="p-3 rounded-2xl bg-[#faf8f4] border border-[#ece7df] flex items-center gap-2.5">
-                <img src="/extracted/badge_fast_debugger.png" alt="Fast Debugger" className="w-8 h-8 object-contain shrink-0" />
-                <div className="min-w-0">
-                  <h4 className="font-bold text-[11px] text-stone-900 truncate">Fast Debugger</h4>
-                  <span className="text-[9.5px] text-stone-400 block truncate">Earned 1 week ago</span>
-                </div>
-              </div>
-
-              {/* Achievement 4 */}
-              <div className="p-3 rounded-2xl bg-[#faf8f4] border border-[#ece7df] flex items-center gap-2.5">
-                <img src="/extracted/badge_first_build.png" alt="First Build" className="w-8 h-8 object-contain shrink-0" />
-                <div className="min-w-0">
-                  <h4 className="font-bold text-[11px] text-stone-900 truncate">First Build</h4>
-                  <span className="text-[9.5px] text-stone-400 block truncate">Earned 2 weeks ago</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. LUMI CONTEXTUAL TIP CARD */}
-          {!lumiDismissed ? (
-            <div className="bg-gradient-to-b from-purple-50/70 via-white to-white rounded-3xl p-6 border border-purple-200/80 shadow-xs flex flex-col justify-between gap-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-2.5">
-                  <img src="/extracted/lumi_tip_mascot.png" alt="Lumi" className="w-12 h-12 object-contain shrink-0" />
-                  <div>
-                    <h3 className="font-bold text-sm text-stone-900">Lumi has a tip for you</h3>
-                  </div>
-                </div>
-
-                <p className="text-xs sm:text-sm text-stone-700 leading-relaxed font-medium bg-white/90 p-3 rounded-2xl border border-purple-100 shadow-2xs">
-                  &ldquo;You&apos;re getting close to finishing Loops. Want to practice with one more challenge?&rdquo;
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => (onNavigateTab ? onNavigateTab('practice') : undefined)}
-                  className="flex-1 py-2.5 bg-[#10B981] hover:bg-[#059669] active:bg-[#047857] text-white rounded-xl text-xs font-extrabold shadow-[0_3px_0_#047857] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-                >
-                  Give Me a Challenge
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setLumiDismissed(true)}
-                  className="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl text-xs font-bold shadow-[0_2px_0_#CBD5E1] active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
-                >
-                  Maybe Later
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white rounded-3xl p-6 border border-[#ece7df] shadow-xs flex flex-col items-center justify-center text-center gap-2">
-              <img src="/extracted/lumi_tip_mascot.png" alt="Lumi" className="w-10 h-10 object-contain" />
-              <div className="font-bold text-xs text-stone-800">Lumi is standing by</div>
-              <p className="text-[11px] text-stone-500 max-w-xs">
-                Click &ldquo;Ask Lumi&rdquo; anytime in the bottom right corner for hints or debugging assistance.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 3. INSPIRATIONAL BOTTOM MOTTO & DECORATION                                */}
-      {/* ========================================================================= */}
-      <div className="pt-4 flex items-center justify-center gap-2 text-stone-500 font-pixel text-[10px] tracking-wider uppercase">
-        <span className="text-amber-400">✨</span>
-        <span>Keep building. Keep learning. Keep leveling up.</span>
-        <span className="text-amber-400">✨</span>
       </div>
     </div>
+  )
+}
+
+function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    </svg>
   )
 }

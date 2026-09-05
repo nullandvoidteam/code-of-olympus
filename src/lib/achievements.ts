@@ -21,7 +21,10 @@ export interface AchievementItem {
   targetCount: number
   progressCount: number
   rewardXp: number
+  rewardXp: number
   isUnlocked: boolean
+  isClaimed: boolean
+  claimedAt?: string
 }
 
 export interface ActivityItem {
@@ -86,7 +89,15 @@ export async function fetchUserBadges(userId?: string): Promise<BadgeItem[]> {
       }
     }
 
-    return allBadges.map((b) => ({
+    const uniqueBadgesMap = new Map<string, any>()
+    for (const b of allBadges) {
+      if (!uniqueBadgesMap.has(b.slug)) {
+        uniqueBadgesMap.set(b.slug, b)
+      }
+    }
+    const uniqueBadges = Array.from(uniqueBadgesMap.values())
+
+    return uniqueBadges.map((b) => ({
       id: b.id,
       slug: b.slug,
       title: b.title,
@@ -104,19 +115,35 @@ export async function fetchUserBadges(userId?: string): Promise<BadgeItem[]> {
 
 export async function fetchUserAchievements(userId?: string): Promise<AchievementItem[]> {
   try {
-    const [achRes, profileRes, progressRes] = await Promise.all([
+    const [achRes, profileRes, progressRes, userAchRes] = await Promise.all([
       supabase.from('achievements').select('*').order('created_at', { ascending: true }),
       userId ? supabase.from('profiles').select('level, streak, daily_goal_xp, daily_xp_earned').eq('id', userId).maybeSingle() : Promise.resolve({ data: null }),
       userId ? supabase.from('lesson_progress').select('lesson_id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true) : Promise.resolve({ count: 0 }),
+      userId ? supabase.from('user_achievements').select('achievement_id, unlocked_at').eq('user_id', userId).eq('is_unlocked', true) : Promise.resolve({ data: null })
     ])
+
+    const claimedMap = new Map<string, string>()
+    if (userAchRes.data) {
+      userAchRes.data.forEach((ua) => {
+        claimedMap.set(ua.achievement_id, ua.unlocked_at)
+      })
+    }
 
     const allAch = achRes.data || []
     if (allAch.length === 0) return []
 
+    const uniqueAchMap = new Map<string, any>()
+    for (const a of allAch) {
+      if (!uniqueAchMap.has(a.slug)) {
+        uniqueAchMap.set(a.slug, a)
+      }
+    }
+    const uniqueAch = Array.from(uniqueAchMap.values())
+
     const profile = profileRes.data
     const completedLessonsCount = progressRes.count || 0
 
-    return allAch.map((a) => {
+    return uniqueAch.map((a) => {
       let progressCount = 0
       let isUnlocked = false
 
@@ -146,6 +173,8 @@ export async function fetchUserAchievements(userId?: string): Promise<Achievemen
         progressCount,
         rewardXp: a.reward_xp || 50,
         isUnlocked,
+        isClaimed: claimedMap.has(a.id),
+        claimedAt: claimedMap.get(a.id),
       }
     })
   } catch (err) {
@@ -157,6 +186,24 @@ export async function fetchUserAchievements(userId?: string): Promise<Achievemen
 export async function syncUserBadgesAndAchievements(userId: string): Promise<void> {
   if (!userId) return
   // Dynamically computed on read, no redundant writes needed
+}
+
+export async function claimAchievement(userId: string, achievementId: string): Promise<void> {
+  if (!userId || !achievementId) return;
+  try {
+    const { error } = await supabase.from('user_achievements').insert({
+      user_id: userId,
+      achievement_id: achievementId,
+      is_unlocked: true,
+      unlocked_at: new Date().toISOString()
+    });
+    if (error) {
+      // If it fails due to unique constraint, it means it's already claimed
+      console.warn('Achievement claim might already exist', error);
+    }
+  } catch (err) {
+    console.error('Error claiming achievement:', err)
+  }
 }
 
 export async function recordUserActivity(userId: string, actionType: string, title: string): Promise<void> {

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import type { User, Session, AuthError } from '@supabase/supabase-js'
 import { supabase, type UserRole, type UserProfile } from '../lib/supabase'
+import confetti from 'canvas-confetti'
+import { toast } from 'react-hot-toast'
 
 interface SignUpParams {
   email: string
@@ -14,6 +16,9 @@ interface UpdateProfileParams {
   username?: string
   full_name?: string
   avatar_url?: string
+  xp?: number
+  level?: number
+  streak?: number
 }
 
 interface AuthContextType {
@@ -29,6 +34,8 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<{ error: AuthError | Error | null; message?: string }>
   updateProfile: (params: UpdateProfileParams) => Promise<{ error: Error | null }>
   refreshProfile: () => Promise<void>
+  addXP: (amount: number) => Promise<void>
+  incrementStreak: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -258,6 +265,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
+  const addXP = async (amount: number) => {
+    if (!profile || !user) return;
+    
+    const currentXP = profile.xp || 0;
+    const currentLevel = profile.level || 1;
+    
+    const newXP = currentXP + amount;
+    const newLevel = Math.floor(newXP / 1000) + 1;
+    
+    // Update locally first for immediate UI feedback
+    setProfile({ ...profile, xp: newXP, level: newLevel });
+    
+    if (newLevel > currentLevel) {
+      // Level Up!
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.5 },
+        colors: ['#F5D060', '#DC2626', '#00E5FF', '#10B981']
+      });
+      toast.success(`Leveled up to Level ${newLevel}!`, {
+        icon: '🌟',
+        style: {
+          background: '#0E0606',
+          color: '#F5E8E8',
+          border: '1px solid #3D1C1C'
+        }
+      });
+    }
+
+    // Persist to backend
+    await updateProfile({ xp: newXP, level: newLevel });
+  };
+
+  const incrementStreak = async () => {
+    if (!profile || !user) return;
+    const newStreak = (profile.streak || 0) + 1;
+    
+    setProfile({ ...profile, streak: newStreak });
+    toast.success(`Streak increased to ${newStreak} days!`, {
+      icon: '🔥',
+      style: {
+        background: '#0E0606',
+        color: '#F5E8E8',
+        border: '1px solid #3D1C1C'
+      }
+    });
+
+    await updateProfile({ streak: newStreak });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -273,6 +331,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         resetPassword,
         updateProfile,
         refreshProfile,
+        addXP,
+        incrementStreak,
       }}
     >
       {children}

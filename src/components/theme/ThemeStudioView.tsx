@@ -230,25 +230,6 @@ export const ThemeStudioView: React.FC = () => {
                     </div>
                   ))}
                 </div>
-
-                {/* Activation Button */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setTheme(preset.id)
-                  }}
-                  className="w-full py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-2 border shadow-md active:scale-95"
-                  style={{
-                    fontFamily: 'var(--theme-font-heading)',
-                    background: isSelected ? 'var(--theme-btn-primary-gradient)' : 'var(--theme-btn-secondary-bg)',
-                    borderColor: isSelected ? 'var(--theme-btn-primary-border)' : 'var(--theme-btn-secondary-border)',
-                    color: isSelected ? '#FFFFFF' : 'var(--theme-text-muted)',
-                  }}
-                >
-                  <Swords className="w-3.5 h-3.5" />
-                  <span>{isSelected ? 'CURRENTLY APPLIED' : 'APPLY THEME'}</span>
-                </button>
               </div>
             )
           })}

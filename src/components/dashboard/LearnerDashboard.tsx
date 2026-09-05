@@ -21,7 +21,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   onSelectLesson,
 }) => {
   const { theme } = useTheme()
-  const { user, profile, refreshProfile, loading: authLoading } = useAuth()
+  const { user, profile, refreshProfile, loading: authLoading, addXP, incrementStreak } = useAuth()
   const { courses, learningPaths, resumePoint, overallProgress, refreshProgress, loading: learningLoading } = useLearningProgress(user?.id)
   const { stats, refreshGamification, loading: gamificationLoading } = useGamification(user?.id, profile?.xp, profile?.streak, profile?.level)
   const { badges, achievements, activities, refreshAll, loading: achievementsLoading } =
@@ -122,39 +122,55 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
     )
   }
 
-  if (theme === 'classic') {
-    return (
-      <AppShellDashboardView
-        username={username}
-        stats={stats}
-        resumePoint={resumePoint}
-        courses={courses}
-        learningPaths={learningPaths}
-        overallProgress={overallProgress}
-        badges={badges}
-        achievements={achievements}
-        activities={activities}
-        onOpenLesson={handleOpenLesson}
-        onNavigateTab={onNavigateTab}
-        onSelectCourse={onSelectCourse}
-      />
-    )
-  }
-
   return (
-    <CrucibleDashboard
-      username={username}
-      stats={stats}
-      resumePoint={resumePoint}
-      courses={courses}
-      learningPaths={learningPaths}
-      overallProgress={overallProgress}
-      badges={badges}
-      achievements={achievements}
-      activities={activities}
-      onOpenLesson={handleOpenLesson}
-      onNavigateTab={onNavigateTab}
-      onSelectCourse={onSelectCourse}
-    />
+    <div className="relative w-full">
+      {/* Developer Testing Controls */}
+      <div className="absolute -top-12 right-0 flex gap-2 z-50">
+        <button 
+          onClick={() => addXP(500)} 
+          className="text-xs font-bold uppercase tracking-wider bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg shadow-lg border border-emerald-500/50 transition-all cursor-pointer"
+        >
+          +500 XP
+        </button>
+        <button 
+          onClick={() => incrementStreak()} 
+          className="text-xs font-bold uppercase tracking-wider bg-orange-600/90 hover:bg-orange-500 text-white px-3 py-1.5 rounded-lg shadow-lg border border-orange-500/50 transition-all cursor-pointer"
+        >
+          +1 Streak
+        </button>
+      </div>
+
+      {theme === 'classic' ? (
+        <AppShellDashboardView
+          username={username}
+          stats={stats}
+          resumePoint={resumePoint}
+          courses={courses}
+          learningPaths={learningPaths}
+          overallProgress={overallProgress}
+          badges={badges}
+          achievements={achievements}
+          activities={activities}
+          onOpenLesson={handleOpenLesson}
+          onNavigateTab={onNavigateTab}
+          onSelectCourse={onSelectCourse}
+        />
+      ) : (
+        <CrucibleDashboard
+          username={username}
+          stats={stats}
+          resumePoint={resumePoint}
+          courses={courses}
+          learningPaths={learningPaths}
+          overallProgress={overallProgress}
+          badges={badges}
+          achievements={achievements}
+          activities={activities}
+          onOpenLesson={handleOpenLesson}
+          onNavigateTab={onNavigateTab}
+          onSelectCourse={onSelectCourse}
+        />
+      )}
+    </div>
   )
 }

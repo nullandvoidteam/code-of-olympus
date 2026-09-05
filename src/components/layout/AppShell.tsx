@@ -19,6 +19,12 @@ import { CommunityPage } from '../../pages/CommunityPage'
 import { TeamArcadePage } from '../../pages/TeamArcadePage'
 import { LearnerDashboard } from '../dashboard/LearnerDashboard'
 import { ThemeStudioView } from '../theme/ThemeStudioView'
+import { AchievementsView } from '../achievements/AchievementsView'
+import { ProfileView } from '../profile/ProfileView'
+import { QuestsView } from '../achievements/QuestsView'
+import { BadgesView } from '../achievements/BadgesView'
+import { SettingsView } from '../settings/SettingsView'
+import { LearningPathView } from '../learn/LearningPathView'
 import { GameToaster } from '../ui/GameToast'
 import { AlexPixelAvatar } from '../brand/PixelArtAvatars'
 import {
@@ -207,15 +213,15 @@ export const AppShell: React.FC = () => {
               ? selectedQuestId
                 ? 'Chapter 04 / Loops & Logic ➔ Countdown Challenge'
                 : selectedChallengeId
-                ? 'Loops & Logic / Exercise 03'
-                : selectedLessonId
-                ? 'Python Adventure / Chapter 04 / Lesson 03'
-                : selectedCourseId
-                ? 'Course / Python Adventure'
-                : null
+                  ? 'Loops & Logic / Exercise 03'
+                  : selectedLessonId
+                    ? 'Python Adventure / Chapter 04 / Lesson 03'
+                    : selectedCourseId
+                      ? 'Course / Python Adventure'
+                      : null
               : activeTab === 'practice' && practiceBriefingId
-              ? 'Practice / Challenge Arena / Reverse the String'
-              : null
+                ? 'Practice / Challenge Arena / Reverse the String'
+                : null
           }
           onOpenLumi={() => {
             const btn = document.querySelector('button[title="Ask Lumi AI Mentor"]') as HTMLButtonElement | null
@@ -292,15 +298,7 @@ export const AppShell: React.FC = () => {
                   }}
                 />
               ) : (
-                <LearnCatalogView
-                  onSelectCourse={(courseId) => {
-                    setSelectedCourseId(courseId)
-                  }}
-                  onOpenLumi={() => {
-                    const btn = document.querySelector('button[title="Ask Lumi AI Mentor"]') as HTMLButtonElement | null
-                    btn?.click()
-                  }}
-                />
+                <LearningPathView />
               )}
             </>
           )}
@@ -365,98 +363,18 @@ export const AppShell: React.FC = () => {
 
           {activeTab === 'community' && <CommunityPage />}
 
+          {activeTab === 'profile' && <ProfileView />}
+
+          {activeTab === 'quests' && <QuestsView />}
+
+          {activeTab === 'badges' && <BadgesView />}
+
+          {activeTab === 'achievements' && <AchievementsView />}
+
           {activeTab === 'theme' && <ThemeStudioView />}
 
           {activeTab === 'settings' && (
-            <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 text-left animate-in fade-in pb-12">
-              <div className="p-6 bg-white rounded-3xl border border-[#ece7df] shadow-xs flex flex-col sm:flex-row items-center gap-6">
-                <div className="relative group cursor-pointer">
-                  <AlexPixelAvatar size={72} />
-                  <div className="absolute inset-0 bg-stone-900/60 rounded-xl hidden group-hover:flex flex-col items-center justify-center transition-all animate-in fade-in">
-                    <Camera className="w-5 h-5 text-white mb-0.5" />
-                    <span className="text-[9px] font-bold text-white uppercase font-pixel text-center leading-tight">Edit<br/>Avatar</span>
-                  </div>
-                </div>
-                <div className="flex-1 text-center sm:text-left">
-                  <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
-                    <h2 className="text-2xl font-black text-stone-900">{user?.user_metadata?.full_name || 'Alex Morgan'}</h2>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-pixel font-bold">
-                      LVL 12
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-500 font-medium">
-                    @{user?.user_metadata?.username || 'alex_dev'} • {user?.email || 'alex.morgan@codingconflicts.dev'}
-                  </p>
-                  <p className="text-xs text-stone-600 mt-2 italic">
-                    "Passionate adventurer in the world of code. Learning Python and preparing to build full-stack web apps!"
-                  </p>
-                  <div className="flex items-center justify-center sm:justify-start gap-3 mt-3 flex-wrap">
-                    <span className="px-3 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold font-mono">
-                      ⭐ 4,850 XP
-                    </span>
-                    <span className="px-3 py-1 rounded-xl bg-orange-50 text-orange-800 border border-orange-200 text-xs font-bold font-mono">
-                      🔥 7 Day Streak
-                    </span>
-                    <span className="px-3 py-1 rounded-xl bg-purple-50 text-purple-800 border border-purple-200 text-xs font-bold font-mono">
-                      ⚔️ 14 Quests Done
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Preferences Card */}
-              <div className="p-6 bg-white rounded-3xl border border-[#ece7df] shadow-xs flex flex-col gap-4">
-                <h3 className="text-base font-bold text-stone-900 font-pixel uppercase">Adventurer Profile Settings</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-stone-700">Display Name</label>
-                    <input
-                      type="text"
-                      defaultValue={user?.user_metadata?.full_name || 'Alex Morgan'}
-                      className="h-11 px-3.5 rounded-xl border border-stone-200 bg-stone-50 font-medium text-stone-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-stone-700">Username</label>
-                    <input
-                      type="text"
-                      defaultValue={user?.user_metadata?.username || 'alex_dev'}
-                      className="h-11 px-3.5 rounded-xl border border-stone-200 bg-stone-50 font-medium text-stone-900 focus:outline-none focus:border-emerald-500 focus:bg-white transition-colors"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5 sm:col-span-2">
-                    <label className="font-bold text-stone-700">Bio</label>
-                    <textarea
-                      rows={3}
-                      defaultValue="Passionate adventurer in the world of code. Learning Python and preparing to build full-stack web apps!"
-                      className="p-3.5 rounded-xl border border-stone-200 bg-stone-50 font-medium text-stone-900 focus:outline-none focus:border-emerald-500 focus:bg-white resize-none transition-colors"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-stone-700">Primary Track</label>
-                    <select
-                      defaultValue="Python"
-                      className="h-11 px-3.5 rounded-xl border border-stone-200 bg-stone-50 font-medium text-stone-900 focus:outline-none focus:border-emerald-500 focus:bg-white"
-                    >
-                      <option value="Python">Python Adventure</option>
-                      <option value="JavaScript">JavaScript Game Dev</option>
-                      <option value="AI">AI & Machine Learning</option>
-                      <option value="React">React Web Engineering</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-stone-100">
-                  <span className="text-xs text-stone-500">Changes are automatically saved to your character profile.</span>
-                  <button
-                    type="button"
-                    className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs cursor-pointer"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </div>
+            <SettingsView />
           )}
 
           {activeTab === 'help' && (
