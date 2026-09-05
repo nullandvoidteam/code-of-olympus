@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { AuthPage } from './pages/AuthPage'
@@ -6,16 +6,42 @@ import { AppShell } from './components/layout/AppShell'
 import { AdminShell } from './components/layout/AdminShell'
 import { GameToaster } from './components/ui/GameToast'
 import { CodeQuestOnboardingFlow } from './components/onboarding/CodeQuestOnboardingFlow'
-import { BladeOfChaosCursor } from './components/ui/BladeOfChaosCursor'
+import { ThemeCursor } from './components/ui/ThemeCursor'
 
 const MainApp: React.FC = () => {
   const { user, loading, isAdmin } = useAuth()
-  const { bladeCursorActive } = useTheme()
+  const { theme, bladeCursorActive } = useTheme()
   const [showPreviewOnboarding, setShowPreviewOnboarding] = useState<boolean>(false)
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(false)
 
   // 1. Loading State
   if (loading) {
+    if (theme === 'classic') {
+      return (
+        <div className="min-h-screen w-full flex flex-col items-center justify-center gap-5 bg-blue-600 font-mono text-white">
+          <div className="text-5xl animate-bounce">?</div>
+          <div className="text-xl animate-pulse tracking-widest">LOADING STAGE...</div>
+        </div>
+      )
+    }
+    if (theme === 'space') {
+      return (
+        <div className="min-h-screen w-full flex flex-col items-center justify-center gap-5 bg-black text-cyan-400 font-sans tracking-widest">
+          <div className="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" style={{ filter: 'drop-shadow(0 0 10px cyan)' }}></div>
+          <div className="animate-pulse text-sm">INITIALIZING SYSTEM...</div>
+        </div>
+      )
+    }
+    if (theme === 'light') {
+      return (
+         <div className="min-h-screen w-full flex flex-col items-center justify-center gap-5 bg-gray-50 text-gray-900 font-sans">
+           <div className="w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+           <div className="text-sm font-medium text-gray-500 tracking-wide">Loading workspace...</div>
+         </div>
+      )
+    }
+    
+    // Default GOW Theme
     return (
       <div className="min-h-screen w-full flex flex-col items-center justify-center gap-5" style={{ background: 'var(--theme-bg-canvas, #070505)' }}>
         <div
@@ -76,7 +102,7 @@ const MainApp: React.FC = () => {
   // 4. Global App Shell Framework
   return (
     <>
-      {bladeCursorActive && <BladeOfChaosCursor />}
+      {bladeCursorActive && <ThemeCursor theme={theme} />}
       {isAdmin ? <AdminShell /> : <AppShell />}
     </>
   )

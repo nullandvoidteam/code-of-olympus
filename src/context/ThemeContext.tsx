@@ -80,13 +80,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Sync custom hardware cursor class
   useEffect(() => {
     try {
-      if (bladeCursorActive) {
+      if (bladeCursorActive && theme !== 'light') {
         document.documentElement.classList.add('custom-cursor')
       } else {
         document.documentElement.classList.remove('custom-cursor')
       }
     } catch {}
-  }, [bladeCursorActive])
+  }, [bladeCursorActive, theme])
 
   // Sync watermark opacity token
   useEffect(() => {
