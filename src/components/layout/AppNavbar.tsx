@@ -12,10 +12,11 @@ import {
   Star
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import { useAchievementsAndNotifications } from '../../lib/achievements'
 import { CodeQuestLogo } from '../brand/CodeQuestLogo'
 
-export type ActiveTab = 'dashboard' | 'quests' | 'projects' | 'community' | 'analytics'
+export type ActiveTab = 'dashboard' | 'quests' | 'projects' | 'community' | 'analytics' | 'levels'
 
 interface AppNavbarProps {
   activeTab: ActiveTab

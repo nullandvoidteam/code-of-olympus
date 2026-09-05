@@ -64,17 +64,10 @@ export const AppShell: React.FC = () => {
       return
     }
     setActiveTab(tab as NavItemKey)
-    if (tab !== 'learn') {
-      setSelectedCourseId(null)
-      setSelectedLessonId(null)
-      setSelectedChallengeId(null)
-      setSelectedQuestId(null)
-    } else {
-      setSelectedCourseId(null)
-      setSelectedLessonId(null)
-      setSelectedChallengeId(null)
-      setSelectedQuestId(null)
-    }
+    setSelectedCourseId(null)
+    setSelectedLessonId(null)
+    setSelectedChallengeId(null)
+    setSelectedQuestId(null)
   }
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
@@ -191,20 +184,7 @@ export const AppShell: React.FC = () => {
       <div className="hidden md:block shrink-0">
         <Sidebar
           activeTab={activeTab}
-          onSelectTab={(tab) => {
-            setActiveTab(tab)
-            if (tab !== 'learn') {
-              setSelectedCourseId(null)
-              setSelectedLessonId(null)
-              setSelectedChallengeId(null)
-              setSelectedQuestId(null)
-            } else {
-              setSelectedCourseId('python')
-              setSelectedLessonId(null)
-              setSelectedChallengeId(null)
-              setSelectedQuestId(null)
-            }
-          }}
+          onSelectTab={(tab) => handleSelectTab(tab)}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onContinueQuest={() => {
@@ -302,6 +282,9 @@ export const AppShell: React.FC = () => {
                 <QuestIDEView
                   onBackToLesson={() => setSelectedQuestId(null)}
                   onNextLesson={() => {
+                    if (selectedCourseId) {
+                      saveCourseProgress(user?.id, selectedCourseId, 67)
+                    }
                     setSelectedQuestId(null)
                     setSelectedChallengeId(null)
                     setSelectedLessonId(null)
@@ -325,14 +308,17 @@ export const AppShell: React.FC = () => {
                   courseId={selectedCourseId}
                   onBackToCourses={() => setSelectedCourseId(null)}
                   onStartQuest={() => {
-                    if (user?.id) {
-                      saveCourseProgress(user.id, selectedCourseId, 15)
+                    if (selectedCourseId) {
+                      saveCourseProgress(user?.id, selectedCourseId, 17, 'ch1-lesson1')
                     }
-                    setSelectedLessonId('ch4-lesson3')
+                    setSelectedLessonId('ch1-lesson1')
                   }}
                   onSelectLesson={(lessonId) => {
-                    if (user?.id) {
-                      saveCourseProgress(user.id, selectedCourseId, 25)
+                    if (selectedCourseId) {
+                      const match = lessonId.match(/ch(\d+)/i)
+                      const chNum = match ? parseInt(match[1], 10) : 1
+                      const percent = Math.min(100, Math.round((chNum / 6) * 100))
+                      saveCourseProgress(user?.id, selectedCourseId, percent, lessonId)
                     }
                     setSelectedLessonId(lessonId)
                   }}
