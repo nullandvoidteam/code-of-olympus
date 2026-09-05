@@ -107,6 +107,9 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
               </button>
               <button
                 type="button"
+                onClick={() => {
+                  document.getElementById('curriculum-section')?.scrollIntoView({ behavior: 'smooth' })
+                }}
                 className="btn-gamified-3d btn-gamified-3d-secondary px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer"
               >
                 <span>Preview Course</span>
@@ -235,7 +238,7 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
       </div>
 
       {/* 4. MAIN 3-COLUMN SECTION */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      <div id="curriculum-section" className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* LEFT COLUMN: CHAPTER TIMELINE (5 Cols) */}
         <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col gap-1">

@@ -34,6 +34,7 @@ export const AppShell: React.FC = () => {
   const { user, profile, isAdmin } = useAuth()
   const [activeTab, setActiveTab] = useState<NavItemKey>(isAdmin ? 'admin' : 'dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const dashboardMode: DashboardMode = (profile?.xp ?? 0) > 50 ? 'headquarters' : 'first_time'
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>('python')
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>('ch4-lesson3')
@@ -141,11 +142,51 @@ export const AppShell: React.FC = () => {
         />
       </div>
 
+      {/* MOBILE SIDEBAR OVERLAY */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="relative w-64 max-w-[80vw] h-full shadow-2xl flex flex-col animate-in slide-in-from-left">
+            <Sidebar
+              activeTab={activeTab}
+              onSelectTab={(tab) => {
+                setActiveTab(tab)
+                setIsMobileMenuOpen(false)
+                if (tab !== 'learn') {
+                  setSelectedCourseId(null)
+                  setSelectedLessonId(null)
+                  setSelectedChallengeId(null)
+                  setSelectedQuestId(null)
+                } else {
+                  setSelectedCourseId('python')
+                  setSelectedLessonId(null)
+                  setSelectedChallengeId(null)
+                  setSelectedQuestId(null)
+                }
+              }}
+              isCollapsed={false}
+              onContinueQuest={() => {
+                setActiveTab('learn')
+                setSelectedCourseId('python')
+                setSelectedLessonId('ch4-lesson3')
+                setIsMobileMenuOpen(false)
+              }}
+              userMode={isLevel1 ? 'level1' : 'level12'}
+              isAdmin={isAdmin}
+            />
+          </div>
+        </div>
+      )}
+
       {/* 2. MAIN APPLICATION COLUMN */}
       <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
         {/* ── The Helm of War — Mythic Global Header ── */}
         <CrucibleHeader
           activeTab={activeTab}
+          onToggleMobileMenu={() => setIsMobileMenuOpen(true)}
           onSelectTab={(tab) => {
             setActiveTab(tab)
             if (tab !== 'learn') {

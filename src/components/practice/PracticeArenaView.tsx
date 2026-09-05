@@ -207,6 +207,9 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
                 </button>
                 <button
                   type="button"
+                  onClick={() => {
+                    document.getElementById('explore-challenges-section')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
                   className="btn-gamified-3d btn-gamified-3d-secondary px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2 cursor-pointer"
                 >
                   <span>Explore Challenges</span>
@@ -280,7 +283,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
           </div>
 
           {/* Search Bar & Filter Pills */}
-          <div className="flex flex-col gap-4">
+          <div id="explore-challenges-section" className="flex flex-col gap-4">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input

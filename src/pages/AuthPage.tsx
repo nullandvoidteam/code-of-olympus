@@ -30,7 +30,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
         <img
           src={bgImage}
           alt=""
-          className="w-full h-full object-cover object-center pixelated transition-all duration-700"
+          className="w-full h-full object-cover object-center pixelated transition-all duration-700 opacity-30"
         />
         {/* Very light center vignette — keeps the pixel island scenery visible at edges */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_65%_at_center,_rgba(244,248,240,0.82)_0%,_rgba(244,248,240,0.5)_55%,_rgba(244,248,240,0)_100%)] pointer-events-none" />
@@ -46,7 +46,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
 
       {/* Top Header Branding & Auth Mode Controls */}
       <header className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 pt-6 flex items-center justify-between">
-        <CodeQuestLogo size="md" showTagline={false} />
+        <div className="bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl shadow-sm inline-flex">
+          <CodeQuestLogo size="md" showTagline={false} />
+        </div>
 
         <div className="flex items-center gap-3">
           {/* Auth Mode Toggle Pill */}
@@ -118,8 +120,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
       </main>
 
       {/* Bottom Spacer for padding balance */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto py-4 px-6 text-center text-xs text-slate-500">
-        &copy; {new Date().getFullYear()} CodeQuest. All rights reserved. Level up your coding skills.
+      <footer className="relative z-10 w-full max-w-7xl mx-auto py-4 px-6 text-center">
+        <span className="text-xs font-bold text-slate-800 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full inline-block shadow-sm">
+          &copy; {new Date().getFullYear()} CodeQuest. All rights reserved. Level up your coding skills.
+        </span>
       </footer>
     </div>
   )

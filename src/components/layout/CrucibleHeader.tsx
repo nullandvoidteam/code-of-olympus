@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Bell, LogOut, Settings, ChevronDown, Palette } from 'lucide-react'
+import { Bell, LogOut, Settings, ChevronDown, Palette, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
+import { useNotifications } from '../../context/NotificationContext'
 import { cn } from '../../lib/utils'
 import type { NavItemKey } from './Sidebar'
 
@@ -14,6 +15,7 @@ interface CrucibleHeaderProps {
   dashboardMode?: DashboardMode
   onChangeDashboardMode?: (mode: DashboardMode) => void
   courseDetailTitle?: string | null
+  onToggleMobileMenu?: () => void
 }
 
 /* ── Omega SVG icon ── */
@@ -52,17 +54,16 @@ const OmegaIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 )
 
-interface NotifItem {
-  id: string
-  title: string
-  message: string
-  time: string
-  unread: boolean
-}
+
 
 export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
+  activeTab,
   onSelectTab,
+  onOpenLumi,
+  dashboardMode,
+  onChangeDashboardMode,
   courseDetailTitle,
+  onToggleMobileMenu,
 }) => {
   const { user, profile, signOut } = useAuth()
   const { theme } = useTheme()
@@ -88,12 +89,7 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const notifications: NotifItem[] = [
-    { id: '1', title: 'Trial Complete!', message: `You conquered "Python Loops" — +75 XP`, time: '12m ago', unread: true },
-    { id: '2', title: 'Fury Streak!', message: `${streak} day streak of battle maintained 🔥`, time: '1h ago', unread: true },
-    { id: '3', title: 'Arena Unlocked', message: 'A new Arcade Battle opens at dawn', time: '1d ago', unread: false },
-  ]
-  const unreadCount = notifications.filter((n) => n.unread).length
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
 
   // XP display formatter
   const formatXP = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`
@@ -112,20 +108,18 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
     >
       {/* LEFT — Brand Identity */}
       <div className="flex items-center gap-3 shrink-0">
-        {theme === 'classic' ? (
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center font-bold text-emerald-600 text-base">
-              &lt;|&gt;
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold tracking-tight text-base leading-tight text-slate-900">
-                Coding Conflicts
-              </span>
-              <span className="text-[9px] font-bold text-emerald-600 tracking-wider uppercase leading-tight">
-                CodeQuest
-              </span>
-            </div>
-          </div>
+        <button
+          type="button"
+          onClick={onToggleMobileMenu}
+          className="md:hidden p-2 -ml-2 rounded-xl transition-colors cursor-pointer"
+          style={{
+            color: 'var(--theme-text-primary, #1e293b)'
+          }}
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+
+        {theme === 'classic' ? (<></>
         ) : (
           <>
             <div className="relative flex items-center justify-center w-10 h-10">
@@ -238,11 +232,9 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
             />
             {unreadCount > 0 && (
               <span
-                className="absolute top-1 right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-                style={{ background: 'var(--theme-accent-primary, #DC2626)', fontFamily: 'var(--theme-font-heading, "Cinzel", serif)' }}
-              >
-                {unreadCount}
-              </span>
+                className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full border border-white dark:border-black"
+                style={{ background: 'var(--theme-accent-primary, #DC2626)' }}
+              />
             )}
           </button>
 
@@ -267,47 +259,64 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
                 >
                   Dispatches
                 </span>
-                <span
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded border"
-                  style={{
-                    background: 'var(--theme-status-hard-bg, rgba(220,38,38,0.2))',
-                    borderColor: 'var(--theme-accent-primary, rgba(220,38,38,0.4))',
-                    color: 'var(--theme-accent-glow, #FF5722)',
-                    fontFamily: 'var(--theme-font-heading, "Cinzel", serif)',
-                  }}
-                >
-                  {unreadCount} New
-                </span>
+                <div className="flex items-center gap-2">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-[10px] text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                  <span
+                    className="text-[10px] font-bold px-1.5 py-0.5 rounded border"
+                    style={{
+                      background: 'var(--theme-status-hard-bg, rgba(220,38,38,0.2))',
+                      borderColor: 'var(--theme-accent-primary, rgba(220,38,38,0.4))',
+                      color: 'var(--theme-accent-glow, #FF5722)',
+                      fontFamily: 'var(--theme-font-heading, "Cinzel", serif)',
+                    }}
+                  >
+                    {unreadCount} New
+                  </span>
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className="p-2.5 rounded-xl text-xs transition-colors cursor-pointer border"
-                    style={{
-                      background: n.unread ? 'var(--theme-surface-card-alt, rgba(26,16,16,0.9))' : 'var(--theme-surface-card, rgba(14,10,10,0.6))',
-                      borderColor: n.unread ? 'var(--theme-border-strong, rgba(220,38,38,0.3))' : 'transparent',
-                    }}
-                  >
-                    <div className="flex items-center justify-between font-bold">
-                      <span
-                        style={{
-                          fontFamily: 'var(--theme-font-heading, "Cinzel", serif)',
-                          color: n.unread ? 'var(--theme-text-primary, #F5E8E8)' : 'var(--theme-text-muted, #8C7A7A)',
-                        }}
-                      >
-                        {n.title}
-                      </span>
-                      <span className="text-[9px] font-mono" style={{ color: 'var(--theme-text-dim, #554040)' }}>
-                        {n.time}
-                      </span>
-                    </div>
-                    <div className="text-[11px] mt-0.5" style={{ color: 'var(--theme-text-muted, #8C7A7A)' }}>
-                      {n.message}
-                    </div>
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-xs text-slate-500">
+                    No new dispatches.
                   </div>
-                ))}
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => markAsRead(n.id)}
+                      className="p-2.5 rounded-xl text-xs transition-colors cursor-pointer border"
+                      style={{
+                        background: n.unread ? 'var(--theme-surface-card-alt, rgba(26,16,16,0.9))' : 'var(--theme-surface-card, rgba(14,10,10,0.6))',
+                        borderColor: n.unread ? 'var(--theme-border-strong, rgba(220,38,38,0.3))' : 'transparent',
+                      }}
+                    >
+                      <div className="flex items-center justify-between font-bold">
+                        <span
+                          style={{
+                            fontFamily: 'var(--theme-font-heading, "Cinzel", serif)',
+                            color: n.unread ? 'var(--theme-text-primary, #F5E8E8)' : 'var(--theme-text-muted, #8C7A7A)',
+                          }}
+                        >
+                          {n.title}
+                        </span>
+                        <span className="text-[9px] font-mono" style={{ color: 'var(--theme-text-dim, #554040)' }}>
+                          {n.time}
+                        </span>
+                      </div>
+                      <div className="text-[11px] mt-0.5" style={{ color: 'var(--theme-text-muted, #8C7A7A)' }}>
+                        {n.message}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
