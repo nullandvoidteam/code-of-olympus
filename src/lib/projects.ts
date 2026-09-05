@@ -757,3 +757,189 @@ export function useProjects(userId?: string, categoryFilter?: string, includeUnp
     refreshProjects: loadData,
   }
 }
+
+// ─── BUILD HISTORY ─────────────────────────────────────────────────────────────
+
+export interface ProjectBuildVersion {
+  id: string
+  showcase_id: string
+  version: number
+  title?: string
+  description?: string
+  preview_url?: string
+  live_url?: string
+  created_at: string
+}
+
+export async function fetchBuildHistory(showcaseId: string): Promise<ProjectBuildVersion[]> {
+  try {
+    const { data, error } = await supabase
+      .from('project_build_history')
+      .select('*')
+      .eq('showcase_id', showcaseId)
+      .order('version', { ascending: false })
+    if (error || !data) return []
+    return data as ProjectBuildVersion[]
+  } catch {
+    return []
+  }
+}
+
+export async function saveBuildVersion(
+  showcaseId: string,
+  versionData: { title?: string; description?: string; preview_url?: string; live_url?: string }
+): Promise<ProjectBuildVersion | null> {
+  try {
+    const history = await fetchBuildHistory(showcaseId)
+    const nextVersion = history.length > 0 ? history[0].version + 1 : 1
+
+    const { data, error } = await supabase
+      .from('project_build_history')
+      .insert({
+        showcase_id: showcaseId,
+        version: nextVersion,
+        title: versionData.title,
+        description: versionData.description,
+        preview_url: versionData.preview_url,
+        live_url: versionData.live_url,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error saving build version:', error)
+      return null
+    }
+    return data as ProjectBuildVersion
+  } catch (err) {
+    console.error('Error saving build version:', err)
+    return null
+  }
+}
+
+// ─── BUILD LIKES ───────────────────────────────────────────────────────────────
+
+export async function toggleBuildLike(userId: string, showcaseId: string): Promise<boolean> {
+  try {
+    const { data: existing } = await supabase
+      .from('project_build_likes')
+      .select('user_id')
+      .eq('user_id', userId)
+      .eq('showcase_id', showcaseId)
+      .maybeSingle()
+
+    if (existing) {
+      const { error } = await supabase
+        .from('project_build_likes')
+        .delete()
+        .eq('user_id', userId)
+        .eq('showcase_id', showcaseId)
+      return !error
+    } else {
+      const { error } = await supabase
+        .from('project_build_likes')
+        .insert({ user_id: userId, showcase_id: showcaseId })
+      return !error
+    }
+  } catch (err) {
+    console.error('Error toggling build like:', err)
+    return false
+  }
+}
+
+export async function fetchBuildLikesCount(showcaseId: string): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from('project_build_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('showcase_id', showcaseId)
+    if (error) return 0
+    return count || 0
+  } catch {
+    return 0
+  }
+}
+
+export async function checkIsBuildLiked(userId: string, showcaseId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('project_build_likes')
+      .select('user_id')
+      .eq('user_id', userId)
+      .eq('showcase_id', showcaseId)
+      .maybeSingle()
+    return !!data && !error
+  } catch {
+    return false
+  }
+}
+
+// ─── BUILD COMMENTS ────────────────────────────────────────────────────────────
+
+export interface ProjectBuildComment {
+  id: string
+  user_id: string
+  showcase_id: string
+  content: string
+  created_at: string
+  updated_at: string
+  author_name?: string
+  author_role?: string
+}
+
+export async function fetchBuildComments(showcaseId: string): Promise<ProjectBuildComment[]> {
+  try {
+    const { data, error } = await supabase
+      .from('project_build_comments')
+      .select(`
+        *,
+        profile:profiles (
+          full_name,
+          username,
+          role
+        )
+      `)
+      .eq('showcase_id', showcaseId)
+      .order('created_at', { ascending: true })
+
+    if (error || !data) return []
+
+    return data.map(item => ({
+      ...item,
+      author_name: item.profile?.full_name || item.profile?.username || 'Adventurer',
+      author_role: item.profile?.role || 'student',
+    }))
+  } catch {
+    return []
+  }
+}
+
+export async function addBuildComment(userId: string, showcaseId: string, content: string): Promise<ProjectBuildComment | null> {
+  try {
+    const { data, error } = await supabase
+      .from('project_build_comments')
+      .insert({
+        user_id: userId,
+        showcase_id: showcaseId,
+        content,
+      })
+      .select(`
+        *,
+        profile:profiles (
+          full_name,
+          username,
+          role
+        )
+      `)
+      .single()
+
+    if (error || !data) return null
+    return {
+      ...data,
+      author_name: data.profile?.full_name || data.profile?.username || 'Adventurer',
+      author_role: data.profile?.role || 'student',
+    }
+  } catch {
+    return null
+  }
+}
