@@ -1,0 +1,509 @@
+@import "tailwindcss";
+
+/* ======================================================================
+   THE CRUCIBLE - Global Dynamic Theme Token System
+   Supported Themes:
+   1. 'gow' (God of War - Default)
+   2. 'classic' (Classic Gamified CodeDex)
+   3. 'space' (Cosmic Space Theme)
+   4. 'light' (Clean Professional Light Theme)
+   ====================================================================== */
+
+@layer base {
+  /* ====================================================================
+     1. GOD OF WAR (gow) - DEFAULT MYTHIC THEME
+     ==================================================================== */
+  :root,
+  [data-theme='gow'] {
+    --theme-font-display: 'Cinzel Decorative', serif;
+    --theme-font-heading: 'Cinzel', serif;
+    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-mono: 'JetBrains Mono', monospace;
+
+    --theme-bg-canvas: #070505;
+    --theme-bg-page: #0E0A0A;
+    --theme-bg-subtle: #120808;
+
+    --theme-surface-card: #0E0606;
+    --theme-surface-card-alt: #160A0A;
+    --theme-surface-card-translucent: rgba(14, 8, 8, 0.96);
+    --theme-surface-panel: rgba(20, 12, 12, 0.9);
+    --theme-surface-hover: rgba(255, 255, 255, 0.04);
+
+    --theme-border-subtle: #2A1414;
+    --theme-border-default: #3D1C1C;
+    --theme-border-strong: #8C2828;
+    --theme-border-hot: rgba(220, 38, 38, 0.7);
+
+    --theme-text-primary: #F5E8E8;
+    --theme-text-secondary: #D1C2C2;
+    --theme-text-muted: #8C7A7A;
+    --theme-text-dim: #554040;
+
+    --theme-accent-primary: #DC2626;
+    --theme-accent-primary-hover: #EF4444;
+    --theme-accent-primary-dim: rgba(220, 38, 38, 0.15);
+    --theme-accent-glow: #FF3D00;
+    --theme-accent-secondary: #F5D060;
+    --theme-accent-cyan: #00E5FF;
+
+    --theme-status-easy: #00E5FF;
+    --theme-status-easy-bg: #102418;
+    --theme-status-med: #F5D060;
+    --theme-status-med-bg: #1C1206;
+    --theme-status-hard: #FF3D00;
+    --theme-status-hard-bg: #240C0C;
+
+    --theme-hud-streak-bg: rgba(220, 38, 38, 0.15);
+    --theme-hud-streak-border: #DC2626;
+    --theme-hud-streak-text: #FF3D00;
+    --theme-hud-xp-bg: rgba(245, 208, 96, 0.15);
+    --theme-hud-xp-border: #C59B27;
+    --theme-hud-xp-text: #F5C842;
+    --theme-hud-lvl-bg: rgba(26, 16, 16, 0.85);
+    --theme-hud-lvl-border: rgba(61, 28, 28, 0.8);
+    --theme-hud-lvl-text: #F5E8E8;
+
+    --theme-input-bg: #120A0A;
+    --theme-input-border: #3D1C1C;
+    --theme-input-focus: #FF3D00;
+    --theme-input-placeholder: #6E5A5A;
+
+    --theme-btn-primary-gradient: linear-gradient(90deg, #8B0000 0%, #B91C1C 50%, #EF4444 100%);
+    --theme-btn-primary-border: #8C2828;
+    --theme-btn-secondary-bg: #140808;
+    --theme-btn-secondary-border: #3D1C1C;
+    --theme-btn-secondary-hover: #1F0E0E;
+
+    --theme-sidebar-bg: linear-gradient(180deg, rgba(14, 8, 8, 0.98) 0%, rgba(8, 4, 4, 0.98) 100%);
+    --theme-sidebar-border: rgba(80, 30, 30, 0.85);
+    --theme-sidebar-active-bg: linear-gradient(90deg, rgba(185, 28, 28, 0.35) 0%, rgba(127, 29, 29, 0.15) 60%, transparent 100%);
+    --theme-sidebar-active-border: rgba(220, 38, 38, 0.45);
+    --theme-sidebar-flame: linear-gradient(180deg, #FF3D00 0%, #DC2626 100%);
+
+    --theme-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.85);
+    --theme-glow-ambient: rgba(255, 61, 0, 0.15);
+    --theme-watermark-color: rgba(185, 28, 28, 0.12);
+    --theme-watermark-glow: rgba(220, 38, 38, 0.45);
+    --theme-watermark-display: block;
+    --theme-bg-image-display: block;
+    --theme-bg-image-filter: brightness(0.24) contrast(1.3) saturate(0.8);
+    --theme-bg-image-opacity: 1;
+    --theme-bg-overlay-display: block;
+    --theme-bg-radial-overlay: radial-gradient(circle at 50% 15%, rgba(185,28,28,0.32) 0%, transparent 55%), radial-gradient(circle at 50% 100%, rgba(153,27,27,0.40) 0%, transparent 65%), radial-gradient(circle at 15% 50%, rgba(0,229,255,0.09) 0%, transparent 45%), linear-gradient(to bottom, rgba(7,5,5,0.65) 0%, rgba(7,5,5,0.90) 100%);
+
+    --crucible-black: var(--theme-bg-canvas);
+    --crucible-charcoal: var(--theme-bg-page);
+    --crucible-iron: #1A1010;
+    --crucible-stone: #2A1A1A;
+    --crucible-mist: #3D2525;
+    --crimson-900: #7F1D1D;
+    --crimson-700: #B91C1C;
+    --crimson-600: var(--theme-accent-primary);
+    --crimson-500: #EF4444;
+    --crimson-400: #FF4D4D;
+    --crimson-ember: var(--theme-accent-glow);
+    --gold-deep: #784E10;
+    --gold-mid: #C59B27;
+    --gold-bright: var(--theme-accent-secondary);
+    --gold-glow: #FFD700;
+    --frost-teal: var(--theme-accent-cyan);
+    --border-iron: var(--theme-border-default);
+    --border-blood: var(--theme-border-strong);
+    --surface-glass: var(--theme-surface-card-translucent);
+    --surface-card: var(--theme-surface-card);
+  }
+
+  /* ====================================================================
+     2. CLASSIC GAMIFIED (classic) - OLD CODEDEX VIBES
+     Warm parchment, emerald accents, tactile 3D cards & pixel font
+     ==================================================================== */
+  [data-theme='classic'] {
+    --theme-font-display: 'Press Start 2P', monospace, cursive;
+    --theme-font-heading: 'Mulish', system-ui, -apple-system, sans-serif;
+    --theme-font-body: 'Mulish', system-ui, -apple-system, sans-serif;
+    --theme-font-mono: 'JetBrains Mono', monospace;
+
+    --theme-bg-canvas: #FBF9F4;
+    --theme-bg-page: #FAF8F4;
+    --theme-bg-subtle: #F4F1EA;
+
+    --theme-surface-card: #FFFFFF;
+    --theme-surface-card-alt: #F8FAFC;
+    --theme-surface-card-translucent: rgba(255, 255, 255, 0.95);
+    --theme-surface-panel: rgba(244, 241, 234, 0.95);
+    --theme-surface-hover: rgba(16, 185, 129, 0.08);
+
+    --theme-border-subtle: #F1F5F9;
+    --theme-border-default: #ECE7DF;
+    --theme-border-strong: #10B981;
+    --theme-border-hot: rgba(16, 185, 129, 0.7);
+
+    --theme-text-primary: #0F172A;
+    --theme-text-secondary: #334155;
+    --theme-text-muted: #64748B;
+    --theme-text-dim: #94A3B8;
+
+    --theme-accent-primary: #10B981;
+    --theme-accent-primary-hover: #059669;
+    --theme-accent-primary-dim: rgba(16, 185, 129, 0.12);
+    --theme-accent-glow: #10B981;
+    --theme-accent-secondary: #FBBF24;
+    --theme-accent-cyan: #1CB0F6;
+
+    --theme-status-easy: #10B981;
+    --theme-status-easy-bg: #ECFDF5;
+    --theme-status-med: #F59E0B;
+    --theme-status-med-bg: #FEF3C7;
+    --theme-status-hard: #EF4444;
+    --theme-status-hard-bg: #FEE2E2;
+
+    --theme-hud-streak-bg: #FFF7ED;
+    --theme-hud-streak-border: #FED7AA;
+    --theme-hud-streak-text: #C2410C;
+    --theme-hud-xp-bg: #FEFCE8;
+    --theme-hud-xp-border: #FEF08A;
+    --theme-hud-xp-text: #854D0E;
+    --theme-hud-lvl-bg: #FAF5FF;
+    --theme-hud-lvl-border: #E9D5FF;
+    --theme-hud-lvl-text: #6B21A8;
+
+    --theme-input-bg: #FFFFFF;
+    --theme-input-border: #ECE7DF;
+    --theme-input-focus: #10B981;
+    --theme-input-placeholder: #94A3B8;
+
+    --theme-btn-primary-gradient: linear-gradient(180deg, #10B981 0%, #059669 100%);
+    --theme-btn-primary-border: #059669;
+    --theme-btn-primary-shadow: #047857;
+    --theme-btn-secondary-bg: #FFFFFF;
+    --theme-btn-secondary-border: #E2E8F0;
+    --theme-btn-secondary-hover: #F8FAFC;
+
+    --theme-sidebar-bg: #FFFFFF;
+    --theme-sidebar-border: #ECE7DF;
+    --theme-sidebar-active-bg: rgba(16, 185, 129, 0.09);
+    --theme-sidebar-active-border: transparent;
+    --theme-sidebar-flame: #10B981;
+
+    --theme-shadow-card: 0 2px 10px rgba(0, 0, 0, 0.04);
+    --theme-glow-ambient: rgba(16, 185, 129, 0.12);
+    --theme-watermark-color: transparent;
+    --theme-watermark-glow: transparent;
+    --theme-watermark-display: none;
+    --theme-bg-image-display: none;
+    --theme-bg-image-filter: none;
+    --theme-bg-image-opacity: 0;
+    --theme-bg-overlay-display: none;
+    --theme-bg-radial-overlay: none;
+  }
+
+  /* ====================================================================
+     3. SPACE (space) - COSMIC CYBERPUNK SPACE EXPLORATION
+     Deep nebula void, indigo/purple/cyan accents & starlight glows
+     ==================================================================== */
+  [data-theme='space'] {
+    --theme-font-display: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-mono: 'JetBrains Mono', monospace;
+
+    --theme-bg-canvas: #060813;
+    --theme-bg-page: #0B0E20;
+    --theme-bg-subtle: #0F142D;
+
+    --theme-surface-card: #0E122A;
+    --theme-surface-card-alt: #14193B;
+    --theme-surface-card-translucent: rgba(14, 18, 42, 0.94);
+    --theme-surface-panel: rgba(20, 25, 59, 0.9);
+    --theme-surface-hover: rgba(99, 102, 241, 0.08);
+
+    --theme-border-subtle: #1B224E;
+    --theme-border-default: #252F6B;
+    --theme-border-strong: #6366F1;
+    --theme-border-hot: rgba(129, 140, 248, 0.8);
+
+    --theme-text-primary: #F8FAFC;
+    --theme-text-secondary: #CBD5E1;
+    --theme-text-muted: #818CF8;
+    --theme-text-dim: #4338CA;
+
+    --theme-accent-primary: #6366F1;
+    --theme-accent-primary-hover: #818CF8;
+    --theme-accent-primary-dim: rgba(99, 102, 241, 0.2);
+    --theme-accent-glow: #00E5FF;
+    --theme-accent-secondary: #C084FC;
+    --theme-accent-cyan: #38BDF8;
+
+    --theme-status-easy: #38BDF8;
+    --theme-status-easy-bg: #0C213B;
+    --theme-status-med: #C084FC;
+    --theme-status-med-bg: #21123B;
+    --theme-status-hard: #F43F5E;
+    --theme-status-hard-bg: #3B101E;
+
+    --theme-hud-streak-bg: rgba(244, 63, 94, 0.15);
+    --theme-hud-streak-border: #F43F5E;
+    --theme-hud-streak-text: #FB7185;
+    --theme-hud-xp-bg: rgba(192, 132, 252, 0.15);
+    --theme-hud-xp-border: #C084FC;
+    --theme-hud-xp-text: #E9D5FF;
+    --theme-hud-lvl-bg: rgba(20, 25, 59, 0.9);
+    --theme-hud-lvl-border: #252F6B;
+    --theme-hud-lvl-text: #F8FAFC;
+
+    --theme-input-bg: #0B0E20;
+    --theme-input-border: #252F6B;
+    --theme-input-focus: #00E5FF;
+    --theme-input-placeholder: #475569;
+
+    --theme-btn-primary-gradient: linear-gradient(90deg, #4F46E5 0%, #6366F1 50%, #00E5FF 100%);
+    --theme-btn-primary-border: #6366F1;
+    --theme-btn-secondary-bg: #14193B;
+    --theme-btn-secondary-border: #252F6B;
+    --theme-btn-secondary-hover: #1E2554;
+
+    --theme-sidebar-bg: linear-gradient(180deg, rgba(11, 14, 32, 0.98) 0%, rgba(6, 8, 19, 0.98) 100%);
+    --theme-sidebar-border: rgba(99, 102, 241, 0.4);
+    --theme-sidebar-active-bg: linear-gradient(90deg, rgba(99, 102, 241, 0.3) 0%, rgba(129, 140, 248, 0.08) 100%);
+    --theme-sidebar-active-border: #6366F1;
+    --theme-sidebar-flame: linear-gradient(180deg, #00E5FF 0%, #6366F1 100%);
+
+    --theme-shadow-card: 0 8px 32px rgba(6, 8, 19, 0.85);
+    --theme-glow-ambient: rgba(99, 102, 241, 0.2);
+    --theme-watermark-color: rgba(99, 102, 241, 0.08);
+    --theme-watermark-glow: rgba(99, 102, 241, 0.2);
+    --theme-watermark-display: block;
+    --theme-bg-image-display: block;
+    --theme-bg-image-filter: brightness(0.16) hue-rotate(215deg) saturate(1.3);
+    --theme-bg-image-opacity: 0.55;
+    --theme-bg-overlay-display: block;
+    --theme-bg-radial-overlay: radial-gradient(circle at 50% 15%, rgba(99, 102, 241, 0.25) 0%, transparent 55%), radial-gradient(circle at 80% 80%, rgba(0, 229, 255, 0.18) 0%, transparent 50%), radial-gradient(circle at 20% 70%, rgba(192, 132, 252, 0.15) 0%, transparent 45%), linear-gradient(to bottom, rgba(6, 8, 19, 0.75) 0%, rgba(6, 8, 19, 0.95) 100%);
+  }
+
+  /* ====================================================================
+     4. LIGHT (light) - CLEAN PROFESSIONAL LIGHT THEME
+     Bright white surfaces, high contrast slate text & refined blue accents
+     ==================================================================== */
+  [data-theme='light'] {
+    --theme-font-display: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-mono: 'JetBrains Mono', monospace;
+
+    --theme-bg-canvas: #F8FAFC;
+    --theme-bg-page: #FFFFFF;
+    --theme-bg-subtle: #F1F5F9;
+
+    --theme-surface-card: #FFFFFF;
+    --theme-surface-card-alt: #F8FAFC;
+    --theme-surface-card-translucent: rgba(255, 255, 255, 0.98);
+    --theme-surface-panel: rgba(248, 250, 252, 0.95);
+    --theme-surface-hover: rgba(15, 23, 42, 0.04);
+
+    --theme-border-subtle: #F1F5F9;
+    --theme-border-default: #E2E8F0;
+    --theme-border-strong: #0284C7;
+    --theme-border-hot: rgba(2, 132, 199, 0.7);
+
+    --theme-text-primary: #0F172A;
+    --theme-text-secondary: #334155;
+    --theme-text-muted: #64748B;
+    --theme-text-dim: #94A3B8;
+
+    --theme-accent-primary: #0284C7;
+    --theme-accent-primary-hover: #0369A1;
+    --theme-accent-primary-dim: rgba(2, 132, 199, 0.12);
+    --theme-accent-glow: #0EA5E9;
+    --theme-accent-secondary: #F59E0B;
+    --theme-accent-cyan: #06B6D4;
+
+    --theme-status-easy: #10B981;
+    --theme-status-easy-bg: #ECFDF5;
+    --theme-status-med: #F59E0B;
+    --theme-status-med-bg: #FEF3C7;
+    --theme-status-hard: #EF4444;
+    --theme-status-hard-bg: #FEE2E2;
+
+    --theme-hud-streak-bg: #FEF2F2;
+    --theme-hud-streak-border: #FECACA;
+    --theme-hud-streak-text: #DC2626;
+    --theme-hud-xp-bg: #FEFCE8;
+    --theme-hud-xp-border: #FEF08A;
+    --theme-hud-xp-text: #B45309;
+    --theme-hud-lvl-bg: #F0F9FF;
+    --theme-hud-lvl-border: #BAE6FD;
+    --theme-hud-lvl-text: #0369A1;
+
+    --theme-input-bg: #FFFFFF;
+    --theme-input-border: #E2E8F0;
+    --theme-input-focus: #0284C7;
+    --theme-input-placeholder: #94A3B8;
+
+    --theme-btn-primary-gradient: linear-gradient(90deg, #0284C7 0%, #0369A1 100%);
+    --theme-btn-primary-border: #0284C7;
+    --theme-btn-secondary-bg: #F8FAFC;
+    --theme-btn-secondary-border: #E2E8F0;
+    --theme-btn-secondary-hover: #F1F5F9;
+
+    --theme-sidebar-bg: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+    --theme-sidebar-border: #E2E8F0;
+    --theme-sidebar-active-bg: linear-gradient(90deg, rgba(2, 132, 199, 0.12) 0%, rgba(2, 132, 199, 0.03) 100%);
+    --theme-sidebar-active-border: #0284C7;
+    --theme-sidebar-flame: linear-gradient(180deg, #0EA5E9 0%, #0284C7 100%);
+
+    --theme-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    --theme-glow-ambient: transparent;
+    --theme-watermark-color: transparent;
+    --theme-watermark-glow: transparent;
+    --theme-watermark-display: none;
+    --theme-bg-image-display: none;
+    --theme-bg-image-filter: none;
+    --theme-bg-image-opacity: 0;
+    --theme-bg-overlay-display: none;
+    --theme-bg-radial-overlay: none;
+  }
+
+  /* ---- GLOBAL HARDWARE CURSOR ---- */
+  html.custom-cursor,
+  html.custom-cursor * {
+    cursor: none !important;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--theme-bg-canvas);
+    color: var(--theme-text-primary);
+    font-family: var(--theme-font-body);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  }
+
+  input, textarea {
+    cursor: none !important;
+    font-family: var(--theme-font-body);
+  }
+
+  ::selection {
+    background: var(--theme-accent-primary);
+    color: #fff;
+  }
+}
+
+/* Typography Utilities */
+.font-display {
+  font-family: var(--theme-font-display);
+}
+
+.font-cinzel {
+  font-family: var(--theme-font-heading);
+}
+
+.font-sans {
+  font-family: var(--theme-font-body);
+}
+
+.font-mono {
+  font-family: var(--theme-font-mono);
+}
+
+.font-pixel {
+  font-family: var(--theme-font-heading);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Animations */
+@keyframes omega-breathe {
+  0%, 100% {
+    opacity: 0.08;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 0 60px var(--theme-watermark-color));
+  }
+  50% {
+    opacity: 0.15;
+    transform: translate(-50%, -50%) scale(1.03);
+    filter: drop-shadow(0 0 120px var(--theme-accent-primary));
+  }
+}
+
+@keyframes ember-float {
+  0% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+  50% { transform: translateY(-8px) rotate(5deg); opacity: 1; }
+  100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+}
+
+@keyframes lava-slide {
+  from { transform: scaleX(0); transform-origin: left; }
+  to   { transform: scaleX(1); transform-origin: left; }
+}
+
+@keyframes blade-appear {
+  from { opacity: 0; transform: scale(0.6) rotate(-60deg); }
+  to   { opacity: 1; transform: scale(1) rotate(-50deg); }
+}
+
+.animate-omega-breathe {
+  animation: omega-breathe 6s ease-in-out infinite;
+}
+
+.animate-ember-float {
+  animation: ember-float 4s ease-in-out infinite;
+}
+
+/* Tactile 3D Gamified Button System */
+.btn-gamified-3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+[data-theme='classic'] .btn-gamified-3d-primary {
+  background: var(--theme-btn-primary-gradient);
+  border: 1.5px solid var(--theme-btn-primary-border);
+  box-shadow: 0 4px 0 var(--theme-btn-primary-shadow, #065F46);
+  color: #FFFFFF;
+}
+
+[data-theme='classic'] .btn-gamified-3d-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 var(--theme-btn-primary-shadow, #065F46);
+  filter: brightness(1.05);
+}
+
+[data-theme='classic'] .btn-gamified-3d-primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--theme-btn-primary-shadow, #065F46);
+}
+
+[data-theme='classic'] .btn-gamified-3d-secondary {
+  background: var(--theme-btn-secondary-bg);
+  border: 1.5px solid var(--theme-btn-secondary-border);
+  box-shadow: 0 4px 0 #CBD5E1;
+  color: var(--theme-text-primary);
+}
+
+[data-theme='classic'] .btn-gamified-3d-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 #CBD5E1;
+  background: var(--theme-btn-secondary-hover);
+}
+
+[data-theme='classic'] .btn-gamified-3d-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #CBD5E1;
+}
+
