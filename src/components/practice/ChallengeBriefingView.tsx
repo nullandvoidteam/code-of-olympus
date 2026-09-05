@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,22 +15,47 @@ import {
   X,
 } from 'lucide-react'
 import { LumiPixelBot, PixelPythonIcon } from '../brand/PixelArtAvatars'
+import { useAuth } from '../../context/AuthContext'
+import { checkIsChallengeSaved, saveChallenge, unsaveChallenge } from '../../lib/challenges'
 
 interface ChallengeBriefingViewProps {
+  challengeId?: string
   onBack?: () => void
   onStartChallenge?: () => void
   onPreviousChallenge?: () => void
 }
 
 export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
+  challengeId,
   onBack,
   onStartChallenge,
   onPreviousChallenge,
 }) => {
+  const { user } = useAuth()
   const [saved, setSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [hintRevealed, setHintRevealed] = useState(false)
   const [lumiOpen, setLumiOpen] = useState(false)
   const [activeLumiBtn, setActiveLumiBtn] = useState<'hint' | 'explain' | 'debug' | null>(null)
+
+  useEffect(() => {
+    if (user && challengeId) {
+      checkIsChallengeSaved(user.id, challengeId).then(setSaved)
+    }
+  }, [user, challengeId])
+
+  const handleToggleSave = async () => {
+    if (!user || !challengeId || isSaving) return
+    setIsSaving(true)
+    if (saved) {
+      const success = await unsaveChallenge(user.id, challengeId)
+      if (success) setSaved(false)
+    } else {
+      const success = await saveChallenge(user.id, challengeId)
+      if (success) setSaved(true)
+    }
+    setIsSaving(false)
+  }
 
   return (
     <div className="w-full max-w-[1400px] mx-auto flex flex-col gap-6 text-left pb-16 font-sans select-none animate-in fade-in duration-300">
@@ -149,8 +174,9 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setSaved(!saved)}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm cursor-pointer transition-colors"
+                onClick={handleToggleSave}
+                disabled={isSaving}
+                className={`flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm cursor-pointer transition-colors ${isSaving ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 {saved ? <BookmarkCheck className="w-4 h-4 text-emerald-600" /> : <Bookmark className="w-4 h-4" />}
                 {saved ? 'Saved!' : 'Save for Later'}

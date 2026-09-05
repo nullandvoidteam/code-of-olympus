@@ -380,3 +380,69 @@ export async function fetchArcadeEligibleQuestions(params?: {
   }
 }
 
+// ─── SAVED CHALLENGES ────────────────────────────────────────────────────────
+
+export async function checkIsChallengeSaved(userId: string, challengeId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('saved_challenges')
+      .select('challenge_id')
+      .eq('user_id', userId)
+      .eq('challenge_id', challengeId)
+      .single()
+    return !!data && !error
+  } catch {
+    return false
+  }
+}
+
+export async function saveChallenge(userId: string, challengeId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('saved_challenges')
+      .insert({ user_id: userId, challenge_id: challengeId })
+    
+    if (error && error.code !== '23505') { // Ignore unique violation
+      console.error('Error saving challenge:', error)
+      return false
+    }
+    return true
+  } catch (err) {
+    console.error('Error saving challenge:', err)
+    return false
+  }
+}
+
+export async function unsaveChallenge(userId: string, challengeId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from('saved_challenges')
+      .delete()
+      .eq('user_id', userId)
+      .eq('challenge_id', challengeId)
+      
+    if (error) {
+      console.error('Error unsaving challenge:', error)
+      return false
+    }
+    return true
+  } catch (err) {
+    console.error('Error unsaving challenge:', err)
+    return false
+  }
+}
+
+export async function fetchSavedChallenges(userId: string): Promise<string[]> {
+  try {
+    const { data, error } = await supabase
+      .from('saved_challenges')
+      .select('challenge_id')
+      .eq('user_id', userId)
+      
+    if (error || !data) return []
+    return data.map(row => row.challenge_id)
+  } catch {
+    return []
+  }
+}
+

@@ -316,6 +316,7 @@ export const AppShell: React.FC = () => {
               />
             ) : practiceBriefingId ? (
               <ChallengeBriefingView
+                challengeId={practiceBriefingId}
                 onBack={() => setPracticeBriefingId(null)}
                 onStartChallenge={() => {
                   setCrucibleChallengeId(practiceBriefingId)
