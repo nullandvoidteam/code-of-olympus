@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { cn } from '../../lib/utils';
 import { Target, Star, Loader2, Compass, Shield, Clock } from 'lucide-react';
+import { SpiderNetDecal } from '../ui/SpiderNetDecal';
 
 export const QuestsView: React.FC = () => {
   const { profile, loading } = useAuth();
@@ -42,6 +43,10 @@ export const QuestsView: React.FC = () => {
                  style={{ background: 'radial-gradient(circle, var(--theme-accent-primary, #DC2626) 0%, transparent 70%)' }} />
           )}
 
+          {theme === 'spiderman' && (
+            <SpiderNetDecal size={90} position="top-right" glow={true} />
+          )}
+
           <div className="flex items-center gap-5 z-10">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center border-2 transition-colors duration-300"
                  style={{
@@ -54,10 +59,10 @@ export const QuestsView: React.FC = () => {
             <div className="flex flex-col">
               <h1 className="text-3xl font-extrabold tracking-widest uppercase drop-shadow-md transition-colors duration-300"
                   style={{ fontFamily: 'var(--theme-font-heading, "Cinzel", serif)', color: 'var(--theme-text-primary, #F5E8E8)' }}>
-                {theme === 'gow' ? 'Saga Quests' : 'Active Quests'}
+                {theme === 'gow' ? 'Saga Quests' : theme === 'spiderman' ? 'Daily Web Patrol' : 'Active Quests'}
               </h1>
               <p className="text-sm font-medium opacity-80 transition-colors duration-300" style={{ color: 'var(--theme-text-muted, #A89898)' }}>
-                {theme === 'gow' ? 'Fulfill your destiny today.' : 'Complete daily objectives to earn XP.'}
+                {theme === 'gow' ? 'Fulfill your destiny today.' : theme === 'spiderman' ? 'Swing into action and conquer daily coding objectives.' : 'Complete daily objectives to earn XP.'}
               </p>
             </div>
           </div>

@@ -18,6 +18,8 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { GuidedProjectDetailModal } from './GuidedProjectDetailModal'
+import { SpiderNetDecal } from '../ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
 interface StudentGuidedProjectsLibraryProps {
   onSelectProject: (projectId: string) => void
@@ -247,6 +249,222 @@ export const StudentGuidedProjectsLibrary: React.FC<StudentGuidedProjectsLibrary
                       type="button"
                       onClick={() => onSelectProject(project.id)}
                       className="btn-gamified-3d btn-gamified-3d-primary px-4 py-2 rounded-xl text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>{isStarted ? 'CONTINUE' : 'START'}</span>
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Project Detail Modal */}
+        {selectedProject && (
+          <GuidedProjectDetailModal
+            project={selectedProject}
+            stages={selectedStages}
+            loading={loadingModal}
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            onStartOrContinue={(proj) => {
+              setModalOpen(false)
+              onSelectProject(proj.id)
+            }}
+          />
+        )}
+      </div>
+    )
+  }
+
+  if (theme === 'spiderman') {
+    return (
+      <div className="space-y-6">
+        {/* Hero Header */}
+        {!hideHero && (
+          <div
+            className="relative text-white rounded-3xl p-6 sm:p-8 overflow-hidden shadow-[0_12px_40px_rgba(0,240,255,0.18)] border-2 border-[#FF2A34] animate-spider-banner"
+            style={{
+              background: 'linear-gradient(135deg, #151E3A 0%, #0B1021 50%, #1A2E63 100%)',
+            }}
+          >
+            <SpiderNetDecal size={110} position="top-right" glowColor="rgba(0, 240, 255, 0.8)" />
+            <SpiderNetDecal size={70} position="bottom-left" glowColor="rgba(255, 42, 52, 0.7)" />
+
+            <div className="relative z-10 max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[10px] uppercase font-black text-[#00F0FF]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse" />
+                <span>SPIDER-GADGET WORKSHOP • PARKER LABS</span>
+              </div>
+
+              <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+                Spider-Tech Guided Blueprints
+              </h1>
+
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+                Engineer real interactive Spider-Man gadgets and web applications step-by-step. Each stage unlocks sequentially as you master algorithms, state design, and practical software engineering.
+              </p>
+
+              <div className="pt-1 hidden sm:block">
+                <ThwipSticker size={56} rotate={-6} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filter and Search Bar */}
+        <div className="bg-[#151E3A] p-4 rounded-2xl border border-[#2A3A65] shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Difficulty Tabs */}
+          <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto p-1 bg-[#101730] rounded-xl border border-[#2A3A65]">
+            <button
+              type="button"
+              onClick={() => setDifficultyFilter('all')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
+                difficultyFilter === 'all'
+                  ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                  : 'border-transparent text-slate-400 hover:text-white'
+              }`}
+            >
+              All Blueprints ({projects.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setDifficultyFilter('beginner')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
+                difficultyFilter === 'beginner'
+                  ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                  : 'border-transparent text-slate-400 hover:text-[#00F0FF]'
+              }`}
+            >
+              Friendly Neighborhood
+            </button>
+            <button
+              type="button"
+              onClick={() => setDifficultyFilter('intermediate')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
+                difficultyFilter === 'intermediate'
+                  ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                  : 'border-transparent text-slate-400 hover:text-amber-400'
+              }`}
+            >
+              Queens Vigilante
+            </button>
+            <button
+              type="button"
+              onClick={() => setDifficultyFilter('advanced')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap border ${
+                difficultyFilter === 'advanced'
+                  ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                  : 'border-transparent text-slate-400 hover:text-[#FF2A34]'
+              }`}
+            >
+              Spider-Verse Hero
+            </button>
+          </div>
+
+          {/* Search Box */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00F0FF]" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search blueprints..."
+              className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-[#101730] border border-[#2A3A65] text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#00F0FF]"
+            />
+          </div>
+        </div>
+
+        {/* Project Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20 text-slate-400">
+            <Loader2 className="w-8 h-8 animate-spin text-[#00F0FF]" />
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-16 border border-dashed border-[#2A3A65] rounded-2xl bg-[#151E3A]">
+            <p className="text-sm text-slate-400">No Spider-Tech blueprints match your filters.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project) => {
+              const isStarted = Boolean(project.user_progress)
+              const completedCount = project.completed_stages_count || 0
+              const totalStages = project.stages_count || 1
+              const progressPercent = Math.min(100, Math.round((completedCount / totalStages) * 100))
+              const isCompleted = project.user_progress?.status === 'completed' || (totalStages > 0 && completedCount >= totalStages)
+
+              return (
+                <div
+                  key={project.id}
+                  className="bg-[#151E3A] rounded-2xl p-5 border border-[#2A3A65] hover:border-[#00F0FF] shadow-lg transition-all flex flex-col justify-between group relative overflow-hidden"
+                >
+                  <SpiderNetDecal size={60} position="top-right" opacity={0.25} />
+
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF]">
+                        {project.difficulty === 'beginner' ? 'Friendly Neighborhood' : project.difficulty === 'intermediate' ? 'Queens Vigilante' : 'Spider-Verse Hero'}
+                      </span>
+                      {isCompleted && (
+                        <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
+                          ✓ Completed
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-bold text-white group-hover:text-[#00F0FF] transition-colors leading-tight">
+                        {project.title}
+                      </h3>
+                      {project.description && (
+                        <p className="text-xs text-slate-300 line-clamp-2 mt-1 leading-relaxed">
+                          {project.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-3 text-xs text-slate-400 font-mono">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-[#00F0FF]" /> {project.estimated_minutes || 45}m
+                      </span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1 text-[#FFD700] font-bold">
+                        <Award className="w-3.5 h-3.5 text-[#FFD700]" /> {project.badge?.title || '+300 XP'}
+                      </span>
+                    </div>
+
+                    {isStarted && (
+                      <div className="pt-2 space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-semibold">
+                          <span className="text-slate-400">Progress</span>
+                          <span className="text-[#00F0FF] font-bold font-mono">
+                            {completedCount}/{totalStages} ({progressPercent}%)
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 bg-[#0B1021] rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#FF1744] to-[#00F0FF] rounded-full"
+                            style={{ width: `${progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-[#2A3A65] flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenDetail(project)}
+                      className="text-xs text-slate-300 hover:text-white font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                    >
+                      VIEW ROADMAP
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onSelectProject(project.id)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 flex items-center gap-1.5 cursor-pointer border border-[#FF2A34]/50 active:scale-95 shadow-sm"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" />
                       <span>{isStarted ? 'CONTINUE' : 'START'}</span>

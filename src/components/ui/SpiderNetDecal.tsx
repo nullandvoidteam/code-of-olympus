@@ -5,6 +5,9 @@ interface SpiderNetDecalProps {
   className?: string
   size?: number
   glow?: boolean
+  glowColor?: string
+  opacity?: number
+  style?: React.CSSProperties
 }
 
 /**
@@ -16,6 +19,9 @@ export const SpiderNetDecal: React.FC<SpiderNetDecalProps> = ({
   className = '',
   size = 80,
   glow = true,
+  glowColor = '#00D2FF',
+  opacity = 1,
+  style = {},
 }) => {
   const rotationMap = {
     'top-right': 'rotate(0deg)',
@@ -39,6 +45,8 @@ export const SpiderNetDecal: React.FC<SpiderNetDecalProps> = ({
         height: size,
         transform: rotationMap[position],
         transformOrigin: 'top right',
+        opacity,
+        ...style,
       }}
       aria-hidden="true"
     >
@@ -122,10 +130,14 @@ export const SpiderEmblemIcon: React.FC<{
   className?: string
   size?: number
   glowColor?: string
+  glow?: boolean
+  style?: React.CSSProperties
 }> = ({
   className = '',
   size = 36,
   glowColor = 'rgba(230, 36, 41, 0.8)',
+  glow = true,
+  style = {},
 }) => {
   return (
     <svg
@@ -135,7 +147,10 @@ export const SpiderEmblemIcon: React.FC<{
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      style={{ filter: `drop-shadow(0 0 10px ${glowColor})` }}
+      style={{
+        filter: glow ? `drop-shadow(0 0 10px ${glowColor})` : undefined,
+        ...style,
+      }}
     >
       <defs>
         <linearGradient id="spiderBodyGrad" x1="50" y1="10" x2="50" y2="90" gradientUnits="userSpaceOnUse">

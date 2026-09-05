@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Sword, Star, Flame, Trophy, Zap, Shield } from 'lucide-react'
 import { useTheme } from '../../../context/ThemeContext'
+import { SpiderNetDecal, SpiderEmblemIcon } from '../../ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker, FriendlyNeighborhoodBadge } from '../../ui/SpiderStickers'
 import type { GamificationStats } from '../../../lib/gamification'
 import type { ResumePoint, CourseProgressSummary, LearningPath, OverallLearnerProgress } from '../../../lib/learning'
 import type { BadgeItem, AchievementItem, ActivityItem } from '../../../lib/achievements'
@@ -126,28 +128,42 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
     >
       {/* ── HERO BANNER ─────────────────────────────────────────── */}
       <div
-        className="relative overflow-hidden rounded-2xl p-6 sm:p-7 shadow-2xl"
+        className={`relative overflow-hidden rounded-3xl p-6 sm:p-7 shadow-2xl ${
+          theme === 'spiderman' ? 'animate-spider-banner border-2 border-red-500/40' : ''
+        }`}
         style={{
-          background: 'linear-gradient(135deg, var(--theme-surface-card-alt, #110808) 0%, var(--theme-surface-card, #1a0a0a) 45%, var(--theme-bg-canvas, #0c0505) 100%)',
-          border: '1px solid var(--theme-border-strong, rgba(80, 30, 30, 0.85))',
+          background: theme === 'spiderman'
+            ? undefined
+            : 'linear-gradient(135deg, var(--theme-surface-card-alt, #110808) 0%, var(--theme-surface-card, #1a0a0a) 45%, var(--theme-bg-canvas, #0c0505) 100%)',
+          border: theme === 'spiderman' ? undefined : '1px solid var(--theme-border-strong, rgba(80, 30, 30, 0.85))',
           boxShadow: 'var(--theme-shadow-card, 0 8px 36px rgba(7,5,5,0.9))',
         }}
       >
+        {/* Corner Spider Web Nets for Spiderman */}
+        {theme === 'spiderman' && (
+          <>
+            <SpiderNetDecal position="top-right" size={130} glow={true} />
+            <SpiderNetDecal position="bottom-left" size={100} glow={true} />
+          </>
+        )}
+
         {/* Background Runic Watermark & Nordic Glyphs (GoW only) */}
-        <div
-          className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.06] flex items-center justify-between px-10"
-          style={{ display: 'var(--theme-watermark-display, block)' }}
-        >
-          <span className="text-9xl font-black text-red-600" style={{ fontFamily: "'Cinzel Decorative', serif" }}>
-            Ω
-          </span>
-          <span className="text-8xl font-black text-amber-500" style={{ fontFamily: "'Cinzel', serif" }}>
-            ᛟ
-          </span>
-          <span className="text-9xl font-black text-red-600" style={{ fontFamily: "'Cinzel Decorative', serif" }}>
-            ᚱ
-          </span>
-        </div>
+        {theme === 'gow' && (
+          <div
+            className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.06] flex items-center justify-between px-10"
+            style={{ display: 'var(--theme-watermark-display, block)' }}
+          >
+            <span className="text-9xl font-black text-red-600" style={{ fontFamily: "'Cinzel Decorative', serif" }}>
+              Ω
+            </span>
+            <span className="text-8xl font-black text-amber-500" style={{ fontFamily: "'Cinzel', serif" }}>
+              ᛟ
+            </span>
+            <span className="text-9xl font-black text-red-600" style={{ fontFamily: "'Cinzel Decorative', serif" }}>
+              ᚱ
+            </span>
+          </div>
+        )}
 
         {/* Ember radial glows */}
         <div
@@ -162,42 +178,56 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-2">
-              <span
-                className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.25em]"
-                style={{
-                  background: 'var(--theme-accent-primary-dim, rgba(220,38,38,0.18))',
-                  border: '1px solid var(--theme-border-strong, rgba(220,38,38,0.45))',
-                  color: 'var(--theme-accent-glow, #EF4444)',
-                  fontFamily: "var(--theme-font-heading, 'Cinzel', serif)",
-                }}
-              >
-                ⚔ BASTION OF WAR
-              </span>
-              <span style={{ color: 'var(--theme-text-dim, #666)' }}>•</span>
-              <span
-                className="text-[11px] font-semibold uppercase tracking-[0.18em]"
-                style={{ color: 'var(--theme-accent-secondary, #C59B27)', fontFamily: "var(--theme-font-heading, 'Cinzel', serif)" }}
-              >
-                LEVEL {stats?.level ?? 1} WARRIOR
-              </span>
+              {theme === 'spiderman' ? (
+                <FriendlyNeighborhoodBadge />
+              ) : (
+                <>
+                  <span
+                    className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-[0.25em]"
+                    style={{
+                      background: 'var(--theme-accent-primary-dim, rgba(220,38,38,0.18))',
+                      border: '1px solid var(--theme-border-strong, rgba(220,38,38,0.45))',
+                      color: 'var(--theme-accent-glow, #EF4444)',
+                      fontFamily: "var(--theme-font-heading, 'Cinzel', serif)",
+                    }}
+                  >
+                    ⚔ BASTION OF WAR
+                  </span>
+                  <span style={{ color: 'var(--theme-text-dim, #666)' }}>•</span>
+                  <span
+                    className="text-[11px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: 'var(--theme-accent-secondary, #C59B27)', fontFamily: "var(--theme-font-heading, 'Cinzel', serif)" }}
+                  >
+                    LEVEL {stats?.level ?? 1} WARRIOR
+                  </span>
+                </>
+              )}
             </div>
 
             <h1
               className="font-bold uppercase tracking-wide leading-tight text-3xl sm:text-4xl text-transparent bg-clip-text"
               style={{
-                backgroundImage: 'linear-gradient(135deg, #FFFFFF 0%, #F5E6E6 40%, #D4A373 80%, #C59B27 100%)',
+                backgroundImage: theme === 'spiderman'
+                  ? 'linear-gradient(135deg, #FFFFFF 0%, #E0F2FE 50%, #93C5FD 100%)'
+                  : 'linear-gradient(135deg, #FFFFFF 0%, #F5E6E6 40%, #D4A373 80%, #C59B27 100%)',
                 fontFamily: "var(--theme-font-heading, 'Cinzel', serif)",
                 filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.8))',
               }}
             >
-              Hail, {username}
+              {theme === 'spiderman' ? `Spider-HQ: Welcome, ${username}` : `Hail, ${username}`}
             </h1>
 
             <p className="mt-1 text-sm font-medium" style={{ color: 'var(--theme-text-muted, #A89898)' }}>
-              {resumePoint
-                ? `Your adventure awaits in the Realm — continue ${resumePoint.courseTitle}.`
-                : 'Ready for your next quest? Enter the realm and forge your path.'}
+              {theme === 'spiderman'
+                ? (resumePoint ? `Web patrol active in Queens — continue ${resumePoint.courseTitle}.` : 'Ready for your next mission? Swing into action and crush coding bugs.')
+                : (resumePoint ? `Your adventure awaits in the Realm — continue ${resumePoint.courseTitle}.` : 'Ready for your next quest? Enter the realm and forge your path.')}
             </p>
+
+            {theme === 'spiderman' && (
+              <div className="pt-2 flex items-center gap-3">
+                <ThwipSticker size={36} />
+              </div>
+            )}
           </div>
 
           {/* Overall progress altar orb */}
@@ -360,9 +390,21 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
         }}
       >
         {([
-          { key: 'sagas', label: 'SAGAS & LABORS', icon: '⚔' },
-          { key: 'realms', label: 'NINE REALMS', icon: 'ᛟ' },
-          { key: 'trophies', label: 'VALHALLA TROPHIES', icon: '🏆' },
+          {
+            key: 'sagas',
+            label: theme === 'spiderman' ? 'WEB MISSIONS' : 'SAGAS & LABORS',
+            icon: theme === 'spiderman' ? '🕸️' : '⚔',
+          },
+          {
+            key: 'realms',
+            label: theme === 'spiderman' ? 'SKILL DISTRICTS' : 'NINE REALMS',
+            icon: theme === 'spiderman' ? '🏙️' : 'ᛟ',
+          },
+          {
+            key: 'trophies',
+            label: theme === 'spiderman' ? 'SPIDER TROPHIES' : 'VALHALLA TROPHIES',
+            icon: '🏆',
+          },
         ] as const).map(({ key, label, icon }) => (
           <button
             key={key}
@@ -391,12 +433,12 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
         <div className="flex flex-col gap-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <Sword className="w-5 h-5" style={{ color: '#FF3D00' }} />
+              <Sword className="w-5 h-5" style={{ color: theme === 'spiderman' ? '#00F0FF' : '#FF3D00' }} />
               <h2
                 className="font-bold uppercase tracking-wide text-lg text-stone-100"
                 style={{ fontFamily: "'Cinzel', serif" }}
               >
-                Sagas & Mythic Labors
+                {theme === 'spiderman' ? 'Active Web Missions & Projects' : 'Sagas & Mythic Labors'}
               </h2>
             </div>
             <span

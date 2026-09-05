@@ -15,6 +15,8 @@ import {
   Copy, Shield, Gamepad2
 } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { SpiderNetDecal, SpiderEmblemIcon } from '../components/ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker, FriendlyNeighborhoodBadge } from '../components/ui/SpiderStickers'
 
 export const TeamArcadePage: React.FC = () => {
   const { user } = useAuth()
@@ -158,6 +160,59 @@ export const TeamArcadePage: React.FC = () => {
               <div className="absolute -bottom-2 -right-2 bg-emerald-900/90 border border-emerald-400/60 p-2 rounded-2xl shadow-lg backdrop-blur-sm flex items-center gap-1.5 z-20">
                 <img src="/extracted/icon_gamepad.png" alt="" className="w-5 h-5 object-contain" />
                 <span className="text-[10px] font-pixel font-bold text-emerald-200">READY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : theme === 'spiderman' ? (
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-spider-banner">
+          {/* Animated Ambient Glow Overlays */}
+          <div className="absolute right-12 top-0 w-96 h-96 rounded-full bg-red-600/30 blur-3xl pointer-events-none animate-shade-glow" />
+          <div className="absolute left-1/4 bottom-0 w-80 h-36 bg-blue-600/25 blur-2xl pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent" />
+
+          {/* Corner Spider Web Nets */}
+          <SpiderNetDecal position="top-right" size={130} glow={true} />
+          <SpiderNetDecal position="bottom-left" size={100} glow={true} />
+
+          {/* Left Text Column */}
+          <div className="relative z-10 flex flex-col gap-4 max-w-xl text-left">
+            <div className="flex items-center gap-2">
+              <FriendlyNeighborhoodBadge />
+            </div>
+
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight uppercase drop-shadow-md">
+              Spider-Verse Arcade
+            </h1>
+            <p className="text-xs sm:text-sm leading-relaxed text-blue-100 font-medium">
+              Form 4-player web warrior squads, sling code in real-time multiverse duels, and defend Queens from bugs alongside Peter Parker.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <span className="px-3 py-1 rounded-xl bg-blue-950/70 border border-blue-400/40 text-blue-200 text-xs font-mono font-bold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> Live Squad Battles Active
+              </span>
+              <ThwipSticker size={42} />
+            </div>
+          </div>
+
+          {/* Right Cartoonish Mascot Column with Spider Stickers */}
+          <div className="relative z-10 shrink-0 flex items-center justify-center">
+            <div className="relative animate-cartoon-float">
+              <div className="absolute inset-0 rounded-full bg-red-500/35 blur-2xl scale-95" />
+              <img
+                src="/questbot.png"
+                alt="Spider-Bot Arcade Mascot"
+                className="w-44 sm:w-56 md:w-64 h-auto object-contain relative z-10 drop-shadow-[0_16px_32px_rgba(230,36,41,0.5)] transition-transform hover:scale-105"
+              />
+              {/* Spider Mask Sticker badge on mascot */}
+              <div className="absolute -top-3 -right-2 z-20">
+                <SpiderMaskSticker size={52} glow={true} />
+              </div>
+              <div className="absolute -bottom-2 -left-2 px-3 py-1 rounded-xl shadow-lg border backdrop-blur-md flex items-center gap-1.5 z-20 bg-slate-900/90 border-cyan-400/60">
+                <span className="text-[10px] font-black tracking-widest text-cyan-300 font-mono">
+                  WEB SQUAD READY
+                </span>
               </div>
             </div>
           </div>

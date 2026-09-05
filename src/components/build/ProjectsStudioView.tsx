@@ -17,6 +17,8 @@ import {
 } from 'lucide-react'
 import { StudentGuidedProjectsLibrary } from '../guidedProjects/StudentGuidedProjectsLibrary'
 import { useTheme } from '../../context/ThemeContext'
+import { SpiderNetDecal } from '../ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, FriendlyNeighborhoodBadge } from '../ui/SpiderStickers'
 
 interface ProjectsStudioViewProps {
   onNewProject?: () => void
@@ -237,6 +239,58 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
             </div>
           </div>
         </div>
+      ) : theme === 'spiderman' ? (
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-spider-banner">
+          {/* Animated Ambient Glow Overlays */}
+          <div className="absolute right-12 top-0 w-96 h-96 rounded-full bg-blue-600/30 blur-3xl pointer-events-none animate-shade-glow" />
+          <div className="absolute left-1/4 bottom-0 w-80 h-36 bg-red-600/25 blur-2xl pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent" />
+
+          {/* Corner Spider Web Nets */}
+          <SpiderNetDecal position="top-right" size={130} glow={true} />
+          <SpiderNetDecal position="bottom-left" size={100} glow={true} />
+
+          {/* Left Text Column */}
+          <div className="relative z-10 flex flex-col gap-4 max-w-xl text-left">
+            <div className="flex items-center gap-2">
+              <FriendlyNeighborhoodBadge />
+            </div>
+
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight uppercase drop-shadow-md">
+              Parker Labs & Workshop
+            </h1>
+            <p className="text-xs sm:text-sm leading-relaxed text-blue-100 font-medium">
+              Engineer high-tech web applications, interactive games, and developer gadgets. Turn blueprints into deployed production code.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <span className="px-3 py-1 rounded-xl bg-blue-950/70 border border-blue-400/40 text-blue-200 text-xs font-mono font-bold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" /> Web-Tech Engineering Ready
+              </span>
+              <ThwipSticker size={42} />
+            </div>
+          </div>
+
+          {/* Right Cartoonish Mascot Column */}
+          <div className="relative z-10 shrink-0 flex items-center justify-center">
+            <div className="relative animate-cartoon-float">
+              <div className="absolute inset-0 rounded-full bg-blue-500/30 blur-2xl scale-95" />
+              <img
+                src="/extracted/hero1_alex_desk.png"
+                alt="Spider Lab Workbench"
+                className="w-48 sm:w-60 md:w-72 h-auto object-contain relative z-10 drop-shadow-[0_16px_32px_rgba(0,102,255,0.45)] transition-transform hover:scale-105"
+              />
+              <div className="absolute -top-3 -right-2 z-20">
+                <SpiderMaskSticker size={52} glow={true} />
+              </div>
+              <div className="absolute -bottom-2 -left-2 px-3 py-1 rounded-2xl shadow-lg border backdrop-blur-md flex items-center gap-1.5 z-20 bg-slate-900/90 border-cyan-400/60">
+                <span className="text-[10px] font-black tracking-widest text-cyan-300 font-mono">
+                  TECH BLUEPRINTS
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <div
           className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep"
@@ -331,6 +385,34 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
           >
             <Hammer className="w-3.5 h-3.5" />
             <span className="font-pixel text-[10px] tracking-wider uppercase">FREEFORM STUDIO</span>
+          </button>
+        </div>
+      ) : theme === 'spiderman' ? (
+        <div className="flex items-center gap-2 p-1.5 bg-[#151E3A] rounded-xl w-fit border border-[#2A3A65] shadow-lg">
+          <button
+            type="button"
+            onClick={() => setStudioMode('guided')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              studioMode === 'guided'
+                ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5 text-[#00F0FF]" />
+            <span>Spider-Tech Blueprints</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setStudioMode('freeform')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              studioMode === 'freeform'
+                ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Hammer className="w-3.5 h-3.5 text-[#00F0FF]" />
+            <span>Parker Labs Studio</span>
           </button>
         </div>
       ) : (
@@ -550,7 +632,7 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
                 </div>
                 <div className="flex items-center gap-2 text-[#6E5A5A]">
                   <Lock className="w-3.5 h-3.5 text-[#3D1C1C]" />
-                  <span>Grand God of War Engine (+300 XP)</span>
+                  <span>{theme === 'spiderman' ? 'Grand Spider-Verse Engine (+300 XP)' : 'Grand God of War Engine (+300 XP)'}</span>
                 </div>
               </div>
             </div>

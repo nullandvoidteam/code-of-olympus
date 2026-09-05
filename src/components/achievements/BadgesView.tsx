@@ -5,6 +5,7 @@ import { useAchievementsAndNotifications } from '../../lib/achievements';
 import { cn } from '../../lib/utils';
 import * as LucideIcons from 'lucide-react';
 import { Shield, Lock, Loader2, Star } from 'lucide-react';
+import { SpiderNetDecal } from '../ui/SpiderNetDecal';
 
 export const BadgesView: React.FC = () => {
   const { user } = useAuth();
@@ -43,6 +44,10 @@ export const BadgesView: React.FC = () => {
                  style={{ background: 'radial-gradient(circle, var(--theme-accent-cyan, #00E5FF) 0%, transparent 70%)' }} />
           )}
 
+          {theme === 'spiderman' && (
+            <SpiderNetDecal size={90} position="top-right" glow={true} />
+          )}
+
           <div className="flex items-center gap-5 z-10">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center border-2 transition-colors duration-300"
                  style={{
@@ -55,10 +60,10 @@ export const BadgesView: React.FC = () => {
             <div className="flex flex-col">
               <h1 className="text-3xl font-extrabold tracking-widest uppercase drop-shadow-md transition-colors duration-300"
                   style={{ fontFamily: 'var(--theme-font-heading, "Cinzel", serif)', color: 'var(--theme-text-primary, #F5E8E8)' }}>
-                {theme === 'gow' ? 'Honor Badges' : 'My Badges'}
+                {theme === 'gow' ? 'Honor Badges' : theme === 'spiderman' ? 'Web-Shooter Badges' : 'My Badges'}
               </h1>
               <p className="text-sm font-medium opacity-80 transition-colors duration-300" style={{ color: 'var(--theme-text-muted, #A89898)' }}>
-                {theme === 'gow' ? 'Marks of your legendary deeds.' : 'Collect badges by completing milestones.'}
+                {theme === 'gow' ? 'Marks of your legendary deeds.' : theme === 'spiderman' ? 'Collect superhero badges and unlock Web-Warrior ranks.' : 'Collect badges by completing milestones.'}
               </p>
             </div>
           </div>

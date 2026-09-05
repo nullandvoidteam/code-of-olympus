@@ -25,6 +25,7 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { SpiderNetDecal } from '../ui/SpiderNetDecal'
+import { SpiderMaskSticker } from '../ui/SpiderStickers'
 import { cn } from '../../lib/utils'
 import { CodeQuestLogo } from '../brand/CodeQuestLogo'
 
@@ -75,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { user, profile } = useAuth()
   const { theme } = useTheme()
 
-  const displayName = profile?.full_name || profile?.username || user?.email?.split('@')[0] || (theme === 'classic' ? 'Alex Morgan' : 'Spartan Warrior')
+  const displayName = profile?.full_name || profile?.username || user?.email?.split('@')[0] || (theme === 'spiderman' ? 'Peter Parker' : theme === 'classic' ? 'Alex Morgan' : 'Spartan Warrior')
   const level = profile?.level ?? 12
   const xp = profile?.xp ?? 4850
   const streak = profile?.streak ?? 7
@@ -242,6 +243,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div className="text-[10px] text-slate-500 font-medium">
                 Level {level} Adventurer
+              </div>
+            </div>
+          </div>
+        ) : theme === 'spiderman' ? (
+          <div
+            onClick={() => onSelectTab('profile')}
+            className="p-2.5 rounded-2xl flex items-center gap-3 transition-all duration-300 cursor-pointer group bg-gradient-to-r from-red-950/40 via-slate-900/60 to-blue-950/40 border border-red-500/40 hover:border-cyan-400 shadow-md"
+          >
+            <div className="w-9 h-9 shrink-0 flex items-center justify-center">
+              <SpiderMaskSticker size={32} glow={false} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div
+                className="font-bold text-xs uppercase tracking-wide truncate transition-colors text-white"
+              >
+                {displayName}
+              </div>
+              <div
+                className="text-[9px] uppercase tracking-wider font-bold text-cyan-300 font-mono"
+              >
+                Level {level} Web Hero
               </div>
             </div>
           </div>
