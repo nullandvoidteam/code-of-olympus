@@ -131,6 +131,16 @@ export const ThemeStudioView: React.FC = () => {
           style={{ background: 'linear-gradient(90deg, transparent, var(--theme-accent-glow), transparent)' }}
         />
 
+        {/* Full Cover Background Image */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <img
+            src="/extracted/theme_chamber_art.jpg"
+            alt="Theme Chamber Art"
+            className="w-full h-full object-cover opacity-70 mix-blend-screen"
+          />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, var(--theme-surface-card-alt) 20%, transparent 100%)' }} />
+        </div>
+
         <div className="relative z-10 flex flex-col gap-2 max-w-2xl">
           <div className="flex items-center gap-2">
             <span
@@ -147,7 +157,7 @@ export const ThemeStudioView: React.FC = () => {
 
           <h1
             style={{ fontFamily: 'var(--theme-font-heading)', color: 'var(--theme-text-primary)' }}
-            className="text-2xl sm:text-4xl font-black tracking-wider uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+            className="text-2xl sm:text-4xl font-black tracking-wider uppercase"
           >
             Visual Themes & Real-time FX
           </h1>

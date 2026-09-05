@@ -675,6 +675,16 @@ export const ClassicCommunityFeed: React.FC = () => {
         <div className="absolute left-1/3 bottom-0 w-72 h-32 bg-indigo-300/20 blur-2xl pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-t from-purple-900/5 via-transparent to-white/40 pointer-events-none" />
 
+        {/* Full Cover Background Image */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <img
+            src="/extracted/community_guild_art.jpg"
+            alt="Community Guild Art"
+            className="w-full h-full object-cover opacity-85 mix-blend-multiply"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#FAF5FF] via-[#FAF5FF]/80 to-transparent" />
+        </div>
+
         <div className="relative z-10 flex flex-col gap-2.5 max-w-xl text-left">
           <div className="flex items-center gap-1.5 text-purple-700 font-pixel text-[10px] font-bold tracking-wider uppercase bg-white/90 border border-purple-200 px-3 py-1 rounded-full w-fit shadow-xs backdrop-blur-sm">
             <span>✦</span>
@@ -697,21 +707,6 @@ export const ClassicCommunityFeed: React.FC = () => {
           </div>
         </div>
 
-        {/* Cartoonish Image */}
-        <div className="relative z-10 shrink-0 flex items-center justify-center">
-          <div className="relative animate-cartoon-float">
-            <div className="absolute inset-0 rounded-full bg-purple-400/25 blur-xl scale-95" />
-            <img
-              src="/extracted/community_space.png"
-              alt="Community Coders"
-              className="w-48 sm:w-56 md:w-64 h-auto object-contain relative z-10 drop-shadow-[0_12px_24px_rgba(100,50,150,0.25)] transition-transform hover:scale-105"
-            />
-            <div className="absolute -bottom-2 -left-2 bg-white/95 border border-purple-300 px-3 py-1 rounded-2xl shadow-sm backdrop-blur-sm flex items-center gap-1.5 z-20">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span className="text-[10px] font-pixel font-bold text-purple-800">CONNECT</span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* ── 2. Profile Network Bar ── */}

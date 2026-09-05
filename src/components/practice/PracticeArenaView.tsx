@@ -31,8 +31,9 @@ const TECH_FILTERS_CLASSIC = ['All', 'Python', 'JavaScript', 'HTML/CSS', 'SQL', 
 const TECH_FILTERS_SPIDERMAN = ['All Districts', 'Python', 'JavaScript', 'HTML/CSS', 'SQL', 'React', 'Algorithms', 'Data Structures']
 const LEVEL_FILTERS = ['All Tiers', 'Mortal', 'Hero', 'God of War']
 const LEVEL_FILTERS_SPIDERMAN = ['All Tiers', 'Friendly Neighborhood', 'Queens Vigilante', 'Spider-Verse Hero']
-const SORT_OPTIONS = ['Spartan Favor', 'Newest Blood', 'Most Conquered', 'Hacksilver XP']
-const SORT_OPTIONS_SPIDERMAN = ['Spider Accuracy', 'Newest Patrols', 'Most Conquered', 'Spider XP']
+const SORT_OPTIONS = ['Spartan Favor', 'Difficulty', 'Hacksilver XP (High to Low)']
+const SORT_OPTIONS_SPIDERMAN = ['Spider Accuracy', 'Difficulty', 'Spider XP (High to Low)']
+const SORT_OPTIONS_CLASSIC = ['Default', 'Difficulty', 'XP Reward (High to Low)']
 
 interface ChallengeCard {
   id: string
@@ -206,6 +207,7 @@ const SPIDERMAN_LEADERBOARD = [
 const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartChallenge }) => {
   const [techFilter, setTechFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('Default')
 
   const classicChallenges = [
     {
@@ -294,11 +296,14 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
               </div>
             </div>
 
-            {/* Right Pixel Art illustration */}
-            <div className="shrink-0 w-64 h-36 rounded-2xl bg-gradient-to-br from-emerald-50 to-sky-50 border border-emerald-100 p-4 flex flex-col items-center justify-center text-center shadow-sm">
-              <div className="text-4xl mb-1">🎮 🤖 🐍</div>
-              <span className="text-xs font-bold text-slate-800">Daily Quest Arena</span>
-              <span className="text-[10px] text-slate-500">New challenge unlocks in 14h</span>
+            {/* Full Cover Background Image */}
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <img
+                src="/extracted/practice_arena_art.jpg"
+                alt="Practice Arena Art"
+                className="w-full h-full object-cover opacity-85 mix-blend-multiply"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent" />
             </div>
           </div>
 
@@ -372,28 +377,42 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
               />
             </div>
 
-            {/* Language filter pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {TECH_FILTERS_CLASSIC.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => setTechFilter(tag)}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                    techFilter === tag
-                      ? 'bg-slate-900 text-white shadow-sm'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
+            {/* Controls Bar: Filters & Sort */}
+            <div className="flex items-center justify-between gap-4 flex-wrap pb-1">
+              {/* Language filter pills */}
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {TECH_FILTERS_CLASSIC.map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setTechFilter(tag)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      techFilter === tag
+                        ? 'bg-slate-900 text-white shadow-sm'
+                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Sort Dropdown */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-xl cursor-pointer focus:outline-none focus:border-emerald-500 shadow-sm"
+              >
+                {SORT_OPTIONS_CLASSIC.map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
             </div>
           </div>
 
           {/* Challenge Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filtered.map((item) => (
+            {sortedCards.map((item) => (
               <div
                 key={item.id}
                 className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between gap-4 hover:border-emerald-500 hover:shadow-md transition-all group"
@@ -536,6 +555,18 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
       (levelFilter === 'Hero' && c.difficulty === 'MEDIUM') ||
       (levelFilter === 'God of War' && c.difficulty === 'HARD')
     return matchSearch && matchTech && matchLevel
+  })
+
+  // Apply Sorting
+  const sortedCards = [...filteredCards].sort((a, b) => {
+    if (sortBy === 'Hacksilver XP (High to Low)') {
+      return b.xp - a.xp
+    }
+    if (sortBy === 'Difficulty') {
+      const dMap: Record<string, number> = { 'EASY': 1, 'MEDIUM': 2, 'HARD': 3 }
+      return (dMap[a.difficulty] || 0) - (dMap[b.difficulty] || 0)
+    }
+    return 0
   })
 
   const scrollCarousel = (dir: 'left' | 'right') => {
@@ -803,7 +834,7 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
               ref={carouselRef}
               className="flex gap-4 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory"
             >
-              {filteredCards.map(c => (
+              {sortedCards.map(c => (
                 <div
                   key={c.id}
                   className={`snap-start shrink-0 w-[260px] rounded-2xl border overflow-hidden shadow-lg flex flex-col transition-all hover:-translate-y-1 ${
@@ -1011,6 +1042,18 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
       (levelFilter === 'Queens Vigilante' && c.difficulty === 'MEDIUM') ||
       (levelFilter === 'Spider-Verse Hero' && c.difficulty === 'HARD')
     return matchSearch && matchTech && matchLevel
+  })
+
+  // Apply Sorting
+  const sortedCards = [...filteredCards].sort((a, b) => {
+    if (sortBy === 'Spider XP (High to Low)') {
+      return b.xp - a.xp
+    }
+    if (sortBy === 'Difficulty') {
+      const dMap: Record<string, number> = { 'EASY': 1, 'MEDIUM': 2, 'HARD': 3 }
+      return (dMap[a.difficulty] || 0) - (dMap[b.difficulty] || 0)
+    }
+    return 0
   })
 
   const scrollCarousel = (dir: 'left' | 'right') => {
@@ -1288,7 +1331,7 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
               ref={carouselRef}
               className="flex items-stretch gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth"
             >
-              {filteredCards.map(card => (
+              {sortedCards.map(card => (
                 <div
                   key={card.id}
                   className="w-72 shrink-0 rounded-2xl p-5 border flex flex-col justify-between transition-all duration-200 group hover:border-[#00F0FF] relative overflow-hidden"

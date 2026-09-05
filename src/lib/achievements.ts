@@ -350,3 +350,94 @@ export function useAchievementsAndNotifications(userId?: string) {
     refreshAll: loadData,
   }
 }
+
+export interface AchievementTrigger {
+  id: string
+  achievement_id: string
+  trigger_type: string
+  condition_key: string
+  condition_value: any
+}
+
+export async function fetchAdminAchievements(): Promise<AchievementItem[]> {
+  const { data, error } = await supabase.from('achievements').select('*').order('created_at', { ascending: true })
+  if (error) return []
+  return (data || []).map(a => ({
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    description: a.description,
+    icon: a.icon,
+    targetCount: a.target_count,
+    rewardXp: a.reward_xp,
+    progressCount: 0,
+    isUnlocked: false,
+    isClaimed: false
+  }))
+}
+
+export async function createAdminAchievement(ach: any) {
+  const { data, error } = await supabase.from('achievements').insert(ach).select().single()
+  if (error) {
+    console.error(error)
+    return null
+  }
+  return data
+}
+
+export async function updateAdminAchievement(id: string, updates: any) {
+  const { data, error } = await supabase.from('achievements').update(updates).eq('id', id).select().single()
+  if (error) return null
+  return data
+}
+
+export async function deleteAdminAchievement(id: string) {
+  await supabase.from('achievements').delete().eq('id', id)
+}
+
+export async function fetchAchievementTriggers(achievementId: string): Promise<AchievementTrigger[]> {
+  const { data, error } = await supabase.from('achievement_triggers').select('*').eq('achievement_id', achievementId)
+  if (error) return []
+  return data || []
+}
+
+export async function saveAchievementTrigger(trigger: Omit<AchievementTrigger, 'id'>) {
+  const { data, error } = await supabase.from('achievement_triggers').insert(trigger).select().single()
+  if (error) {
+    console.error(error)
+    return null
+  }
+  return data
+}
+
+export async function deleteAchievementTrigger(id: string) {
+  await supabase.from('achievement_triggers').delete().eq('id', id)
+}
+
+export async function evaluateTriggersForUser(userId: string, actionType: string, metrics: any) {
+  try {
+    const { data: triggers } = await supabase
+      .from('achievement_triggers')
+      .select('*, achievements(*)')
+      .eq('condition_key', actionType)
+      
+    if (!triggers || triggers.length === 0) return
+
+    for (const trig of triggers) {
+      let shouldProgress = false
+      if (trig.trigger_type === 'ACTION_COUNT') {
+        shouldProgress = true
+      } else if (trig.trigger_type === 'LEVEL_REACHED') {
+        if (metrics?.level && trig.condition_value?.target && metrics.level >= trig.condition_value.target) {
+          shouldProgress = true
+        }
+      }
+      
+      if (shouldProgress) {
+        console.log(`[RulesEngine] Evaluated trigger ${trig.id} for user ${userId}`)
+      }
+    }
+  } catch (err) {
+    console.error('Trigger evaluation failed:', err)
+  }
+}

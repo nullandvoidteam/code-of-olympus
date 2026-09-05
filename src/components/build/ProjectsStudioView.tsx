@@ -198,46 +198,39 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
     <div className="w-full max-w-[1400px] mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
       {/* ── 1. MASTER PROJECTS HERO BANNER WITH SHADED ANIMATION & CARTOONISH IMAGE ── */}
       {theme === 'classic' ? (
-        <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 bg-gradient-to-r from-[#2E1065] via-[#4C1D95] to-[#1E1B4B] text-white shadow-xl border border-purple-800/50 flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep">
-          {/* Shaded Ambient Glow Overlays */}
-          <div className="absolute -right-16 -top-16 w-96 h-96 rounded-full bg-purple-400/20 blur-3xl pointer-events-none animate-shade-glow" />
-          <div className="absolute left-1/3 bottom-0 w-80 h-40 bg-indigo-500/15 blur-2xl pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/5 pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 bg-[#faf7f2] border border-[#ece7df] shadow-xs flex flex-col md:flex-row items-center justify-between gap-8 min-h-[150px]">
+
+
+          {/* Full Cover Background Image */}
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <img
+              src="/extracted/project_studio_art.jpg"
+              alt="Project Studio Art"
+              className="w-full h-full object-cover opacity-85 mix-blend-multiply"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#faf7f2] via-[#faf7f2]/80 to-transparent" />
+          </div>
 
           {/* Left Text Column */}
           <div className="relative z-10 flex flex-col gap-3 max-w-xl text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-purple-950/80 border border-purple-400/40 text-purple-200 shadow-sm backdrop-blur-md">
-              <Hammer className="w-3.5 h-3.5 text-purple-300" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-purple-50 border border-purple-200 text-purple-700 shadow-sm backdrop-blur-md">
+              <Hammer className="w-3.5 h-3.5 text-purple-500" />
               <span>PROJECT STUDIO • CODE WORKBENCH</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm font-pixel">
+            <h1 className="text-3xl md:text-5xl font-black text-stone-900 tracking-tight font-pixel">
               Project Studio
             </h1>
-            <p className="text-xs sm:text-sm text-purple-100/90 leading-relaxed font-medium">
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
               Transform your coding skills into real interactive web applications, games, and developer tools with step-by-step guided blueprints or freeform sandbox crafting.
             </p>
             <div className="flex items-center gap-3 pt-2">
-              <span className="px-3 py-1 rounded-xl bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs font-mono font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" /> Multi-Stage Software Engineering
+              <span className="px-3 py-1 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 text-xs font-mono font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" /> Multi-Stage Software Engineering
               </span>
             </div>
           </div>
 
-          {/* Right Cartoonish Mascot Column */}
-          <div className="relative z-10 shrink-0 flex items-center justify-center">
-            <div className="relative animate-cartoon-float">
-              <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-2xl scale-95" />
-              <img
-                src="/extracted/hero1_alex_desk.png"
-                alt="Alex Project Workbench"
-                className="w-48 sm:w-60 md:w-72 h-auto object-contain relative z-10 drop-shadow-[0_16px_28px_rgba(0,0,0,0.5)] transition-transform hover:scale-105"
-              />
-              <div className="absolute -bottom-2 -left-2 bg-purple-900/90 border border-purple-400/60 px-3 py-1 rounded-2xl shadow-lg backdrop-blur-sm flex items-center gap-1.5 z-20">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                <span className="text-[10px] font-pixel font-bold text-purple-200">BUILD & SHIP</span>
-              </div>
-            </div>
-          </div>
+
         </div>
       ) : theme === 'spiderman' ? (
         <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-spider-banner">

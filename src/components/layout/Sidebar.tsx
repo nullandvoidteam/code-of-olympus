@@ -29,7 +29,7 @@ import { SpiderMaskSticker } from '../ui/SpiderStickers'
 import { cn } from '../../lib/utils'
 import { CodeQuestLogo } from '../brand/CodeQuestLogo'
 
-export type NavItemKey = 'dashboard' | 'learn' | 'practice' | 'build' | 'arcade' | 'community' | 'profile' | 'quests' | 'achievements' | 'badges' | 'levels' | 'theme' | 'settings' | 'help' | 'admin'
+export type NavItemKey = 'dashboard' | 'learn' | 'practice' | 'build' | 'arcade' | 'ranking' | 'community' | 'profile' | 'quests' | 'achievements' | 'badges' | 'levels' | 'theme' | 'settings' | 'help' | 'admin'
 
 interface SidebarProps {
   activeTab: NavItemKey
@@ -87,6 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { key: 'practice' as NavItemKey, label: 'Practice', icon: Swords },
     { key: 'build' as NavItemKey, label: 'Projects', icon: Hammer },
     { key: 'arcade' as NavItemKey, label: 'Arcade', icon: Flame },
+    { key: 'ranking' as NavItemKey, label: 'Global Ranking', icon: Trophy },
     { key: 'community' as NavItemKey, label: 'Community', icon: Users },
     { key: 'profile' as NavItemKey, label: 'Profile', icon: User },
     { key: 'theme' as NavItemKey, label: 'Theme', icon: Palette },

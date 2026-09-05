@@ -18,6 +18,7 @@ import { DwarvenForgeWorkbench } from '../crucible/DwarvenForgeWorkbench'
 import { CommunityPage } from '../../pages/CommunityPage'
 import { TeamArcadePage } from '../../pages/TeamArcadePage'
 import { LearnerDashboard } from '../dashboard/LearnerDashboard'
+import { AnalyticsPage } from '../../pages/AnalyticsPage'
 import { ThemeStudioView } from '../theme/ThemeStudioView'
 import { ProfileView, type ProfileSubTab } from '../profile/ProfileView'
 import { SettingsView } from '../settings/SettingsView'
@@ -410,6 +411,8 @@ export const AppShell: React.FC = () => {
           )}
 
           {activeTab === 'arcade' && <TeamArcadePage />}
+          
+          {activeTab === 'ranking' && <AnalyticsPage />}
 
           {activeTab === 'community' && <CommunityPage />}
 

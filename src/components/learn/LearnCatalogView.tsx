@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
 import { useAuth } from '../../context/AuthContext'
-import { COURSE_CATALOG } from '../../lib/courseData'
+import { COURSE_CATALOG, EXTENDED_LANGUAGES } from '../../lib/courseData'
 import type { CourseCatalogItem } from '../../lib/courseData'
 import { getCourseProgress } from '../../lib/courseProgress'
 import type { CourseProgress } from '../../lib/courseProgress'
@@ -71,25 +71,36 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-7 text-left pb-20 select-none animate-in fade-in duration-300 font-sans">
       {/* 1. HERO BANNER */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-emerald-500 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
-        <div className="flex flex-col gap-2 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold uppercase tracking-wider self-start">
+      <div className="bg-[#faf7f2] rounded-3xl p-6 sm:p-8 border border-[#ece7df] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden min-h-[150px]">
+        
+        {/* Background Image (Dashboard style) */}
+        <div className="absolute right-0 top-0 bottom-0 w-2/3 hidden md:flex items-center justify-end overflow-hidden pointer-events-none opacity-80">
+          <img
+            src="/extracted/hero2_art_clean.png"
+            alt=""
+            className="h-full w-auto object-contain object-right"
+            style={{ transform: 'scale(1.1) translateX(5%)' }}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 max-w-xl z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-pixel font-bold uppercase tracking-wider self-start shadow-2xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Coding Quests &amp; Courses</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight leading-tight">
             Choose Your Coding Journey
           </h1>
 
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed">
             Master programming from the ground up with structured adventure paths, interactive editor challenges, and verified project certificates.
           </p>
         </div>
 
         {/* Quick Stats Banner */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0 z-10">
+          <div className="bg-white/80 backdrop-blur border border-emerald-200/50 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
             <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-xl">
               🏆
             </div>
@@ -247,6 +258,45 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                       : 'Start Course'}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 4.5 MORE LANGUAGE PATHS (EXPERIMENTAL) */}
+      <div className="flex items-center gap-2 mt-4 px-1">
+        <Sparkles className="w-4 h-4 text-emerald-600" />
+        <h2 className="text-lg font-black text-slate-900 tracking-tight">Experimental Paths</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 opacity-75 grayscale hover:grayscale-0 transition-all">
+        {EXTENDED_LANGUAGES.map((c) => (
+          <div
+            key={c.id}
+            className="bg-slate-50 rounded-3xl p-5 border-2 border-slate-200 shadow-sm flex flex-col justify-between gap-4 cursor-not-allowed"
+          >
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-slate-200 border border-slate-300 flex items-center justify-center shrink-0">
+                  <span className="text-2xl">{c.icon}</span>
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col items-end">
+                  <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px] uppercase border border-slate-300">
+                    COMING SOON
+                  </span>
+                </div>
+              </div>
+              <h3 className="font-extrabold text-base text-slate-900 leading-tight line-clamp-1 truncate">
+                {c.title}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2">
+                {c.description}
+              </p>
+            </div>
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200 text-xs">
+              <span className="font-bold text-slate-400">Vote to unlock</span>
+              <button disabled className="bg-slate-200 px-4 py-1.5 rounded-xl text-xs font-bold text-slate-400 cursor-not-allowed">
+                Locked
               </button>
             </div>
           </div>
@@ -1030,6 +1080,55 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
         </div>
       </div>
 
+      {/* 5.5 UNCHARTED TERRITORIES */}
+      <div className="flex flex-col gap-4 mt-8">
+        <div className="flex items-center gap-2 px-1">
+          <Compass className="w-4 h-4 text-[#FF3D00]" />
+          <h2
+            style={{ fontFamily: "'Cinzel', serif" }}
+            className="text-lg font-bold text-[#F5E8E8] tracking-wider uppercase"
+          >
+            Uncharted Territories
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 opacity-70 grayscale hover:grayscale-0 transition-all">
+          {EXTENDED_LANGUAGES.map((c) => (
+            <div
+              key={c.id}
+              className="bg-[#120808] rounded-2xl p-5 border border-[#3D1C1C] flex flex-col justify-between gap-4 cursor-not-allowed"
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-[#200A0A] border border-[#8C2828] flex items-center justify-center shrink-0 shadow-inner">
+                    <span className="text-2xl">{c.icon}</span>
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col items-end">
+                    <span className="px-2 py-0.5 rounded bg-[#240C0C] text-[#FF8A80] font-pixel text-[9px] font-bold uppercase border border-[#8C2828]/40">
+                      LOCKED
+                    </span>
+                  </div>
+                </div>
+                <h3
+                  style={{ fontFamily: "'Cinzel', serif" }}
+                  className="font-bold text-lg text-[#F5E8E8] leading-tight truncate"
+                >
+                  {c.title}
+                </h3>
+                <p className="text-xs text-[#A89898] leading-relaxed line-clamp-2">
+                  {c.description}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-3 border-t border-[#3D1C1C] text-xs">
+                <span className="font-bold text-[#6E5A5A]">Vote to manifest</span>
+                <button disabled className="bg-[#1A0E0E] text-[#6E5A5A] border border-[#3D1C1C] px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-not-allowed">
+                  Sealed
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ========================================================================= */}
       {/* 6. BOTTOM ORACLE SUMMON: MIMIR CONSULTATION                               */}
       {/* ========================================================================= */}
@@ -1431,6 +1530,49 @@ const SpiderManLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                 >
                   <span>{course.status === 'continue' ? 'RESUME MISSION' : 'START MISSION'}</span>
                   <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4.5 MULTIVERSE ANOMALIES */}
+      <div className="flex flex-col gap-4 mt-8">
+        <div className="flex items-center gap-2 px-1">
+          <SpiderNetDecal size={24} position="top-right" opacity={1} />
+          <h2 className="text-lg font-black text-white tracking-wider uppercase">
+            Multiverse Anomalies
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 opacity-70 grayscale hover:grayscale-0 transition-all">
+          {EXTENDED_LANGUAGES.map((c) => (
+            <div
+              key={c.id}
+              className="rounded-2xl p-5 border flex flex-col justify-between gap-4 cursor-not-allowed shadow-md"
+              style={{
+                background: '#151E3A',
+                borderColor: '#2A3A65',
+              }}
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl">{c.icon}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF]">
+                    LOCKED
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-white leading-tight truncate">
+                  {c.title}
+                </h3>
+                <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                  {c.description}
+                </p>
+              </div>
+              <div className="pt-3 border-t border-[#2A3A65] flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-400">Vote to synchronize</span>
+                <button disabled className="bg-[#0B1021] text-slate-500 border border-[#2A3A65] px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-not-allowed">
+                  Sealed
                 </button>
               </div>
             </div>

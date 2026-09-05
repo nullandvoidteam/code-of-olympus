@@ -37,6 +37,16 @@ import {
   type CommunityPost,
 } from '../../lib/community'
 import {
+  fetchAdminAchievements,
+  createAdminAchievement,
+  updateAdminAchievement,
+  deleteAdminAchievement,
+  fetchAchievementTriggers,
+  saveAchievementTrigger,
+  deleteAchievementTrigger,
+  type AchievementTrigger
+} from '../../lib/achievements'
+import {
   createAdminCourse,
   updateAdminCourse,
   deleteAdminCourse,
@@ -104,6 +114,7 @@ import {
   FileText,
   Sparkles,
   Swords,
+  Trophy
 } from 'lucide-react'
 
 interface LearnerRecord {
@@ -264,6 +275,25 @@ A comprehensive explanation of the solution logic.`
   const [inspectedUser, setInspectedUser] = useState<DetailedLearnerInfo | null>(null)
   const [loadingInspect, setLoadingInspect] = useState(false)
 
+  // Achievements & Triggers State
+  const [adminAchievements, setAdminAchievements] = useState<any[]>([])
+  const [selectedAchievementForTriggers, setSelectedAchievementForTriggers] = useState<any | null>(null)
+  const [achievementTriggers, setAchievementTriggers] = useState<AchievementTrigger[]>([])
+  const [showAddAchievement, setShowAddAchievement] = useState(false)
+  
+  // New Achievement Form
+  const [achTitle, setAchTitle] = useState('')
+  const [achSlug, setAchSlug] = useState('')
+  const [achDesc, setAchDesc] = useState('')
+  const [achIcon, setAchIcon] = useState('🏆')
+  const [achTargetCount, setAchTargetCount] = useState(1)
+  const [achRewardXp, setAchRewardXp] = useState(50)
+
+  // New Trigger Form
+  const [trigType, setTrigType] = useState('ACTION_COUNT')
+  const [trigKey, setTrigKey] = useState('')
+  const [trigTarget, setTrigTarget] = useState(1)
+
   const loadAdminProjects = useCallback(async () => {
     const data = await fetchProjects(undefined, true)
     setAdminProjects(data)
@@ -300,6 +330,16 @@ A comprehensive explanation of the solution logic.`
     ])
     setAdminReports(reps)
     setAdminPosts(postsData)
+  }, [])
+
+  const loadAdminAchievements = useCallback(async () => {
+    const data = await fetchAdminAchievements()
+    setAdminAchievements(data)
+  }, [])
+
+  const loadTriggersForSelected = useCallback(async (achievementId: string) => {
+    const data = await fetchAchievementTriggers(achievementId)
+    setAchievementTriggers(data)
   }, [])
 
   const loadAdminChallenges = useCallback(async () => {
@@ -378,6 +418,7 @@ A comprehensive explanation of the solution logic.`
       loadAdminChallenges()
       loadAdminCommunity()
       loadAdminAnalyticsAndLogs()
+      loadAdminAchievements()
     }
   }, [
     isAdmin,
@@ -1303,6 +1344,85 @@ A comprehensive explanation of the solution logic.`
       await loadAdminAnalyticsAndLogs()
       if (inspectedUser && inspectedUser.id === targetUserId) {
         setInspectedUser((prev) => (prev ? { ...prev, role: nextRole } : null))
+      }
+    }
+  }
+
+  // ----------------------------------------------------
+  // ACHIEVEMENTS & TRIGGERS HANDLERS
+  // ----------------------------------------------------
+  const handleCreateAchievement = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!achTitle.trim()) return
+
+    const ok = await createAdminAchievement({
+      title: achTitle.trim(),
+      slug: achSlug.trim() || achTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      description: achDesc,
+      icon: achIcon,
+      target_count: achTargetCount,
+      reward_xp: achRewardXp,
+    })
+
+    if (ok) {
+      if (user?.id) {
+        await logAdminAction(user.id, 'CREATE_ACHIEVEMENT', 'achievement', ok.id, { title: achTitle })
+      }
+      setShowAddAchievement(false)
+      setAchTitle('')
+      setAchSlug('')
+      setAchDesc('')
+      setAchIcon('🏆')
+      setAchTargetCount(1)
+      setAchRewardXp(50)
+      await loadAdminAchievements()
+    }
+  }
+
+  const handleDeleteAchievement = async (id: string) => {
+    if (confirm('Delete this achievement?')) {
+      await deleteAdminAchievement(id)
+      if (user?.id) {
+        await logAdminAction(user.id, 'DELETE_ACHIEVEMENT', 'achievement', id)
+      }
+      await loadAdminAchievements()
+    }
+  }
+
+  const handleOpenTriggers = async (ach: any) => {
+    setSelectedAchievementForTriggers(ach)
+    await loadTriggersForSelected(ach.id)
+  }
+
+  const handleCreateTrigger = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedAchievementForTriggers || !trigKey.trim()) return
+
+    const ok = await saveAchievementTrigger({
+      achievement_id: selectedAchievementForTriggers.id,
+      trigger_type: trigType,
+      condition_key: trigKey.trim(),
+      condition_value: { target: trigTarget },
+    })
+
+    if (ok) {
+      if (user?.id) {
+        await logAdminAction(user.id, 'CREATE_TRIGGER', 'achievement_trigger', ok.id, { key: trigKey })
+      }
+      setTrigKey('')
+      setTrigTarget(1)
+      await loadTriggersForSelected(selectedAchievementForTriggers.id)
+    }
+  }
+
+  const handleDeleteTrigger = async (id: string) => {
+    if (confirm('Delete this trigger?')) {
+      await deleteAchievementTrigger(id)
+      if (user?.id) {
+        await logAdminAction(user.id, 'DELETE_TRIGGER', 'achievement_trigger', id)
+      }
+      if (selectedAchievementForTriggers) {
+        await loadTriggersForSelected(selectedAchievementForTriggers.id)
       }
     }
   }
@@ -4220,6 +4340,251 @@ A comprehensive explanation of the solution logic.`
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* Achievements & Triggers Configurator */}
+        <div className="border-t border-slate-100 pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              <h3 className="text-lg font-black text-slate-900 font-pixel uppercase">
+                Achievements & Rules Engine
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAddAchievement(!showAddAchievement)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-xl text-xs font-bold font-pixel uppercase transition-colors cursor-pointer"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Create Achievement</span>
+            </button>
+          </div>
+
+          {/* Add Achievement Form */}
+          {showAddAchievement && (
+            <form onSubmit={handleCreateAchievement} className="mb-6 p-5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col gap-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy className="w-4 h-4 text-amber-600" />
+                <h4 className="font-pixel text-xs font-bold text-amber-900 uppercase">New Achievement Definition</h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Title</label>
+                  <input
+                    required
+                    type="text"
+                    value={achTitle}
+                    onChange={(e) => setAchTitle(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                    placeholder="e.g. Master Coder"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Slug (optional)</label>
+                  <input
+                    type="text"
+                    value={achSlug}
+                    onChange={(e) => setAchSlug(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                    placeholder="e.g. master-coder"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Icon</label>
+                  <input
+                    required
+                    type="text"
+                    value={achIcon}
+                    onChange={(e) => setAchIcon(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Target Count</label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    value={achTargetCount}
+                    onChange={(e) => setAchTargetCount(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Reward XP</label>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    value={achRewardXp}
+                    onChange={(e) => setAchRewardXp(parseInt(e.target.value) || 0)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Description</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={achDesc}
+                  onChange={(e) => setAchDesc(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+              </div>
+              <div className="flex justify-end pt-2">
+                <button type="submit" className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold font-pixel uppercase cursor-pointer">
+                  Mint Achievement
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Achievements Table */}
+          <div className="overflow-x-auto border border-slate-200 rounded-xl mb-6">
+            <table className="w-full text-xs text-left">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200 font-pixel text-[10px] text-slate-400">
+                  <th className="p-3">ICON</th>
+                  <th className="p-3">TITLE / DESC</th>
+                  <th className="p-3">TARGET</th>
+                  <th className="p-3">REWARD</th>
+                  <th className="p-3 text-right">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {adminAchievements.map(ach => (
+                  <tr key={ach.id} className="hover:bg-slate-50/50">
+                    <td className="p-3 text-2xl">{ach.icon}</td>
+                    <td className="p-3">
+                      <div className="font-bold text-slate-800">{ach.title}</div>
+                      <div className="text-[10px] text-slate-500">{ach.description}</div>
+                    </td>
+                    <td className="p-3 font-mono font-bold text-slate-700">{ach.targetCount}</td>
+                    <td className="p-3 font-bold text-amber-600 font-pixel">+{ach.rewardXp} XP</td>
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenTriggers(ach)}
+                          className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded text-[9px] font-bold font-pixel uppercase cursor-pointer transition-colors flex items-center gap-1"
+                        >
+                          <Zap className="w-3 h-3" />
+                          Triggers
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAchievement(ach.id)}
+                          className="p-1 rounded text-rose-600 hover:bg-rose-50 cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Triggers Modal */}
+          {selectedAchievementForTriggers && (
+            <div className="p-5 rounded-2xl bg-indigo-50 border border-indigo-200 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-pixel text-sm font-bold text-indigo-900 uppercase">
+                    Configure Rules Engine Triggers
+                  </h4>
+                  <div className="text-xs text-indigo-700">
+                    For Achievement: <span className="font-bold">{selectedAchievementForTriggers.title}</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAchievementForTriggers(null)}
+                  className="p-1.5 rounded-lg text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Existing Triggers */}
+              {achievementTriggers.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {achievementTriggers.map((trig) => (
+                    <div key={trig.id} className="flex items-center justify-between p-3 bg-white rounded-xl border border-indigo-100">
+                      <div className="flex items-center gap-3">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold font-pixel bg-indigo-100 text-indigo-800">
+                          {trig.trigger_type}
+                        </span>
+                        <span className="text-xs font-mono font-bold text-slate-700">
+                          {trig.condition_key}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-500">
+                          {JSON.stringify(trig.condition_value)}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteTrigger(trig.id)}
+                        className="p-1 text-rose-500 hover:bg-rose-50 rounded cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-indigo-500 font-medium py-2">
+                  No active triggers found. This achievement can only be unlocked manually.
+                </div>
+              )}
+
+              {/* Add New Trigger */}
+              <form onSubmit={handleCreateTrigger} className="mt-2 p-4 bg-white rounded-xl border border-indigo-100 flex flex-col sm:flex-row items-end gap-3">
+                <div className="w-full sm:flex-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Trigger Type</label>
+                  <select
+                    value={trigType}
+                    onChange={(e) => setTrigType(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-500 outline-none"
+                  >
+                    <option value="ACTION_COUNT">Action Occurred</option>
+                    <option value="LEVEL_REACHED">Level Reached</option>
+                    <option value="XP_EARNED">XP Earned</option>
+                  </select>
+                </div>
+                <div className="w-full sm:flex-1">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Condition Key</label>
+                  <input
+                    required
+                    type="text"
+                    value={trigKey}
+                    onChange={(e) => setTrigKey(e.target.value)}
+                    placeholder="e.g. BATTLE_WON"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+                <div className="w-full sm:w-24">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Target</label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    value={trigTarget}
+                    onChange={(e) => setTrigTarget(parseInt(e.target.value) || 1)}
+                    className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                </div>
+                <button type="submit" className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-bold font-pixel uppercase cursor-pointer">
+                  Add Rule
+                </button>
+              </form>
+            </div>
+          )}
         </div>
 
         {/* Community & Reports Moderation Section */}

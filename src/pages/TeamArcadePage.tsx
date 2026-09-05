@@ -123,46 +123,39 @@ export const TeamArcadePage: React.FC = () => {
     <div className="w-full max-w-6xl mx-auto p-6 md:p-8 flex flex-col gap-10" style={{ color: C.textPrimary }}>
       {/* ── 1. HERO BANNER WITH SHADED ANIMATION & CARTOONISH IMAGE ── */}
       {theme === 'classic' ? (
-        <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 bg-gradient-to-r from-[#064E3B] via-[#047857] to-[#022C22] text-white shadow-xl border border-emerald-800/50 flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep">
-          {/* Shaded Ambient Glow Overlays */}
-          <div className="absolute -right-16 -top-16 w-96 h-96 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none animate-shade-glow" />
-          <div className="absolute left-1/3 bottom-0 w-80 h-40 bg-teal-500/15 blur-2xl pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/5 pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 bg-[#faf7f2] border border-[#ece7df] shadow-xs flex flex-col md:flex-row items-center justify-between gap-8 min-h-[150px]">
+
+
+          {/* Full Cover Background Image */}
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <img
+              src="/extracted/team_arcade_art.jpg"
+              alt="Team Arcade Art"
+              className="w-full h-full object-cover opacity-85 mix-blend-multiply"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#faf7f2] via-[#faf7f2]/80 to-transparent" />
+          </div>
 
           {/* Left Text Column */}
           <div className="relative z-10 flex flex-col gap-3 max-w-xl text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 shadow-sm backdrop-blur-md">
-              <Gamepad2 className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-emerald-50 border border-emerald-200 text-emerald-700 shadow-sm backdrop-blur-md">
+              <Gamepad2 className="w-3.5 h-3.5 text-emerald-500" />
               <span>TEAM ARCADE • SQUAD CHALLENGE ARENA</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm font-pixel">
+            <h1 className="text-3xl md:text-5xl font-black text-stone-900 tracking-tight font-pixel">
               Squad Challenge Arena
             </h1>
-            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-medium">
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
               Form 4-player squads, challenge rival teams to real-time coding duels, and conquer quests together to capture enemy turf.
             </p>
             <div className="flex items-center gap-3 pt-2">
-              <span className="px-3 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Live Squad Battles
+              <span className="px-3 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Squad Battles
               </span>
             </div>
           </div>
 
-          {/* Right Cartoonish Mascot Column */}
-          <div className="relative z-10 shrink-0 flex items-center justify-center">
-            <div className="relative animate-cartoon-float">
-              <div className="absolute inset-0 rounded-full bg-emerald-400/30 blur-xl scale-95" />
-              <img
-                src="/questbot.png"
-                alt="Arcade Battle Bot"
-                className="w-44 sm:w-56 md:w-64 h-auto object-contain relative z-10 drop-shadow-[0_16px_28px_rgba(0,0,0,0.5)] transition-transform hover:scale-105"
-              />
-              <div className="absolute -bottom-2 -right-2 bg-emerald-900/90 border border-emerald-400/60 p-2 rounded-2xl shadow-lg backdrop-blur-sm flex items-center gap-1.5 z-20">
-                <img src="/extracted/icon_gamepad.png" alt="" className="w-5 h-5 object-contain" />
-                <span className="text-[10px] font-pixel font-bold text-emerald-200">READY</span>
-              </div>
-            </div>
-          </div>
+
         </div>
       ) : theme === 'spiderman' ? (
         <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-spider-banner">
