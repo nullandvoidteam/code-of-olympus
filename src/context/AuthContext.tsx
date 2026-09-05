@@ -172,6 +172,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) return { error }
 
       if (data.user) {
+        // User logged in via credentials -> they are an existing user, NEVER show onboarding!
+        localStorage.setItem(`onboarded_${data.user.id}`, 'true')
+        localStorage.removeItem(`new_signup_pending_onboarding_${data.user.id}`)
+        sessionStorage.removeItem(`just_signed_up_${data.user.id}`)
+
         const userProfile = await fetchProfile(data.user)
         setProfile(userProfile)
         setRole(userProfile?.role || 'student')
@@ -199,6 +204,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             xp: selectedRole === 'admin' ? 9999 : 50,
             level: selectedRole === 'admin' ? 99 : 1,
             streak: 1,
+            is_new_signup: true,
           },
         },
       })
@@ -206,6 +212,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) return { error }
 
       if (data.user) {
+        // Flag ONLY brand new signups to see the onboarding flow
+        sessionStorage.setItem(`just_signed_up_${data.user.id}`, 'true')
+        localStorage.setItem(`new_signup_pending_onboarding_${data.user.id}`, 'true')
+
         const userProfile = await fetchProfile(data.user)
         setProfile(userProfile)
         setRole(userProfile?.role || selectedRole)
@@ -222,6 +232,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signOut = async () => {
     setLoading(true)
     try {
+      if (user?.id) {
+        sessionStorage.removeItem(`just_signed_up_${user.id}`)
+        localStorage.removeItem(`new_signup_pending_onboarding_${user.id}`)
+      }
       const { error } = await supabase.auth.signOut()
       setUser(null)
       setSession(null)

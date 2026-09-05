@@ -59,6 +59,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     quests: { title: 'Quests', icon: <BookOpen className="w-4 h-4 text-blue-600" /> },
     achievements: { title: 'Achievements', icon: <Star className="w-4 h-4 text-amber-600" /> },
     badges: { title: 'Badges', icon: <ShieldCheck className="w-4 h-4 text-cyan-600" /> },
+    levels: { title: 'Level Progression', icon: <Star className="w-4 h-4 text-cyan-600" /> },
     theme: { title: 'Theme Studio', icon: <Palette className="w-4 h-4 text-amber-600" /> },
     settings: { title: 'Settings', icon: <Settings className="w-4 h-4 text-stone-600" /> },
     help: { title: 'Help & Support', icon: <Bot className="w-4 h-4 text-emerald-600" /> },

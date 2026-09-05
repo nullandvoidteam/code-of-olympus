@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Bell, LogOut, Settings, ChevronDown, Palette, Menu } from 'lucide-react'
+import { Bell, LogOut, Settings, ChevronDown, Palette, Menu, User } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { useNotifications } from '../../context/NotificationContext'
@@ -98,7 +98,7 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
   return (
     <header
       id="crucible-header"
-      className="relative overflow-hidden h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 select-none w-full"
+      className="relative h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 select-none w-full"
       style={{
         background: 'var(--theme-surface-card-translucent, rgba(7,5,5,0.92))',
         backdropFilter: 'blur(16px)',
@@ -415,8 +415,17 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
               <div className="py-1 flex flex-col gap-0.5">
                 <button
                   type="button"
+                  onClick={() => { setShowProfileMenu(false); onSelectTab('profile') }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer hover:bg-white/10"
+                  style={{ color: 'var(--theme-text-primary, #F5E8E8)' }}
+                >
+                  <User className="w-3.5 h-3.5" style={{ color: 'var(--theme-accent-primary, #DC2626)' }} />
+                  <span>My Profile & Quests</span>
+                </button>
+                <button
+                  type="button"
                   onClick={() => { setShowProfileMenu(false); onSelectTab('settings') }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer hover:bg-white/10"
                   style={{ color: 'var(--theme-text-secondary, #D1C2C2)' }}
                 >
                   <Settings className="w-3.5 h-3.5" style={{ color: 'var(--theme-accent-glow, #FF3D00)' }} />
@@ -425,7 +434,7 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => { setShowProfileMenu(false); onSelectTab('theme') }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-colors cursor-pointer hover:bg-white/10"
                   style={{ color: 'var(--theme-text-secondary, #D1C2C2)' }}
                 >
                   <Palette className="w-3.5 h-3.5" style={{ color: 'var(--theme-accent-cyan, #00E5FF)' }} />
@@ -434,7 +443,7 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => { setShowProfileMenu(false); signOut() }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-red-400 hover:bg-red-950/20 transition-colors cursor-pointer"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-red-400 hover:bg-red-950/30 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Log Out</span>
