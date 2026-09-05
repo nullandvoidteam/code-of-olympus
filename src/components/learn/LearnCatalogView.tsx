@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Search,
   SlidersHorizontal,
@@ -14,6 +14,11 @@ import {
   Compass,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
+import { COURSE_CATALOG } from '../../lib/courseData'
+import type { CourseCatalogItem } from '../../lib/courseData'
+import { getCourseProgress } from '../../lib/courseProgress'
+import type { CourseProgress } from '../../lib/courseProgress'
 
 interface LearnCatalogViewProps {
   onSelectCourse?: (courseId: string) => void
@@ -36,101 +41,22 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
   onSelectCourse,
   onOpenLumi,
 }) => {
+  const { user } = useAuth()
   const [activeCategory, setActiveCategory] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [progressMap, setProgressMap] = useState<Record<string, CourseProgress>>({})
 
-  const courses = [
-    {
-      id: 'python',
-      title: 'Python Adventure',
-      category: 'programming',
-      difficulty: 'Beginner',
-      hours: '8–10 Hours',
-      chapters: 18,
-      xp: 2400,
-      icon: '🐍',
-      rating: '4.9',
-      students: '12,400+',
-      progress: 78,
-      description: 'Master programming fundamentals by completing quests, solving challenges, and building real projects.',
-      status: 'continue',
-    },
-    {
-      id: 'html-css',
-      title: 'The HTML & CSS Odyssey',
-      category: 'web',
-      difficulty: 'Beginner',
-      hours: '6–8 Hours',
-      chapters: 16,
-      xp: 1800,
-      icon: '🌐',
-      rating: '4.9',
-      students: '18,200+',
-      progress: 100,
-      description: 'Build modern responsive web pages from scratch with semantic HTML5 and modern CSS techniques.',
-      status: 'completed',
-    },
-    {
-      id: 'javascript',
-      title: 'JavaScript Realms',
-      category: 'web',
-      difficulty: 'Intermediate',
-      hours: '10–12 Hours',
-      chapters: 20,
-      xp: 3200,
-      icon: '⚡',
-      rating: '4.8',
-      students: '9,500+',
-      progress: 40,
-      description: 'Unlock interactive programming, DOM manipulation, asynchronous fetching, and modern ES6+ magic.',
-      status: 'continue',
-    },
-    {
-      id: 'react',
-      title: 'React & Frontend Mastery',
-      category: 'web',
-      difficulty: 'Intermediate',
-      hours: '12–14 Hours',
-      chapters: 14,
-      xp: 3600,
-      icon: '⚛️',
-      rating: '4.9',
-      students: '7,100+',
-      progress: 0,
-      description: 'Component architecture, state management, hooks, and scalable frontend single page apps.',
-      status: 'start',
-    },
-    {
-      id: 'sql',
-      title: 'SQL & Data Vaults',
-      category: 'programming',
-      difficulty: 'Beginner',
-      hours: '5–6 Hours',
-      chapters: 10,
-      xp: 1500,
-      icon: '🗄️',
-      rating: '4.7',
-      students: '5,800+',
-      progress: 0,
-      description: 'Querying databases, relational models, joins, group by, and backend data design patterns.',
-      status: 'start',
-    },
-    {
-      id: 'ai',
-      title: 'AI & Prompt Engineering',
-      category: 'ai',
-      difficulty: 'Intermediate',
-      hours: '8–10 Hours',
-      chapters: 12,
-      xp: 2800,
-      icon: '🤖',
-      rating: '4.9',
-      students: '8,300+',
-      progress: 0,
-      description: 'Build generative AI apps, structured prompting, API workflows, and intelligent coding assistants.',
-      status: 'start',
-    },
-  ]
+  useEffect(() => {
+    if (user) {
+      getCourseProgress(user.id).then(map => setProgressMap(map))
+    }
+  }, [user])
+
+  const courses = COURSE_CATALOG.map(c => ({
+    ...c,
+    progress: progressMap[c.id]?.progressPercent || 0,
+    status: progressMap[c.id]?.status || 'start'
+  }))
 
   const filteredCourses = courses.filter((c) => {
     const matchesCat = activeCategory === 'all' || c.category === activeCategory

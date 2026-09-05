@@ -25,6 +25,7 @@ import { QuestsView } from '../achievements/QuestsView'
 import { BadgesView } from '../achievements/BadgesView'
 import { SettingsView } from '../settings/SettingsView'
 import { LearningPathView } from '../learn/LearningPathView'
+import { LevelProgressionView } from '../levels/LevelProgressionView'
 import { GameToaster } from '../ui/GameToast'
 import { AlexPixelAvatar } from '../brand/PixelArtAvatars'
 import {
@@ -34,6 +35,7 @@ import {
   Camera,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { saveCourseProgress } from '../../lib/courseProgress'
 import type { DashboardMode } from './CrucibleHeader'
 
 export const AppShell: React.FC = () => {
@@ -42,8 +44,8 @@ export const AppShell: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const dashboardMode: DashboardMode = (profile?.xp ?? 0) > 50 ? 'headquarters' : 'first_time'
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>('python')
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>('ch4-lesson3')
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null)
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null)
   const [practiceBriefingId, setPracticeBriefingId] = useState<string | null>(null)
@@ -285,11 +287,18 @@ export const AppShell: React.FC = () => {
                 />
               ) : selectedCourseId ? (
                 <CourseDetailView
+                  courseId={selectedCourseId}
                   onBackToCourses={() => setSelectedCourseId(null)}
                   onStartQuest={() => {
+                    if (user?.id) {
+                      saveCourseProgress(user.id, selectedCourseId, 15)
+                    }
                     setSelectedLessonId('ch4-lesson3')
                   }}
                   onSelectLesson={(lessonId) => {
+                    if (user?.id) {
+                      saveCourseProgress(user.id, selectedCourseId, 25)
+                    }
                     setSelectedLessonId(lessonId)
                   }}
                   onOpenLumi={() => {
@@ -298,7 +307,13 @@ export const AppShell: React.FC = () => {
                   }}
                 />
               ) : (
-                <LearningPathView />
+                <LearnCatalogView
+                  onSelectCourse={(id) => setSelectedCourseId(id)}
+                  onOpenLumi={() => {
+                    const btn = document.querySelector('button[title="Ask Lumi AI Mentor"]') as HTMLButtonElement | null
+                    btn?.click()
+                  }}
+                />
               )}
             </>
           )}
@@ -370,6 +385,8 @@ export const AppShell: React.FC = () => {
           {activeTab === 'badges' && <BadgesView />}
 
           {activeTab === 'achievements' && <AchievementsView />}
+          
+          {activeTab === 'levels' && <LevelProgressionView />}
 
           {activeTab === 'theme' && <ThemeStudioView />}
 

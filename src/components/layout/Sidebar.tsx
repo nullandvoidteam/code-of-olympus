@@ -27,7 +27,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { cn } from '../../lib/utils'
 import { CodeQuestLogo } from '../brand/CodeQuestLogo'
 
-export type NavItemKey = 'dashboard' | 'learn' | 'practice' | 'build' | 'arcade' | 'community' | 'profile' | 'quests' | 'achievements' | 'badges' | 'theme' | 'settings' | 'help' | 'admin'
+export type NavItemKey = 'dashboard' | 'learn' | 'practice' | 'build' | 'arcade' | 'community' | 'profile' | 'quests' | 'achievements' | 'badges' | 'levels' | 'theme' | 'settings' | 'help' | 'admin'
 
 interface SidebarProps {
   activeTab: NavItemKey
@@ -86,10 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { key: 'build' as NavItemKey, label: 'Projects', icon: Hammer },
     { key: 'arcade' as NavItemKey, label: 'Arcade', icon: Flame },
     { key: 'community' as NavItemKey, label: 'Community', icon: Users },
-    { key: 'profile' as NavItemKey, label: 'Profile', icon: User },
     { key: 'quests' as NavItemKey, label: 'Quests', icon: Target },
-    { key: 'achievements' as NavItemKey, label: 'Achievements', icon: Trophy },
-    { key: 'badges' as NavItemKey, label: 'Badges', icon: Shield },
     { key: 'theme' as NavItemKey, label: 'Theme', icon: Palette },
   ]
 
