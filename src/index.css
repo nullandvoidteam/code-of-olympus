@@ -459,6 +459,51 @@
   animation: ember-float 4s ease-in-out infinite;
 }
 
+@keyframes cartoon-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.2deg);
+  }
+}
+
+@keyframes shade-glow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.06);
+  }
+}
+
+@keyframes shade-sweep {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-cartoon-float {
+  animation: cartoon-float 4s ease-in-out infinite;
+}
+
+.animate-shade-glow {
+  animation: shade-glow 6s ease-in-out infinite;
+}
+
+.animate-shade-sweep {
+  background-size: 200% 200%;
+  animation: shade-sweep 10s ease infinite;
+}
+
 /* Tactile 3D Gamified Button System */
 .btn-gamified-3d {
   position: relative;

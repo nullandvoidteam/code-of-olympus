@@ -12,15 +12,25 @@ export const CommunityPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col gap-8 pb-20 select-none animate-in fade-in duration-300">
-      {/* ── Sacred Shield Wall Hero ── */}
-      <div className="relative bg-gradient-to-br from-[#180A0A] via-[#0E0505] to-[#0A0404] border-2 border-[#8C2828] rounded-2xl p-6 sm:p-8 overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.85)]">
-        <div className="absolute top-0 right-1/4 w-96 h-36 bg-[#FF3D00]/15 blur-[90px] pointer-events-none" />
+      {/* ── Sacred Shield Wall Hero with Shaded Animation & Cartoonish Image ── */}
+      <div
+        className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep"
+        style={{
+          background: 'linear-gradient(135deg, rgba(28,10,10,0.98) 0%, rgba(18,6,6,0.98) 50%, rgba(8,2,2,0.98) 100%)',
+          borderColor: '#8C2828',
+          boxShadow: `0 0 40px rgba(220,38,38,0.2) inset, 0 12px 36px rgba(0,0,0,0.85)`,
+        }}
+      >
+        {/* Shaded Ambient Glow Overlays */}
+        <div className="absolute right-12 top-0 w-96 h-96 rounded-full bg-red-600/25 blur-3xl pointer-events-none animate-shade-glow" />
+        <div className="absolute left-1/4 bottom-0 w-80 h-36 bg-orange-600/15 blur-2xl pointer-events-none" />
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF3D00] to-transparent" />
         <div className="absolute -bottom-8 -right-8 text-[180px] font-serif font-black text-red-950/20 pointer-events-none select-none leading-none">
           Ω
         </div>
 
-        <div className="relative z-10 flex flex-col gap-2 max-w-2xl">
+        {/* Left Content */}
+        <div className="relative z-10 flex flex-col gap-3 max-w-xl text-left">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#FF3D00] shadow-[0_0_8px_#FF3D00] animate-pulse" />
             <span
@@ -32,8 +42,8 @@ export const CommunityPage: React.FC = () => {
           </div>
 
           <h1
-            style={{ fontFamily: "'Cinzel', serif" }}
-            className="text-2xl sm:text-4xl font-black text-[#F5E8E8] tracking-wider uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+            style={{ fontFamily: "'Cinzel Decorative', serif", textShadow: '0 2px 20px rgba(220,38,38,0.5)' }}
+            className="text-3xl md:text-5xl font-black text-[#F5E8E8] tracking-wider uppercase"
           >
             The Shield Wall
           </h1>
@@ -41,6 +51,35 @@ export const CommunityPage: React.FC = () => {
           <p className="text-xs sm:text-sm text-[#A89898] leading-relaxed max-w-xl">
             Proclaim your battle triumphs, request algorithmic counsel, and swear blood oaths alongside fellow Spartan coders.
           </p>
+
+          <div className="flex items-center gap-3 pt-2">
+            <span
+              className="px-3 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-2 border"
+              style={{ background: 'rgba(30,14,14,0.8)', borderColor: '#8C2828', color: '#F5D060' }}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Midgard Guild Feed Active
+            </span>
+          </div>
+        </div>
+
+        {/* Right Cartoonish Image */}
+        <div className="relative z-10 shrink-0 flex items-center justify-center">
+          <div className="relative animate-cartoon-float">
+            <div className="absolute inset-0 rounded-full bg-red-600/30 blur-2xl scale-95" />
+            <img
+              src="/extracted/community_space.png"
+              alt="Community Space Guild"
+              className="w-44 sm:w-56 md:w-64 h-auto object-contain relative z-10 drop-shadow-[0_16px_32px_rgba(220,38,38,0.45)] transition-transform hover:scale-105"
+            />
+            <div
+              className="absolute -bottom-2 -left-2 px-3 py-1 rounded-xl shadow-lg border backdrop-blur-md flex items-center gap-1.5 z-20"
+              style={{ background: 'rgba(14,6,6,0.92)', borderColor: '#8C2828' }}
+            >
+              <span className="text-[10px] font-black tracking-widest text-amber-400" style={{ fontFamily: "'Cinzel', serif" }}>
+                COUNCIL LIVE
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 

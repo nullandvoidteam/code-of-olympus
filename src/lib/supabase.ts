@@ -25,5 +25,6 @@ export interface UserProfile {
   level?: number
   daily_goal_xp?: number
   daily_xp_earned?: number
+  biography?: string
   created_at?: string
 }

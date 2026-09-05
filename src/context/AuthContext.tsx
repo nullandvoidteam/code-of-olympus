@@ -19,6 +19,8 @@ interface UpdateProfileParams {
   xp?: number
   level?: number
   streak?: number
+  daily_goal_xp?: number
+  biography?: string
 }
 
 interface AuthContextType {

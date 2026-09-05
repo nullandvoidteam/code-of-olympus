@@ -117,7 +117,7 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
   }
 
   const earnedBadges = badges.filter((b) => b.isUnlocked)
-  const completionPercent = overallProgress.progressPercent ?? overallProgress.percent ?? 0
+  const completionPercent = (overallProgress as any).progressPercent ?? (overallProgress as any).percent ?? 0
 
   return (
     <div
