@@ -10,6 +10,7 @@ import {
   Sun,
 } from 'lucide-react'
 import { useTheme, type ThemeKey } from '../../context/ThemeContext'
+import { SpiderNetDecal, SpiderEmblemIcon } from '../ui/SpiderNetDecal'
 
 interface ThemePreset {
   id: ThemeKey
@@ -82,6 +83,19 @@ export const ThemeStudioView: React.FC = () => {
       supportsFx: true,
     },
     {
+      id: 'spiderman',
+      name: 'Spiderman',
+      subtitle: 'Spider-Verse & Web-Shooter Neon',
+      icon: SpiderEmblemIcon,
+      accentColor: '#E62429',
+      secondaryColor: '#0066FF',
+      previewGradient: 'linear-gradient(135deg, #07080E 0%, #170F2B 35%, #E62429 70%, #0066FF 100%)',
+      glowColor: 'rgba(230, 36, 41, 0.45)',
+      description: 'High-energy Marvel Spider-Man gaming aesthetic. Stealth suit obsidian, iconic crimson & web-shooter cobalt, radioactive Spider-Sense radar pulses, and intricate web netting.',
+      features: ['Interactive Web-Shooter Cursor', 'Spider-Sense Radar HUD', 'Bio-Electric Web Netting', 'NYC Skyline Atmosphere'],
+      supportsFx: true,
+    },
+    {
       id: 'light',
       name: 'Minimal Light',
       subtitle: 'Clean Slate & Focused Code',
@@ -142,12 +156,12 @@ export const ThemeStudioView: React.FC = () => {
             className="text-xs sm:text-sm leading-relaxed max-w-xl"
             style={{ color: 'var(--theme-text-muted)' }}
           >
-            Select between the 4 custom visual realms. Switching updates the entire platform instantly and saves your preference across reloads.
+            Select between the 5 custom visual realms. Switching updates the entire platform instantly and saves your preference across reloads.
           </p>
         </div>
       </div>
 
-      {/* ── 2. PRESET SELECTION GRID (ALL 4 THEMES) ── */}
+      {/* ── 2. PRESET SELECTION GRID (ALL 5 THEMES) ── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <Palette className="w-4 h-4" style={{ color: 'var(--theme-accent-glow)' }} />
@@ -173,10 +187,15 @@ export const ThemeStudioView: React.FC = () => {
                   boxShadow: isSelected ? '0 0 24px var(--theme-glow-ambient)' : 'var(--theme-shadow-card)',
                 }}
               >
+                {/* Spider Net corner accent for Spider-Man preset */}
+                {preset.id === 'spiderman' && (
+                  <SpiderNetDecal size={68} position="top-right" />
+                )}
+
                 {/* Active Badge */}
                 {isSelected && (
                   <div
-                    className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[10px] font-bold"
+                    className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[10px] font-bold z-20"
                     style={{
                       background: 'var(--theme-surface-card-alt)',
                       borderColor: 'var(--theme-accent-glow)',
@@ -263,7 +282,7 @@ export const ThemeStudioView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Blade of Chaos Hardware Cursor */}
+          {/* Custom Hardware Cursor */}
           <div
             className="p-4 rounded-xl border flex items-center justify-between gap-4"
             style={{
@@ -279,17 +298,17 @@ export const ThemeStudioView: React.FC = () => {
                   borderColor: 'var(--theme-border-strong)',
                 }}
               >
-                🗡️
+                {theme === 'spiderman' ? '🕸️' : theme === 'space' ? '🎯' : '🗡️'}
               </div>
               <div className="flex flex-col">
                 <span
                   style={{ fontFamily: 'var(--theme-font-heading)', color: 'var(--theme-text-primary)' }}
                   className="font-bold text-xs uppercase tracking-wider"
                 >
-                  Hardware Blade Cursor
+                  {theme === 'spiderman' ? 'Web-Shooter Reticle Cursor' : theme === 'space' ? 'Cosmic Crosshair Cursor' : 'Hardware Blade Cursor'}
                 </span>
                 <span className="text-[11px]" style={{ color: 'var(--theme-text-muted)' }}>
-                  Real-time 0ms hardware tracked cursor blade
+                  {theme === 'spiderman' ? '0ms bio-electric web reticle with spider-sense targeting' : 'Real-time 0ms hardware tracked cursor blade'}
                 </span>
               </div>
             </div>

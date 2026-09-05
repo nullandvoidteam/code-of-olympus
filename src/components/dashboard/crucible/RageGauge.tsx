@@ -1,34 +1,45 @@
 import React from 'react'
 import type { GamificationStats } from '../../../lib/gamification'
+import { useTheme } from '../../../context/ThemeContext'
 
 interface RageGaugeProps {
   stats: GamificationStats
 }
 
 export const RageGauge: React.FC<RageGaugeProps> = ({ stats }) => {
+  const { theme } = useTheme()
+  const isSpiderman = theme === 'spiderman'
   const { dailyXpEarned, dailyGoalXp, dailyGoalPercent, dailyGoalCompleted } = stats
 
   return (
     <div
       className="rounded-xl p-5"
       style={{
-        background: 'linear-gradient(145deg, var(--theme-surface-card-alt, #140909) 0%, var(--theme-surface-card, #0A0606) 100%)',
-        border: '1px solid var(--theme-border-default, rgba(80, 30, 30, 0.9))',
-        boxShadow: 'var(--theme-shadow-card, 0 4px 18px rgba(7,5,5,0.7))',
+        background: isSpiderman ? '#151E3A' : 'linear-gradient(145deg, var(--theme-surface-card-alt, #140909) 0%, var(--theme-surface-card, #0A0606) 100%)',
+        border: `1px solid ${isSpiderman ? '#2A3A65' : 'var(--theme-border-default, rgba(80, 30, 30, 0.9))'}`,
+        boxShadow: isSpiderman ? '0 4px 18px rgba(0, 240, 255, 0.1)' : 'var(--theme-shadow-card, 0 4px 18px rgba(7,5,5,0.7))',
       }}
     >
       {/* Header Row */}
       <div className="flex items-center justify-between mb-3">
         <span
           className="font-bold tracking-[0.2em] uppercase flex items-center gap-1.5"
-          style={{ color: 'var(--theme-accent-primary, #EF4444)', fontSize: '11px', fontFamily: "var(--theme-font-heading, 'Cinzel', serif)" }}
+          style={{
+            color: isSpiderman ? '#00F0FF' : 'var(--theme-accent-primary, #EF4444)',
+            fontSize: '11px',
+            fontFamily: isSpiderman ? 'var(--theme-font-heading, "Inter", sans-serif)' : "var(--theme-font-heading, 'Cinzel', serif)"
+          }}
         >
-          <span>⚔️</span>
-          <span>SPARTAN RAGE</span>
+          <span>{isSpiderman ? '🕸️' : '⚔️'}</span>
+          <span>{isSpiderman ? 'SPIDER-SENSE CHARGE' : 'SPARTAN RAGE'}</span>
         </span>
         <span
           className="font-bold tabular-nums tracking-wider"
-          style={{ color: 'var(--theme-accent-secondary, #F5D060)', fontSize: '12px', fontFamily: "var(--theme-font-heading, 'Cinzel', serif)" }}
+          style={{
+            color: isSpiderman ? '#00F0FF' : 'var(--theme-accent-secondary, #F5D060)',
+            fontSize: '12px',
+            fontFamily: isSpiderman ? 'var(--theme-font-heading, "Inter", sans-serif)' : "var(--theme-font-heading, 'Cinzel', serif)"
+          }}
         >
           {dailyXpEarned} / {dailyGoalXp} XP
         </span>
@@ -79,47 +90,49 @@ export const RageGauge: React.FC<RageGaugeProps> = ({ stats }) => {
         {dailyGoalPercent > 15 && (
           <span
             className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white font-bold z-20"
-            style={{ fontSize: '10px', textShadow: '0 1px 3px rgba(0,0,0,0.9)', fontFamily: "'Cinzel', serif" }}
+            style={{ fontSize: '10px', textShadow: '0 1px 3px rgba(0,0,0,0.9)', fontFamily: isSpiderman ? "'Inter', sans-serif" : "'Cinzel', serif" }}
           >
             {dailyGoalPercent}%
           </span>
         )}
       </div>
 
-      {/* Rage Unleashed Victory Seal */}
+      {/* Rage / Spider-Sense Unleashed Victory Seal */}
       {dailyGoalCompleted && (
         <div
           className="flex items-center justify-center gap-2 mt-2 py-2 rounded-lg"
           style={{
-            background: 'linear-gradient(90deg, rgba(153, 27, 27, 0.4) 0%, rgba(245, 158, 11, 0.25) 50%, rgba(153, 27, 27, 0.4) 100%)',
-            border: '1px solid rgba(245, 208, 96, 0.5)',
+            background: isSpiderman
+              ? 'linear-gradient(90deg, rgba(255, 23, 68, 0.4) 0%, rgba(0, 240, 255, 0.3) 50%, rgba(255, 23, 68, 0.4) 100%)'
+              : 'linear-gradient(90deg, rgba(153, 27, 27, 0.4) 0%, rgba(245, 158, 11, 0.25) 50%, rgba(153, 27, 27, 0.4) 100%)',
+            border: `1px solid ${isSpiderman ? '#00F0FF' : 'rgba(245, 208, 96, 0.5)'}`,
             animation: 'rage-pulse 1.5s ease-in-out infinite',
           }}
         >
-          <span style={{ fontSize: '14px' }}>🔥</span>
+          <span style={{ fontSize: '14px' }}>{isSpiderman ? '⚡' : '🔥'}</span>
           <span
             className="font-bold tracking-[0.2em] uppercase"
-            style={{ color: '#F5D060', fontSize: '10px', fontFamily: "'Cinzel', serif" }}
+            style={{ color: isSpiderman ? '#00F0FF' : '#F5D060', fontSize: '10px', fontFamily: isSpiderman ? "'Inter', sans-serif" : "'Cinzel', serif" }}
           >
-            RAGE UNLEASHED
+            {isSpiderman ? 'SPIDER-SENSE PEAK' : 'RAGE UNLEASHED'}
           </span>
           <span
             className="font-bold tracking-wider"
-            style={{ color: '#FCD34D', fontSize: '10px', fontFamily: "'Cinzel', serif" }}
+            style={{ color: isSpiderman ? '#FFFFFF' : '#FCD34D', fontSize: '10px', fontFamily: isSpiderman ? "'Inter', sans-serif" : "'Cinzel', serif" }}
           >
-            +BONUS HACKSILVER
+            {isSpiderman ? '+BONUS SPIDER XP' : '+BONUS HACKSILVER'}
           </span>
-          <span style={{ fontSize: '14px' }}>🔥</span>
+          <span style={{ fontSize: '14px' }}>{isSpiderman ? '⚡' : '🔥'}</span>
         </div>
       )}
 
       {!dailyGoalCompleted && (
         <div className="flex items-center justify-between mt-1">
-          <span style={{ color: '#8A7A7A', fontSize: '11px', fontFamily: "'Inter', sans-serif" }}>
-            {Math.max(0, dailyGoalXp - dailyXpEarned)} XP until Rage unleashed
+          <span style={{ color: isSpiderman ? '#94A3B8' : '#8A7A7A', fontSize: '11px', fontFamily: "'Inter', sans-serif" }}>
+            {Math.max(0, dailyGoalXp - dailyXpEarned)} XP until {isSpiderman ? 'Spider-Sense peak' : 'Rage unleashed'}
           </span>
           <span
-            style={{ color: '#C59B27', fontSize: '10px', fontFamily: "'Cinzel', serif", letterSpacing: '0.1em' }}
+            style={{ color: isSpiderman ? '#00F0FF' : '#C59B27', fontSize: '10px', fontFamily: isSpiderman ? "'Inter', sans-serif" : "'Cinzel', serif", letterSpacing: '0.1em' }}
           >
             DAILY GOAL
           </span>

@@ -18,6 +18,8 @@ import {
   Trophy,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { SpiderNetDecal } from '../ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
 interface PracticeArenaViewProps {
   onStartChallenge?: (id?: string) => void
@@ -26,8 +28,11 @@ interface PracticeArenaViewProps {
 /* ─── Data ──────────────────────────────────────────────────────────────────── */
 const TECH_FILTERS = ['All Realms', 'Python', 'JavaScript', 'HTML/CSS', 'SQL', 'React', 'Algorithms', 'Data Structures']
 const TECH_FILTERS_CLASSIC = ['All', 'Python', 'JavaScript', 'HTML/CSS', 'SQL', 'React', 'Algorithms', 'Data Structures']
+const TECH_FILTERS_SPIDERMAN = ['All Districts', 'Python', 'JavaScript', 'HTML/CSS', 'SQL', 'React', 'Algorithms', 'Data Structures']
 const LEVEL_FILTERS = ['All Tiers', 'Mortal', 'Hero', 'God of War']
+const LEVEL_FILTERS_SPIDERMAN = ['All Tiers', 'Friendly Neighborhood', 'Queens Vigilante', 'Spider-Verse Hero']
 const SORT_OPTIONS = ['Spartan Favor', 'Newest Blood', 'Most Conquered', 'Hacksilver XP']
+const SORT_OPTIONS_SPIDERMAN = ['Spider Accuracy', 'Newest Patrols', 'Most Conquered', 'Spider XP']
 
 interface ChallengeCard {
   id: string
@@ -121,6 +126,78 @@ const LEADERBOARD_CLASSIC = [
   { rank: 3, emoji: '🚀', name: 'DevRocket', xp: '2,450 XP' },
   { rank: 4, emoji: '👾', name: 'PixelHero', xp: '2,120 XP' },
   { rank: 5, emoji: '🦊', name: 'ByteFox', xp: '1,980 XP' },
+]
+
+const SPIDERMAN_CHALLENGES: ChallengeCard[] = [
+  {
+    id: 'reverse-string',
+    title: 'Web-Shooter Trajectory Invert',
+    description: 'Reverse a telemetry string to calibrate web recoil without using reverse built-ins.',
+    difficulty: 'EASY',
+    tag: 'NOVICE',
+    xp: 75,
+    lang: 'Python',
+    locked: false,
+    isDaily: true,
+    emoji: '🕸️',
+    tierName: 'Friendly Neighborhood',
+  },
+  {
+    id: 'fizzbuzz',
+    title: 'Daily Bugle Press Counter',
+    description: 'Output Spider, Bugle, or SpiderBugle across sequential newspaper presses up to N.',
+    difficulty: 'EASY',
+    tag: 'NOVICE',
+    xp: 80,
+    lang: 'Python',
+    locked: false,
+    emoji: '📰',
+    tierName: 'Friendly Neighborhood',
+  },
+  {
+    id: 'palindrome',
+    title: 'Spider-Signal Reflection Check',
+    description: 'Determine if an alphanumeric patrol radar beam reads identical backwards and forwards.',
+    difficulty: 'EASY',
+    tag: 'NOVICE',
+    xp: 75,
+    lang: 'Python',
+    locked: false,
+    emoji: '🕷️',
+    tierName: 'Friendly Neighborhood',
+  },
+  {
+    id: 'two-sum',
+    title: 'Web Fluid Density Binary Pair',
+    description: 'Locate two canister indices in an array that combine to the target tensile strength.',
+    difficulty: 'MEDIUM',
+    tag: 'HERO',
+    xp: 125,
+    lang: 'Python',
+    locked: false,
+    emoji: '⚡',
+    tierName: 'Queens Vigilante',
+  },
+  {
+    id: 'valid-anagram',
+    title: 'Oscorp Security Decryption',
+    description: 'Confirm if an encrypted security pass scrambles exactly to match the lab authorization key.',
+    difficulty: 'MEDIUM',
+    tag: 'HERO',
+    xp: 125,
+    lang: 'Python',
+    locked: false,
+    emoji: '🧪',
+    tierName: 'Queens Vigilante',
+  },
+]
+
+const SPIDERMAN_LEADERBOARD = [
+  { rank: 1, emoji: '🕸️', name: 'PeterParker_NYC', xp: '3,240 XP' },
+  { rank: 2, emoji: '⚡', name: 'Miles_Brooklyn', xp: '2,890 XP' },
+  { rank: 3, emoji: '🕷️', name: 'Ghost_Spider_Gwen', xp: '2,450 XP' },
+  { rank: 4, emoji: '🎸', name: 'SpiderPunk_Hobie', xp: '2,120 XP' },
+  { rank: 5, emoji: '🕶️', name: 'SpiderMan_2099', xp: '1,980 XP' },
 ]
 
 /* ========================================================================= */
@@ -438,12 +515,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
   )
 }
 
-export const PracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
-  const { theme } = useTheme()
-  if (theme === 'classic') {
-    return <ClassicPracticeArenaView {...props} />
-  }
-
+const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
   const { onStartChallenge } = props
   const [techFilter, setTechFilter] = useState('All Realms')
   const [levelFilter, setLevelFilter] = useState('All Tiers')
@@ -914,4 +986,464 @@ export const PracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
       </div>
     </div>
   )
+}
+
+/* ========================================================================= */
+/* SPIDER-MAN PRACTICE ARENA VIEW                                            */
+/* ========================================================================= */
+const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartChallenge }) => {
+  const [techFilter, setTechFilter] = useState('All Districts')
+  const [levelFilter, setLevelFilter] = useState('All Tiers')
+  const [sortBy, setSortBy] = useState('Spider Accuracy')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSortDropdown, setShowSortDropdown] = useState(false)
+  const carouselRef = useRef<HTMLDivElement>(null)
+
+  const filteredCards = SPIDERMAN_CHALLENGES.filter(c => {
+    const matchSearch =
+      searchQuery === '' ||
+      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchTech = techFilter === 'All Districts' || c.lang === techFilter
+    const matchLevel =
+      levelFilter === 'All Tiers' ||
+      (levelFilter === 'Friendly Neighborhood' && c.difficulty === 'EASY') ||
+      (levelFilter === 'Queens Vigilante' && c.difficulty === 'MEDIUM') ||
+      (levelFilter === 'Spider-Verse Hero' && c.difficulty === 'HARD')
+    return matchSearch && matchTech && matchLevel
+  })
+
+  const scrollCarousel = (dir: 'left' | 'right') => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: dir === 'right' ? 280 : -280, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <div className="w-full max-w-[1400px] mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
+      {/* 2-COLUMN LAYOUT */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* MAIN CONTENT COLUMN (~75%) */}
+        <div className="xl:col-span-9 flex flex-col gap-6">
+          {/* ── A. HERO BANNER: SPIDER COMBAT LABS ── */}
+          <div className="relative animate-spider-banner rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between overflow-hidden shadow-[0_12px_40px_rgba(0,240,255,0.18)] border-2 border-[#FF2A34] gap-6"
+            style={{
+              background: 'linear-gradient(135deg, #151E3A 0%, #0B1021 50%, #1A2E63 100%)',
+            }}
+          >
+            <SpiderNetDecal size={120} position="top-right" glowColor="rgba(0, 240, 255, 0.8)" />
+            <SpiderNetDecal size={80} position="bottom-left" glowColor="rgba(255, 42, 52, 0.7)" />
+
+            {/* Left text */}
+            <div className="flex flex-col gap-3 z-10 max-w-lg">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_10px_#00F0FF] animate-pulse" />
+                <span className="text-[10px] font-extrabold text-[#00F0FF] uppercase tracking-[0.25em]">
+                  SPIDER-VERSE SIMULATOR • DAILY PATROL
+                </span>
+              </div>
+              <h1 className="text-2xl md:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+                Calibrate Web-Shooters<br />& Algorithms.
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
+                Overcome high-voltage NYC coding trials, upgrade your web fluid accuracy, and unlock Spider XP.
+              </p>
+              <div className="flex items-center gap-3 pt-1 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => onStartChallenge?.('reverse-string')}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] via-[#E21B24] to-[#1E3A8A] hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-[0_0_20px_rgba(255,42,52,0.6)] cursor-pointer transition-all active:scale-95 border border-[#00F0FF]/50"
+                >
+                  <span>ENTER DAILY WEB PATROL</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <div className="hidden sm:block">
+                  <ThwipSticker size={58} rotate={-6} />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Spider Altar Widget */}
+            <div className="z-10 shrink-0 flex items-center justify-center relative w-60 h-36 rounded-2xl bg-gradient-to-b from-[#182346] to-[#0D142A] border border-[#00F0FF]/40 p-4 shadow-[0_0_24px_rgba(0,240,255,0.25)]">
+              <div className="flex flex-col items-center text-center gap-1.5">
+                <SpiderMaskSticker size={48} />
+                <span className="text-xs font-black text-[#00F0FF] tracking-widest uppercase mt-1">
+                  WEB-SHOOTERS PRIMED
+                </span>
+                <span className="text-[10.5px] text-slate-300 font-medium">100% Fluid • Telemetry Ready</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── B. TODAY'S DAILY CHALLENGE SPOTLIGHT ── */}
+          <div
+            className="rounded-2xl p-6 border-2 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden transition-all duration-300"
+            style={{
+              background: '#151E3A',
+              borderColor: '#00F0FF',
+              boxShadow: '0 8px 32px rgba(0, 240, 255, 0.15)',
+            }}
+          >
+            <SpiderNetDecal size={90} position="top-right" opacity={0.4} />
+
+            {/* Left */}
+            <div className="flex flex-col gap-2 flex-1 z-10">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#00F0FF]/15 text-[#00F0FF] font-black text-[10px] uppercase tracking-wider border border-[#00F0FF]/30">
+                  🕸️ DAILY WEB MISSION
+                </span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  QUEENS PATROL PROTOCOL
+                </span>
+              </div>
+              <h2 className="text-2xl font-black text-white tracking-wide">
+                Web-Shooter Trajectory Invert
+              </h2>
+              <p className="text-xs text-slate-300 leading-relaxed max-w-md">
+                Invert a telemetry string to calibrate web recoil without using Python&apos;s standard reverse functions.
+              </p>
+              <div className="flex items-center gap-3 flex-wrap text-xs font-medium mt-1">
+                <span className="flex items-center gap-1 text-[#00F0FF] font-bold">
+                  🐍 Python 3.12
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF] font-bold text-[11px]">
+                  Friendly Neighborhood
+                </span>
+                <span className="text-slate-400">⏱ 5 min Trial</span>
+                <span className="flex items-center gap-1 font-bold text-[#FFD700]">
+                  <Sparkles className="w-3.5 h-3.5 text-[#FFD700]" /> +75 Spider XP
+                </span>
+              </div>
+            </div>
+
+            {/* Center Terminal Tablet */}
+            <div className="shrink-0 flex flex-col items-center justify-center z-10">
+              <div className="bg-[#0B1021] border-2 border-[#2A3A65] rounded-xl px-5 py-4 shadow-inner font-mono text-xs text-center space-y-1.5">
+                <div className="text-slate-400 font-bold">abcde</div>
+                <div className="text-[#FF2A34] text-sm">🕸️</div>
+                <div className="text-[#00F0FF] font-bold">edcba</div>
+              </div>
+            </div>
+
+            {/* Right Action Area */}
+            <div className="flex flex-col items-end gap-3 shrink-0 z-10">
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                PATROL READINESS
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="relative w-14 h-14">
+                    <svg className="w-full h-full rotate-[-90deg]" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="15" fill="none" stroke="#1D2A50" strokeWidth="3" />
+                      <circle cx="18" cy="18" r="15" fill="none" stroke="#00F0FF" strokeWidth="3" strokeDasharray="0 94.25" strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="font-bold text-xs text-[#00F0FF]">
+                        0%
+                      </span>
+                    </div>
+                  </div>
+                  <span className="font-mono text-[10px] text-slate-400 font-bold">0 / 1</span>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onStartChallenge?.('reverse-string')}
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all active:scale-95 border border-[#FF2A34]"
+                  >
+                    <span>ENGAGE PATROL</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#101730] border border-[#2A3A65] text-[11px] text-slate-300 font-medium">
+                    <Flame className="w-3.5 h-3.5 text-[#FF2A34] animate-pulse" />
+                    Solve today to sustain your 7-day Spider web streak.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── C. SEARCH & FILTER ── */}
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00F0FF]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search NYC web trials, algorithms, data structures..."
+                className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-[#151E3A] border border-[#2A3A65] text-white placeholder-slate-400 focus:outline-none focus:border-[#00F0FF] transition-colors"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white px-2 py-1 rounded"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Tech filter tags */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+              {TECH_FILTERS_SPIDERMAN.map(tag => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setTechFilter(tag)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all cursor-pointer border ${
+                    techFilter === tag
+                      ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                      : 'bg-[#151E3A] text-slate-400 border-[#2A3A65] hover:text-white hover:border-slate-500'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+
+            {/* Level filter + Sort bar */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5">
+                {LEVEL_FILTERS_SPIDERMAN.map(lvl => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setLevelFilter(lvl)}
+                    className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer border ${
+                      levelFilter === lvl
+                        ? 'bg-[#00F0FF]/20 text-[#00F0FF] border-[#00F0FF]'
+                        : 'bg-[#101730] text-slate-400 border-[#2A3A65] hover:text-white'
+                    }`}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+
+              {/* Sort dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowSortDropdown(v => !v)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#151E3A] border border-[#2A3A65] text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer"
+                >
+                  <span className="text-slate-400">Sort:</span>
+                  <span className="text-[#00F0FF]">{sortBy}</span>
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                {showSortDropdown && (
+                  <div className="absolute right-0 top-full mt-1 w-44 rounded-xl bg-[#151E3A] border border-[#2A3A65] shadow-2xl py-1 z-30">
+                    {SORT_OPTIONS_SPIDERMAN.map(opt => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => {
+                          setSortBy(opt)
+                          setShowSortDropdown(false)
+                        }}
+                        className={`w-full text-left px-3.5 py-2 text-xs font-semibold hover:bg-[#1D2A50] transition-colors cursor-pointer ${
+                          sortBy === opt ? 'text-[#00F0FF] font-bold' : 'text-slate-300'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── D. CHALLENGES CAROUSEL ── */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-white uppercase tracking-wider">
+                  ACTIVE WEB TRIALS ({filteredCards.length})
+                </span>
+                <span className="text-[11px] text-slate-400">• Swipe or use arrows</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => scrollCarousel('left')}
+                  className="w-7 h-7 rounded-lg bg-[#151E3A] border border-[#2A3A65] text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollCarousel('right')}
+                  className="w-7 h-7 rounded-lg bg-[#151E3A] border border-[#2A3A65] text-slate-300 hover:text-white flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={carouselRef}
+              className="flex items-stretch gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth"
+            >
+              {filteredCards.map(card => (
+                <div
+                  key={card.id}
+                  className="w-72 shrink-0 rounded-2xl p-5 border flex flex-col justify-between transition-all duration-200 group hover:border-[#00F0FF] relative overflow-hidden"
+                  style={{
+                    background: '#151E3A',
+                    borderColor: '#2A3A65',
+                  }}
+                >
+                  <SpiderNetDecal size={60} position="top-right" opacity={0.3} />
+
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl">{card.emoji}</span>
+                      <span
+                        className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                          card.difficulty === 'EASY'
+                            ? 'bg-cyan-500/15 text-[#00F0FF] border-[#00F0FF]/30'
+                            : card.difficulty === 'MEDIUM'
+                            ? 'bg-amber-500/15 text-amber-400 border-amber-400/30'
+                            : 'bg-red-500/15 text-[#FF2A34] border-[#FF2A34]/30'
+                        }`}
+                      >
+                        {card.tierName}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-bold text-white group-hover:text-[#00F0FF] transition-colors leading-tight">
+                        {card.title}
+                      </h3>
+                      <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                        {card.description}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                      <span>{card.lang}</span>
+                      <span>•</span>
+                      <span className="text-[#FFD700] font-bold">+{card.xp} XP</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-2 border-t border-[#2A3A65] flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => onStartChallenge?.(card.id)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs transition-all cursor-pointer border border-[#FF2A34]/50 shadow-sm active:scale-95"
+                    >
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>LAUNCH PATROL</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ============================================================ */}
+        {/* RIGHT SIDEBAR (3 cols)                                      */}
+        {/* ============================================================ */}
+        <div className="xl:col-span-3 flex flex-col gap-6">
+          {/* 1. Spider Web Streak */}
+          <div className="rounded-2xl p-5 border flex flex-col gap-3 relative overflow-hidden bg-[#151E3A] border-[#FF2A34]/60 shadow-lg">
+            <SpiderNetDecal size={70} position="top-right" opacity={0.35} />
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Flame className="w-4 h-4 text-[#FF2A34] animate-pulse" /> SPIDER WEB STREAK
+              </span>
+              <span className="text-xs font-mono font-bold text-[#00F0FF]">7 DAYS</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Complete at least 1 web mission daily to keep your streak alive and earn Web-Shooter XP multipliers.
+            </p>
+            <div className="grid grid-cols-7 gap-1 pt-1">
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                <div key={i} className="flex flex-col items-center gap-1">
+                  <span className="text-[9px] font-bold text-slate-400">{day}</span>
+                  <div
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold border ${
+                      i < 6
+                        ? 'bg-[#00F0FF]/20 border-[#00F0FF] text-[#00F0FF]'
+                        : 'bg-[#FF2A34]/20 border-[#FF2A34] text-[#FF2A34] animate-pulse'
+                    }`}
+                  >
+                    {i < 6 ? '✓' : '🕸️'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 2. NYC Hero Leaderboard */}
+          <div className="rounded-2xl p-5 border flex flex-col gap-4 bg-[#151E3A] border-[#2A3A65] shadow-lg relative overflow-hidden">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Trophy className="w-4 h-4 text-[#FFD700]" /> NYC HERO LEADERBOARD
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {SPIDERMAN_LEADERBOARD.map(entry => (
+                <div
+                  key={entry.name}
+                  className="flex items-center gap-2.5 p-2 rounded-xl bg-[#101730] border border-[#2A3A65] text-xs"
+                >
+                  <span
+                    className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10px] ${
+                      entry.rank === 1
+                        ? 'bg-[#FFD700] text-black font-black'
+                        : entry.rank === 2
+                        ? 'bg-[#00F0FF] text-black font-bold'
+                        : entry.rank === 3
+                        ? 'bg-[#FF2A34] text-white font-bold'
+                        : 'bg-[#151E3A] text-slate-400'
+                    }`}
+                  >
+                    {entry.rank}
+                  </span>
+                  <span className="text-base">{entry.emoji}</span>
+                  <span className="flex-1 font-semibold text-slate-200 truncate">{entry.name}</span>
+                  <span className="font-mono font-bold text-[#00F0FF] text-[11px] shrink-0">{entry.xp}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Spider-Sense Coding Tip */}
+          <div className="rounded-2xl p-4 border bg-gradient-to-br from-[#1A2E63]/40 to-[#0B1021] border-[#00F0FF]/40 shadow-sm flex items-start gap-3">
+            <SpiderSenseSticker size={38} className="shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-black text-[#00F0FF] uppercase tracking-wider">
+                Spider-Sense Tip
+              </span>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Ensure your while loop condition mutates properly inside the body. Infinite loops will drain your web-fluid reservoirs!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ========================================================================= */
+/* PRACTICE ARENA VIEW DISPATCHER                                            */
+/* ========================================================================= */
+export const PracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
+  const { theme } = useTheme()
+  if (theme === 'classic') {
+    return <ClassicPracticeArenaView {...props} />
+  }
+  if (theme === 'spiderman') {
+    return <SpiderManPracticeArenaView {...props} />
+  }
+  return <GodOfWarPracticeArenaView {...props} />
 }

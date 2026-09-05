@@ -19,6 +19,8 @@ import {
 } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { useTheme } from '../../context/ThemeContext'
+import { SpiderNetDecal } from '../ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
 interface InteractiveLessonViewProps {
   onBackToCourse?: () => void
@@ -1031,10 +1033,349 @@ const GodOfWarInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
   )
 }
 
+/* ========================================================================= */
+/* SPIDER-MAN INTERACTIVE LESSON VIEW                                        */
+/* ========================================================================= */
+const SpiderManInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
+  onBackToCourse,
+  onPreviousLesson,
+  onNextLesson,
+}) => {
+  const [selectedOption, setSelectedOption] = useState<'A' | 'B' | 'C' | 'D'>('A')
+  const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false)
+  const [quizResult, setQuizResult] = useState<'correct' | 'incorrect' | null>(null)
+  const [copiedCode, setCopiedCode] = useState<boolean>(false)
+  const [activeKarenTip, setActiveKarenTip] = useState<'hint' | 'simple' | 'example' | null>(null)
+
+  const codeSnippet = `web_fluid = 3\n\nwhile web_fluid > 0:\n    print(f"Thwip! Web shot deployed 🕸️ [Fluid: {web_fluid}]")\n    web_fluid -= 1\n\nprint("Target immobilized. Ready for transport! 🕷️")`
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(codeSnippet)
+    setCopiedCode(true)
+    setTimeout(() => setCopiedCode(false), 2000)
+  }
+
+  const handleCheckQuiz = () => {
+    setQuizSubmitted(true)
+    if (selectedOption === 'A') {
+      setQuizResult('correct')
+      try {
+        confetti({
+          particleCount: 110,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#FF1744', '#00F0FF', '#FFFFFF', '#1E3A8A'],
+        })
+      } catch {
+        /* ignore */
+      }
+    } else {
+      setQuizResult('incorrect')
+    }
+  }
+
+  return (
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
+      {/* ── 1. TOP BREADCRUMB & BACK BUTTON ── */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onBackToCourse}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-[#00F0FF] transition-colors cursor-pointer py-1.5"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#00F0FF]" />
+          <span>Back to Course</span>
+        </button>
+
+        <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
+          <span>Learn</span>
+          <span>/</span>
+          <span>Python Protocol</span>
+          <span>/</span>
+          <span>Chapter 04</span>
+          <span>/</span>
+          <span className="font-bold text-[#00F0FF]">Lesson 03</span>
+        </div>
+      </div>
+
+      {/* ── 2. MAIN 2-COLUMN LAYOUT ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: Main Lesson (8 cols) */}
+        <div className="lg:col-span-8 flex flex-col gap-6">
+          {/* A. Hero Lesson Card */}
+          <div
+            className="rounded-3xl p-6 sm:p-8 border-2 border-[#FF2A34] shadow-[0_8px_32px_rgba(0,240,255,0.15)] flex flex-col gap-4 relative overflow-hidden"
+            style={{
+              background: '#151E3A',
+            }}
+          >
+            <SpiderNetDecal size={90} position="top-right" glowColor="rgba(0, 240, 255, 0.7)" />
+
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse" />
+                Python Protocol • Chapter 04
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-400 text-xs font-bold flex items-center gap-1">
+                <Trophy className="w-3.5 h-3.5 text-amber-400" />
+                +50 Spider XP
+              </span>
+            </div>
+
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                The While Loop: Continuous Web Deployment
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-300 mt-2 leading-relaxed max-w-2xl">
+                A while loop repeats a block of code as long as a specified test condition evaluates to True. When web fluid or targets change, program execution resumes safely.
+              </p>
+            </div>
+
+            {/* Objective Banner */}
+            <div className="p-4 rounded-2xl bg-[#101730] border border-[#2A3A65] flex items-start gap-3 mt-1">
+              <div className="w-8 h-8 rounded-xl bg-red-950/60 border border-[#FF2A34]/40 flex items-center justify-center shrink-0">
+                <SpiderMaskSticker size={22} />
+              </div>
+              <div>
+                <h4 className="text-xs font-extrabold text-[#00F0FF] uppercase tracking-wider">
+                  With Great Power Comes Great Debugging
+                </h4>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Always modify your control variable inside the loop body to prevent an infinite loop from draining your suit battery.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* B. Code Example Syntax Block */}
+          <div className="rounded-2xl border border-[#2A3A65] bg-[#0B1021] overflow-hidden shadow-md">
+            <div className="px-4 py-3 bg-[#101730] border-b border-[#2A3A65] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-yellow-500/80 inline-block" />
+                  <span className="w-3 h-3 rounded-full bg-green-500/80 inline-block" />
+                </div>
+                <span className="text-xs font-mono font-bold text-slate-300 ml-2">web_telemetry.py</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyCode}
+                className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-[#00F0FF] transition-colors cursor-pointer px-2.5 py-1 rounded-lg bg-[#151E3A] border border-[#2A3A65]"
+              >
+                {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedCode ? 'Copied!' : 'Copy Code'}</span>
+              </button>
+            </div>
+            <pre className="p-5 text-xs font-mono text-slate-200 overflow-x-auto leading-relaxed">
+              <code>{codeSnippet}</code>
+            </pre>
+
+            {/* Terminal Output */}
+            <div className="px-5 py-3 bg-[#070B16] border-t border-[#1D2A50] font-mono text-xs text-slate-300">
+              <p className="text-[10px] uppercase font-bold text-slate-500 mb-1">TERMINAL OUTPUT</p>
+              <p className="text-emerald-400">&gt; Thwip! Web shot deployed 🕸️ [Fluid: 3]</p>
+              <p className="text-emerald-400">&gt; Thwip! Web shot deployed 🕸️ [Fluid: 2]</p>
+              <p className="text-emerald-400">&gt; Thwip! Web shot deployed 🕸️ [Fluid: 1]</p>
+              <p className="text-[#00F0FF]">&gt; Target immobilized. Ready for transport! 🕷️</p>
+            </div>
+          </div>
+
+          {/* C. Interactive Quiz Card */}
+          <div className="rounded-2xl p-6 border-2 border-[#00F0FF]/60 bg-[#151E3A] shadow-md flex flex-col gap-4 relative overflow-hidden">
+            <SpiderNetDecal size={70} position="bottom-right" opacity={0.3} />
+
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-[#00F0FF] uppercase tracking-wider flex items-center gap-1.5">
+                <HelpCircle className="w-4 h-4 text-[#00F0FF]" /> QUICK TELEMETRY CHECK
+              </span>
+              <span className="text-xs font-bold text-slate-400">1 Question</span>
+            </div>
+
+            <p className="text-sm font-bold text-white leading-snug">
+              What happens if you omit line 5 (<code className="text-[#00F0FF] bg-[#0B1021] px-1.5 py-0.5 rounded">web_fluid -= 1</code>) entirely?
+            </p>
+
+            <div className="flex flex-col gap-2.5 pt-1">
+              {[
+                { id: 'A', text: 'Infinite Loop: The loop condition remains True forever, continuously firing.' },
+                { id: 'B', text: 'The while loop terminates immediately after one iteration.' },
+                { id: 'C', text: 'Python automatically steps down the integer variable by default.' },
+                { id: 'D', text: 'SyntaxError: Python raises an uncalibrated while loop exception.' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedOption(opt.id as any)
+                    setQuizSubmitted(false)
+                    setQuizResult(null)
+                  }}
+                  className={`p-3.5 rounded-xl border text-left text-xs font-medium transition-all flex items-start gap-3 cursor-pointer ${
+                    selectedOption === opt.id
+                      ? 'bg-gradient-to-r from-[#182346] to-[#151E3A] border-[#00F0FF] text-white shadow-[0_0_12px_rgba(0,240,255,0.25)]'
+                      : 'bg-[#101730] border-[#2A3A65] text-slate-300 hover:text-white hover:border-slate-500'
+                  }`}
+                >
+                  <span
+                    className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 border ${
+                      selectedOption === opt.id
+                        ? 'bg-[#00F0FF] text-black border-[#00F0FF]'
+                        : 'bg-[#151E3A] text-slate-400 border-[#2A3A65]'
+                    }`}
+                  >
+                    {opt.id}
+                  </span>
+                  <span className="pt-0.5 leading-relaxed">{opt.text}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="pt-2 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={handleCheckQuiz}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs transition-all cursor-pointer border border-[#FF2A34]/50 shadow-md active:scale-95"
+              >
+                CHECK ANSWER
+              </button>
+
+              {quizSubmitted && quizResult === 'correct' && (
+                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                  <Check className="w-4 h-4" /> Correct! Outstanding precision. +50 XP
+                </span>
+              )}
+
+              {quizSubmitted && quizResult === 'incorrect' && (
+                <span className="text-xs font-bold text-[#FF2A34] flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4" /> Incorrect. Check hint drawer!
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Karen AI Suit Assistant (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          <div className="rounded-2xl p-5 border border-[#00F0FF]/40 bg-[#151E3A] shadow-lg flex flex-col gap-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A3A65]">
+              <div className="flex items-center gap-2.5">
+                <SpiderSenseSticker size={36} />
+                <div className="flex flex-col">
+                  <span className="text-xs font-black text-[#00F0FF] uppercase tracking-wider">
+                    KAREN SUIT AI
+                  </span>
+                  <span className="text-[10px] text-slate-400">Autonomous Suit Assistant</span>
+                </div>
+              </div>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {[
+                { id: 'hint', label: '💡 Quick Hint' },
+                { id: 'simple', label: '🌐 Analogy' },
+                { id: 'example', label: '⚡ Code Example' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveKarenTip(activeKarenTip === tab.id ? null : (tab.id as any))}
+                  className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer border ${
+                    activeKarenTip === tab.id
+                      ? 'bg-[#00F0FF]/20 text-[#00F0FF] border-[#00F0FF]'
+                      : 'bg-[#101730] text-slate-400 border-[#2A3A65] hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {activeKarenTip === 'hint' && (
+              <div className="p-3.5 rounded-xl bg-[#101730] border border-[#00F0FF]/30 text-xs text-slate-300 leading-relaxed animate-in fade-in">
+                <p className="font-bold text-[#00F0FF] mb-1">Karen Protocol Hint:</p>
+                A while loop checks its condition at the start of each iteration. If nothing changes the variables involved, the result never switches to False.
+              </div>
+            )}
+
+            {activeKarenTip === 'simple' && (
+              <div className="p-3.5 rounded-xl bg-[#101730] border border-[#00F0FF]/30 text-xs text-slate-300 leading-relaxed animate-in fade-in">
+                <p className="font-bold text-[#00F0FF] mb-1">Web-Shooter Analogy:</p>
+                Imagine shooting web fluid while your finger holds down the trigger. Unless your finger lets go or the fluid cartridge runs empty, the shooter never stops spraying!
+              </div>
+            )}
+
+            {activeKarenTip === 'example' && (
+              <div className="p-3.5 rounded-xl bg-[#0B1021] border border-[#00F0FF]/30 text-xs font-mono text-slate-300 leading-relaxed animate-in fade-in">
+                <p className="text-slate-400 mb-1"># Safe loop pattern:</p>
+                <code>swing_count = 0<br/>while swing_count &lt; 5:<br/>&nbsp;&nbsp;swing_count += 1</code>
+              </div>
+            )}
+
+            {!activeKarenTip && (
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Click any tool above to receive real-time telemetry assistance from Karen during this mission.
+              </p>
+            )}
+          </div>
+
+          <div className="rounded-2xl p-5 border border-[#2A3A65] bg-[#151E3A] flex flex-col gap-3">
+            <span className="text-xs font-bold text-white uppercase tracking-wider">
+              Patrol Checklist
+            </span>
+            <div className="space-y-2 text-xs text-slate-300">
+              <div className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Understand condition evaluation</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Calibrate variable decrements</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 rounded-full border border-slate-500 inline-block" />
+                <span>Pass the telemetry quiz</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. BOTTOM NAVIGATION CONTROLS ── */}
+      <div className="flex items-center justify-between pt-6 border-t border-[#2A3A65]">
+        <button
+          type="button"
+          onClick={onPreviousLesson}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-white px-5 py-2.5 rounded-xl bg-[#151E3A] hover:bg-[#1D2A50] transition-colors cursor-pointer border border-[#2A3A65]"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-[#00F0FF]" />
+          <span>PREVIOUS LESSON</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onNextLesson}
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-white px-7 py-2.5 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 shadow-md transition-all cursor-pointer border border-[#FF2A34]/50 active:scale-95"
+        >
+          <span>COMPLETE &amp; PROCEED</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ========================================================================= */
+/* INTERACTIVE LESSON VIEW DISPATCHER                                        */
+/* ========================================================================= */
 export const InteractiveLessonView: React.FC<InteractiveLessonViewProps> = (props) => {
   const { theme } = useTheme()
   if (theme === 'classic') {
     return <ClassicInteractiveLessonView {...props} />
+  }
+  if (theme === 'spiderman') {
+    return <SpiderManInteractiveLessonView {...props} />
   }
   return <GodOfWarInteractiveLessonView {...props} />
 }

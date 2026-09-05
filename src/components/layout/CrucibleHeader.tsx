@@ -3,6 +3,7 @@ import { Bell, LogOut, Settings, ChevronDown, Palette, Menu } from 'lucide-react
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { useNotifications } from '../../context/NotificationContext'
+import { SpiderEmblemIcon, SpiderNetDecal } from '../ui/SpiderNetDecal'
 import { cn } from '../../lib/utils'
 import type { NavItemKey } from './Sidebar'
 
@@ -97,7 +98,7 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
   return (
     <header
       id="crucible-header"
-      className="h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 select-none w-full"
+      className="relative overflow-hidden h-16 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-50 select-none w-full"
       style={{
         background: 'var(--theme-surface-card-translucent, rgba(7,5,5,0.92))',
         backdropFilter: 'blur(16px)',
@@ -106,6 +107,8 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
         boxShadow: '0 1px 0 var(--theme-border-subtle, rgba(220,38,38,0.08)), var(--theme-shadow-card, 0 4px 24px rgba(7,5,5,0.8))',
       }}
     >
+      {theme === 'spiderman' && <SpiderNetDecal size={60} position="top-right" />}
+
       {/* LEFT — Brand Identity */}
       <div className="flex items-center gap-3 shrink-0">
         <button
@@ -119,7 +122,28 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
           <Menu className="w-6 h-6" />
         </button>
 
-        {theme === 'classic' ? (<></>
+        {theme === 'classic' ? (
+          <></>
+        ) : theme === 'spiderman' ? (
+          <>
+            <div className="relative flex items-center justify-center w-10 h-10">
+              <SpiderEmblemIcon size={34} glowColor="rgba(0, 210, 255, 0.8)" className="animate-spider-sense" />
+            </div>
+            <div className="flex flex-col">
+              <span
+                className="font-black tracking-[0.2em] text-base leading-tight"
+                style={{ fontFamily: 'var(--theme-font-heading, "Inter", sans-serif)', color: 'var(--theme-text-primary, #F8FAFC)' }}
+              >
+                SPIDER-MAN
+              </span>
+              <span
+                className="text-[9px] tracking-[0.3em] uppercase leading-tight font-bold"
+                style={{ color: 'var(--theme-accent-glow, #00D2FF)' }}
+              >
+                NYC WEB NETWORK
+              </span>
+            </div>
+          </>
         ) : (
           <>
             <div className="relative flex items-center justify-center w-10 h-10">

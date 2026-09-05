@@ -18,6 +18,8 @@ import { COURSE_CATALOG } from '../../lib/courseData'
 import { getCourseProgress } from '../../lib/courseProgress'
 import type { CourseProgress } from '../../lib/courseProgress'
 import { useAuth } from '../../context/AuthContext'
+import { SpiderNetDecal } from '../ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
 interface CourseDetailViewProps {
   courseId: string
@@ -63,7 +65,7 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
           <span>Back to Courses</span>
         </button>
 
-          <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
+        <div className="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-400">
           <span>Learn</span>
           <span>/</span>
           <span className="capitalize">{course.category}</span>
@@ -1288,13 +1290,276 @@ const MythicCourseDetailView: React.FC<CourseDetailViewProps> = ({
   )
 }
 
-export const CourseDetailView: React.FC<CourseDetailViewProps> = (props) => {
-  const { theme } = useTheme()
+/* ========================================================================= */
+/* SPIDER-MAN COURSE DETAIL VIEW                                             */
+/* ========================================================================= */
+const SpiderManCourseDetailView: React.FC<CourseDetailViewProps> = ({
+  onBackToCourses,
+  onStartQuest,
+  onSelectLesson,
+  onOpenLumi,
+}) => {
+  return (
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
+      {/* ── 1. TOP BREADCRUMB & BACK BUTTON ── */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onBackToCourses}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-300 hover:text-[#00F0FF] hover:bg-[#151E3A] px-3.5 py-2 rounded-xl transition-colors cursor-pointer border border-[#2A3A65]"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-[#00F0FF]" />
+          <span className="tracking-wider">RETURN TO MISSIONS</span>
+        </button>
 
-  if (theme === 'gow') {
-    return <MythicCourseDetailView {...props} />
-  }
+        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-medium">
+          <span>NYC</span>
+          <span>/</span>
+          <span>QUEENS</span>
+          <span>/</span>
+          <span className="text-[#00F0FF] font-bold tracking-wider">
+            PYTHON PROTOCOL
+          </span>
+        </div>
+      </div>
 
-  return <ClassicCourseDetailView {...props} />
+      {/* ── 2. HERO BANNER: PARKER TELEMETRY PROTOCOL ── */}
+      <div
+        className="relative rounded-3xl p-6 lg:p-8 border-2 border-[#FF2A34] shadow-[0_12px_40px_rgba(0,240,255,0.18)] flex flex-col justify-between gap-6 overflow-hidden animate-spider-banner"
+        style={{
+          background: 'linear-gradient(135deg, #151E3A 0%, #0B1021 50%, #1A2E63 100%)',
+        }}
+      >
+        <SpiderNetDecal size={120} position="top-right" glowColor="rgba(0, 240, 255, 0.8)" />
+        <SpiderNetDecal size={80} position="bottom-left" glowColor="rgba(255, 42, 52, 0.7)" />
+
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          {/* Left Content */}
+          <div className="flex flex-col gap-3 flex-1 max-w-2xl">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF] text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse" />
+                <span>PYTHON PROTOCOL • QUEENS INITIATE</span>
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+              Peter Parker&apos;s Python Protocol
+            </h1>
+
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+              Calculate web trajectory arcs, simulate high-tensile fluid dispersion, and program autonomous spider-bot patrols across NYC.
+            </p>
+
+            <div className="flex items-center gap-3 text-xs pt-1 flex-wrap">
+              <div className="flex items-center gap-1 text-[#FFD700] font-bold">
+                <span>★★★★★</span>
+                <span className="text-white font-mono font-black ml-1">4.9 / 5.0</span>
+              </div>
+              <span className="text-slate-600">•</span>
+              <span className="text-slate-300 font-medium">12,400+ Web-Slingers Enrolled</span>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap pt-1 text-xs font-medium">
+              <span className="flex items-center gap-1.5 text-slate-300">
+                <BookOpen className="w-3.5 h-3.5 text-[#00F0FF]" /> 18 Missions
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-300">
+                <Clock className="w-3.5 h-3.5 text-[#00F0FF]" /> 8–10 Hours
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] text-[11px] font-bold">
+                Friendly Neighborhood
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-400 font-bold text-[11px] flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-amber-400" /> +2,400 Spider XP
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 pt-3 flex-wrap">
+              <button
+                type="button"
+                onClick={onStartQuest}
+                className="inline-flex items-center gap-2 text-xs sm:text-sm font-black text-white px-7 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] via-[#E21B24] to-[#1E3A8A] hover:brightness-110 shadow-[0_0_20px_rgba(255,42,52,0.6)] transition-all cursor-pointer border border-[#00F0FF]/50 active:scale-95"
+              >
+                <span>RESUME CHAPTER 04</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <div className="hidden sm:block">
+                <ThwipSticker size={58} rotate={-6} />
+              </div>
+            </div>
+          </div>
+
+          {/* Right Banner Preview */}
+          <div className="shrink-0 w-full lg:w-[380px] rounded-2xl overflow-hidden border border-[#2A3A65] bg-[#0B1021]/80 p-5 flex flex-col justify-between relative shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-[#2A3A65]">
+              <div className="flex items-center gap-2.5">
+                <SpiderMaskSticker size={36} />
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#00F0FF]">
+                    COURSE BADGE
+                  </span>
+                  <span className="text-xs font-extrabold text-white">
+                    Python Web-Master
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs font-mono font-bold text-[#FFD700]">+2,400 XP</span>
+            </div>
+
+            <div className="py-4 space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-300">
+                <span>Progress: Chapter 4 of 6</span>
+                <span className="text-[#00F0FF] font-bold font-mono">70%</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-[#151E3A] overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-[#FF1744] to-[#00F0FF] rounded-full"
+                  style={{ width: '70%' }}
+                />
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-[#2A3A65] flex items-center justify-between text-xs text-slate-300">
+              <span className="flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-[#FF2A34] animate-pulse" /> 7-Day Web Streak
+              </span>
+              <span className="text-[#00F0FF] font-bold">12 Lessons Cleared</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. CURRICULUM CHAPTER TIMELINE ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Timeline (7 cols) */}
+        <div className="lg:col-span-7 bg-[#151E3A] rounded-2xl p-6 border border-[#2A3A65] shadow-lg flex flex-col gap-4 relative overflow-hidden">
+          <SpiderNetDecal size={80} position="top-right" opacity={0.3} />
+
+          <div className="flex items-center justify-between">
+            <h2 className="font-bold text-base text-white uppercase tracking-wider">
+              Curriculum Chapters
+            </h2>
+            <span className="text-xs text-[#00F0FF] font-mono font-bold">6 CHAPTERS</span>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {[
+              { num: '01', title: 'Web Telemetry Fundamentals', status: 'completed', xp: 250 },
+              { num: '02', title: 'Variables & Fluid Dispersion', status: 'completed', xp: 350 },
+              { num: '03', title: 'Conditionals & Danger Alerts', status: 'completed', xp: 400 },
+              { num: '04', title: 'While Loops: Continuous Web Deployment', status: 'current', xp: 450 },
+              { num: '05', title: 'Lists & Spider-Bot Swarm Coords', status: 'locked', xp: 500 },
+              { num: '06', title: 'Capstone: Autonomous NYC Radar', status: 'locked', xp: 450 },
+            ].map((ch) => (
+              <div
+                key={ch.num}
+                onClick={() => {
+                  if (ch.status !== 'locked') onSelectLesson?.(ch.num)
+                }}
+                className={`p-3.5 rounded-xl border flex items-center justify-between transition-all ${ch.status === 'completed'
+                    ? 'bg-[#101730] border-emerald-500/40 text-slate-300 hover:border-emerald-400 cursor-pointer'
+                    : ch.status === 'current'
+                      ? 'bg-gradient-to-r from-[#182346] to-[#101730] border-[#00F0FF] text-white shadow-[0_0_12px_rgba(0,240,255,0.25)] cursor-pointer'
+                      : 'bg-[#0B1021]/50 border-[#2A3A65]/50 text-slate-500 opacity-60'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border ${ch.status === 'completed'
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500'
+                        : ch.status === 'current'
+                          ? 'bg-[#00F0FF]/20 text-[#00F0FF] border-[#00F0FF] animate-pulse'
+                          : 'bg-[#151E3A] text-slate-500 border-[#2A3A65]'
+                      }`}
+                  >
+                    {ch.status === 'completed' ? '✓' : ch.num}
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold">{ch.title}</h3>
+                    <span className="text-[10px] text-slate-400">
+                      {ch.status === 'completed' ? 'Cleared' : ch.status === 'current' ? 'In Progress' : 'Locked'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono font-bold text-[#FFD700]">+{ch.xp} XP</span>
+                  {ch.status !== 'locked' ? (
+                    <ArrowRight className="w-3.5 h-3.5 text-[#00F0FF]" />
+                  ) : (
+                    <Lock className="w-3.5 h-3.5 text-slate-600" />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Current Lesson Spotlight (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-5">
+          <div className="bg-[#151E3A] rounded-2xl p-6 border-2 border-[#00F0FF] shadow-lg flex flex-col gap-4 relative overflow-hidden">
+            <SpiderNetDecal size={70} position="top-right" opacity={0.35} />
+
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF]">
+                CURRENT OBJECTIVE
+              </span>
+              <span className="text-xs font-mono font-bold text-[#FFD700]">+50 XP</span>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-black text-white">
+                Chapter 04: The While Loop
+              </h3>
+              <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                Learn continuous execution protocols. Keep your web fluid streams firing until target condition is met.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onStartQuest}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs transition-all cursor-pointer border border-[#FF2A34]/50 shadow-md active:scale-95"
+            >
+              <span>ENTER LESSON 03</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="bg-[#151E3A] rounded-2xl p-5 border border-[#2A3A65] flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <SpiderSenseSticker size={38} />
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-white">Spider-AI Oracle</span>
+                <span className="text-[11px] text-slate-300">Karen can explain concepts & tips</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenLumi}
+              className="px-3.5 py-1.5 rounded-xl bg-[#00F0FF]/20 hover:bg-[#00F0FF]/30 border border-[#00F0FF] text-[#00F0FF] text-xs font-bold transition-colors cursor-pointer"
+            >
+              ASK AI
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
+/* ========================================================================= */
+/* COURSE DETAIL VIEW DISPATCHER                                             */
+/* ========================================================================= */
+export const CourseDetailView: React.FC<CourseDetailViewProps> = (props) => {
+  const { theme } = useTheme()
+  if (theme === 'classic') {
+    return <ClassicCourseDetailView {...props} />
+  }
+  if (theme === 'spiderman') {
+    return <SpiderManCourseDetailView {...props} />
+  }
+  return <MythicCourseDetailView {...props} />
+}

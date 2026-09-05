@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
-export type ThemeKey = 'gow' | 'classic' | 'space' | 'light'
+export type ThemeKey = 'gow' | 'classic' | 'space' | 'light' | 'spiderman'
 
 interface ThemeContextType {
   theme: ThemeKey
@@ -26,7 +26,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setThemeState] = useState<ThemeKey>(() => {
     try {
       const saved = localStorage.getItem(THEME_STORAGE_KEY) as ThemeKey | null
-      return saved && ['gow', 'classic', 'space', 'light'].includes(saved) ? saved : 'gow'
+      return saved && ['gow', 'classic', 'space', 'light', 'spiderman'].includes(saved) ? saved : 'gow'
     } catch {
       return 'gow'
     }

@@ -19,6 +19,8 @@ import { COURSE_CATALOG } from '../../lib/courseData'
 import type { CourseCatalogItem } from '../../lib/courseData'
 import { getCourseProgress } from '../../lib/courseProgress'
 import type { CourseProgress } from '../../lib/courseProgress'
+import { SpiderNetDecal } from '../ui/SpiderNetDecal'
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
 interface LearnCatalogViewProps {
   onSelectCourse?: (courseId: string) => void
@@ -150,11 +152,10 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
               key={cat.key}
               type="button"
               onClick={() => setActiveCategory(cat.key)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-                activeCategory === cat.key
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeCategory === cat.key
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-              }`}
+                }`}
             >
               {cat.label}
             </button>
@@ -233,18 +234,17 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
               <button
                 type="button"
                 onClick={() => onSelectCourse?.(c.id)}
-                className={`w-full py-2 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                  c.status === 'completed'
+                className={`w-full py-2 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${c.status === 'completed'
                     ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                     : 'btn-gamified-3d btn-gamified-3d-primary text-white'
-                }`}
+                  }`}
               >
                 <span>
                   {c.status === 'completed'
                     ? 'Review Course'
                     : c.status === 'continue'
-                    ? 'Continue Quest'
-                    : 'Start Course'}
+                      ? 'Continue Quest'
+                      : 'Start Course'}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -464,11 +464,10 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                   key={cat.key}
                   type="button"
                   onClick={() => setActiveCategory(cat.key)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                    isActive
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${isActive
                       ? 'bg-gradient-to-r from-[#8B0000] to-[#550A0A] text-[#FFE4E4] border border-[#FF3D00] shadow-[0_0_15px_rgba(255,61,0,0.4)]'
                       : 'bg-[#120A0A] text-[#9E8B8B] hover:text-[#F5E8E8] border border-[#2D1515] hover:border-[#522020]'
-                  }`}
+                    }`}
                 >
                   <span className="text-[#FF5722] text-[11px]">{cat.rune}</span>
                   <span style={{ fontFamily: "'Cinzel', serif" }} className="tracking-wider text-[11px]">
@@ -989,13 +988,12 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
               >
                 {/* Node rune tablet */}
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xs shadow-lg transition-all ${
-                    isCompleted
+                  className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xs shadow-lg transition-all ${isCompleted
                       ? 'bg-[#102A1C] text-[#00E5FF] border border-[#00E5FF]/60 shadow-[0_0_12px_rgba(0,229,255,0.4)]'
                       : isCurrent
-                      ? 'bg-[#2A0E0E] text-[#FF5722] border-2 border-[#FF3D00] shadow-[0_0_16px_rgba(255,61,0,0.6)] animate-pulse'
-                      : 'bg-[#140808] text-[#554040] border border-[#2D1414]'
-                  }`}
+                        ? 'bg-[#2A0E0E] text-[#FF5722] border-2 border-[#FF3D00] shadow-[0_0_16px_rgba(255,61,0,0.6)] animate-pulse'
+                        : 'bg-[#140808] text-[#554040] border border-[#2D1414]'
+                    }`}
                 >
                   {isCompleted ? (
                     <Check className="w-5 h-5 stroke-[3]" />
@@ -1015,13 +1013,12 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                   </span>
                   <span
                     style={{ fontFamily: "'Cinzel', serif" }}
-                    className={`text-[11px] font-bold mt-0.5 ${
-                      isCurrent
+                    className={`text-[11px] font-bold mt-0.5 ${isCurrent
                         ? 'text-[#FF5722]'
                         : isCompleted
-                        ? 'text-[#00E5FF]'
-                        : 'text-[#554040]'
-                    }`}
+                          ? 'text-[#00E5FF]'
+                          : 'text-[#554040]'
+                      }`}
                   >
                     {node.sub}
                   </span>
@@ -1071,10 +1068,412 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
   )
 }
 
+/* ========================================================================= */
+/* SPIDER-MAN LEARN CATALOG VIEW                                             */
+/* ========================================================================= */
+const SpiderManLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
+  onSelectCourse,
+  onOpenLumi,
+}) => {
+  const [activeCategory, setActiveCategory] = useState<CategoryFilterKey>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const categories: Array<{ key: CategoryFilterKey; label: string; rune: string }> = [
+    { key: 'all', label: 'All Missions', rune: '🕸️' },
+    { key: 'programming', label: 'Parker Logic', rune: '🧪' },
+    { key: 'web', label: 'Web Weaving', rune: '🌐' },
+    { key: 'ai', label: 'Stark AI', rune: '🤖' },
+    { key: 'game', label: 'Combat Simulation', rune: '⚡' },
+    { key: 'tools', label: 'Parker Workshop', rune: '🔧' },
+    { key: 'career', label: 'Avenger Path', rune: '🎓' },
+  ]
+
+  const pathNodes = [
+    {
+      step: 'QUEENS FOUNDATIONS',
+      title: 'HTML & CSS',
+      realm: 'Queens Alley',
+      status: 'completed',
+      sub: '🌐 Web Glyphs',
+    },
+    {
+      step: 'PARKER ALGORITHMS',
+      title: 'Python Lore',
+      realm: 'Midtown High',
+      status: 'current',
+      sub: '🐍 Python Lab',
+    },
+    {
+      step: 'DAILY BUGLE FEEDS',
+      title: 'JavaScript',
+      realm: 'Manhattan',
+      status: 'locked',
+      sub: '⚡ Dynamic Feeds',
+    },
+    {
+      step: 'OSCORP ARCHITECTURE',
+      title: 'React Forge',
+      realm: 'Oscorp Tower',
+      status: 'locked',
+      sub: '⚛️ Micro-UI',
+    },
+    {
+      step: 'STARK NEURAL NET',
+      title: 'AI Vision',
+      realm: 'Stark Tower',
+      status: 'locked',
+      sub: '🤖 Spider-Bots',
+    },
+    {
+      step: 'SPIDER-VERSE ASCENSION',
+      title: 'Grand Quests',
+      realm: 'Multiverse',
+      status: 'locked',
+      sub: '🌌 Dimensional Mastery',
+    },
+  ]
+
+  const spidermanCourses = [
+    {
+      id: 'python',
+      title: 'Python: Parker Telemetry Protocol',
+      category: 'programming',
+      difficulty: 'Friendly Neighborhood',
+      hours: '8–10 Hours',
+      chapters: 18,
+      xp: 2400,
+      icon: '🐍',
+      rating: '4.9',
+      students: '12,400+',
+      progress: 78,
+      description: 'Program web-shooter trajectory calculations, collision physics, and autonomous spider-bot movement.',
+      status: 'continue',
+    },
+    {
+      id: 'html-css',
+      title: 'HTML & CSS: Daily Bugle Frontpages',
+      category: 'web',
+      difficulty: 'Friendly Neighborhood',
+      hours: '6–8 Hours',
+      chapters: 16,
+      xp: 1800,
+      icon: '🌐',
+      rating: '4.9',
+      students: '18,200+',
+      progress: 100,
+      description: 'Craft responsive, high-impact news portal frontpages, responsive grids, and modern CSS web animations.',
+      status: 'completed',
+    },
+    {
+      id: 'javascript',
+      title: 'JavaScript: NYC Police Dispatch Radar',
+      category: 'web',
+      difficulty: 'Queens Vigilante',
+      hours: '10–12 Hours',
+      chapters: 20,
+      xp: 3200,
+      icon: '⚡',
+      rating: '4.8',
+      students: '9,500+',
+      progress: 40,
+      description: 'Build real-time police radar scanners, event handling, asynchronous crime API streams, and map rendering.',
+      status: 'continue',
+    },
+    {
+      id: 'react',
+      title: 'React: Stark Suit HUD Interface',
+      category: 'web',
+      difficulty: 'Queens Vigilante',
+      hours: '12–14 Hours',
+      chapters: 14,
+      xp: 3600,
+      icon: '⚛️',
+      rating: '4.9',
+      students: '7,100+',
+      progress: 0,
+      description: 'Component architecture, suit diagnostic HUD dashboards, telemetry states, and modular armor widgets.',
+      status: 'start',
+    },
+    {
+      id: 'sql',
+      title: 'SQL: Oscorp Criminal Evidence Vault',
+      category: 'programming',
+      difficulty: 'Friendly Neighborhood',
+      hours: '5–6 Hours',
+      chapters: 10,
+      xp: 1500,
+      icon: '🗄️',
+      rating: '4.8',
+      students: '8,300+',
+      progress: 0,
+      description: 'Relational databases, indexing suspicious syndicate transactions, and complex SQL joins.',
+      status: 'start',
+    },
+    {
+      id: 'intermediate-python',
+      title: 'Python: Spider-Sense Neural Networks',
+      category: 'ai',
+      difficulty: 'Spider-Verse Hero',
+      hours: '14–16 Hours',
+      chapters: 22,
+      xp: 4200,
+      icon: '🤖',
+      rating: '5.0',
+      students: '4,600+',
+      progress: 0,
+      description: 'Deep neural networks for predictive danger sensing, object detection in drone cameras, and radar vectors.',
+      status: 'locked',
+    },
+  ]
+
+  const filteredCourses = spidermanCourses.filter((course) => {
+    const matchesCategory =
+      activeCategory === 'all' || course.category === activeCategory
+    const matchesSearch =
+      searchQuery === '' ||
+      course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.description.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
+
+  return (
+    <div className="w-full max-w-7xl mx-auto flex flex-col gap-7 text-left pb-20 select-none animate-in fade-in duration-300">
+      {/* ── 1. SPIDER ACADEMY HERO BANNER ── */}
+      <div
+        className="relative rounded-3xl overflow-hidden p-6 sm:p-8 border-2 border-[#FF2A34] shadow-[0_12px_40px_rgba(0,240,255,0.18)] animate-spider-banner"
+        style={{
+          background: 'linear-gradient(135deg, #151E3A 0%, #0B1021 50%, #1A2E63 100%)',
+        }}
+      >
+        <SpiderNetDecal size={120} position="top-right" glowColor="rgba(0, 240, 255, 0.8)" />
+        <SpiderNetDecal size={80} position="bottom-left" glowColor="rgba(255, 42, 52, 0.7)" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col gap-2 max-w-2xl">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_8px_#00F0FF] animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#00F0FF]">
+                SPIDER-MAN ACADEMY • PETER PARKER&apos;S LABS
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl font-black text-white uppercase tracking-tight leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+              The Web-Shooter Curriculum.
+            </h1>
+
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+              Master algorithmic logic, responsive web layouts, and AI engineering across the NYC boroughs.
+            </p>
+
+            <div className="flex items-center gap-3 pt-3 flex-wrap">
+              <button
+                type="button"
+                onClick={() => onSelectCourse?.('python')}
+                className="inline-flex items-center gap-2 text-xs sm:text-sm font-black text-white px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] via-[#E21B24] to-[#1E3A8A] hover:brightness-110 shadow-[0_0_20px_rgba(255,42,52,0.6)] transition-all cursor-pointer border border-[#00F0FF]/50 active:scale-95"
+              >
+                <span>RESUME PYTHON LAB (CHAPTER 04)</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <div className="hidden sm:block">
+                <ThwipSticker size={56} rotate={-6} />
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden lg:flex flex-col items-center justify-center relative w-56 h-36 rounded-2xl bg-[#0B1021]/80 border border-[#00F0FF]/40 p-4 shadow-xl">
+            <SpiderMaskSticker size={46} />
+            <span className="text-xs font-black text-[#00F0FF] uppercase tracking-wider mt-1.5">
+              LAB PATROL ACTIVE
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">12/18 Missions Cleared</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 2. NYC BOROUGHS ROADMAP ── */}
+      <div className="rounded-2xl p-6 border border-[#2A3A65] bg-[#151E3A] relative overflow-hidden shadow-lg">
+        <SpiderNetDecal size={90} position="top-right" opacity={0.3} />
+
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-black text-white uppercase tracking-wider">
+              NYC DISTRICT ROADMAP
+            </span>
+            <span className="text-xs text-[#00F0FF] font-mono font-bold">• 6 CHAPTERS</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {pathNodes.map((node, i) => (
+            <div
+              key={node.step}
+              onClick={() => {
+                if (node.status !== 'locked') onSelectCourse?.('python')
+              }}
+              className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all ${node.status === 'completed'
+                  ? 'bg-[#101730] border-emerald-500/40 hover:border-emerald-400 cursor-pointer'
+                  : node.status === 'current'
+                    ? 'bg-gradient-to-b from-[#182346] to-[#101730] border-[#00F0FF] shadow-[0_0_16px_rgba(0,240,255,0.3)] cursor-pointer'
+                    : 'bg-[#0B1021]/60 border-[#2A3A65]/60 opacity-60'
+                }`}
+            >
+              <div className="flex items-center justify-between text-[10px] font-bold">
+                <span className="text-slate-400 font-mono">0{i + 1}</span>
+                {node.status === 'completed' ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : node.status === 'current' ? (
+                  <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse" />
+                ) : (
+                  <Lock className="w-3.5 h-3.5 text-slate-500" />
+                )}
+              </div>
+              <div>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{node.step}</p>
+                <p className="text-xs font-extrabold text-white">{node.title}</p>
+              </div>
+              <p className="text-[10px] text-[#00F0FF] font-semibold">{node.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 3. SEARCH & CATEGORIES ── */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Search bar */}
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#00F0FF]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search curriculum, frameworks, algorithms..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#151E3A] border border-[#2A3A65] text-white placeholder-slate-400 text-xs focus:outline-none focus:border-[#00F0FF] transition-colors"
+            />
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 hide-scrollbar">
+            {categories.map((cat) => (
+              <button
+                key={cat.key}
+                type="button"
+                onClick={() => setActiveCategory(cat.key)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border ${activeCategory === cat.key
+                    ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                    : 'bg-[#151E3A] text-slate-400 border-[#2A3A65] hover:text-white'
+                  }`}
+              >
+                <span>{cat.rune}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── 4. COURSES GRID ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredCourses.map((course) => (
+            <div
+              key={course.id}
+              className="rounded-2xl p-5 border flex flex-col justify-between gap-4 transition-all duration-200 group hover:border-[#00F0FF] relative overflow-hidden shadow-md"
+              style={{
+                background: '#151E3A',
+                borderColor: '#2A3A65',
+              }}
+            >
+              <SpiderNetDecal size={60} position="top-right" opacity={0.25} />
+
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-3xl">{course.icon}</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF]">
+                    {course.difficulty}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="text-base font-bold text-white group-hover:text-[#00F0FF] transition-colors leading-tight">
+                    {course.title}
+                  </h3>
+                  <p className="text-xs text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                    {course.description}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-400 font-medium pt-1">
+                  <span>⏱ {course.hours}</span>
+                  <span className="text-[#FFD700] font-bold font-mono">+{course.xp} XP</span>
+                </div>
+
+                {course.progress > 0 && (
+                  <div className="space-y-1 pt-1">
+                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-400">
+                      <span>Progress</span>
+                      <span className="text-[#00F0FF]">{course.progress}%</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-[#0B1021] overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-[#FF1744] to-[#00F0FF] rounded-full"
+                        style={{ width: `${course.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-3 border-t border-[#2A3A65]">
+                <button
+                  type="button"
+                  onClick={() => onSelectCourse?.(course.id)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs transition-all cursor-pointer border border-[#FF2A34]/50 shadow-sm active:scale-95"
+                >
+                  <span>{course.status === 'continue' ? 'RESUME MISSION' : 'START MISSION'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 5. SPIDER-AI / KAREN ASSISTANCE CALLOUT ── */}
+      <div className="rounded-2xl p-6 border border-[#00F0FF]/40 bg-gradient-to-r from-[#182346] via-[#101730] to-[#0B1021] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+        <div className="flex items-center gap-3.5">
+          <SpiderSenseSticker size={42} className="shrink-0" />
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-black text-[#00F0FF] uppercase tracking-wider">
+              SPIDER-AI ORACLE • KAREN SUIT ASSISTANT
+            </span>
+            <p className="text-xs text-slate-300">
+              Need algorithmic guidance, bug debugging, or telemetry optimization? Karen is online and ready.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onOpenLumi}
+          className="shrink-0 inline-flex items-center gap-2 text-xs font-black text-white px-5 py-2.5 rounded-xl bg-[#00F0FF]/20 hover:bg-[#00F0FF]/30 border border-[#00F0FF] transition-colors cursor-pointer"
+        >
+          <span>ACTIVATE SPIDER-AI</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ========================================================================= */
+/* LEARN CATALOG VIEW DISPATCHER                                             */
+/* ========================================================================= */
 export const LearnCatalogView: React.FC<LearnCatalogViewProps> = (props) => {
   const { theme } = useTheme()
   if (theme === 'classic') {
     return <ClassicLearnCatalogView {...props} />
+  }
+  if (theme === 'spiderman') {
+    return <SpiderManLearnCatalogView {...props} />
   }
   return <GodOfWarLearnCatalogView {...props} />
 }

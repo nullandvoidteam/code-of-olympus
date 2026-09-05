@@ -34,6 +34,8 @@ import {
   Check,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { SpiderNetDecal } from '../ui/SpiderNetDecal';
+import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers';
 
 export type ProfileSubTab = 'overview' | 'quests' | 'achievements' | 'badges';
 
@@ -149,6 +151,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const isClassic = theme === 'classic';
   const isSpace = theme === 'space';
   const isLight = theme === 'light';
+  const isSpiderman = theme === 'spiderman';
 
   // Stats calculations
   const level = profile?.level || 1;
@@ -172,12 +175,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   // Rank Tier Title
   const rankTier = useMemo(() => {
+    if (isSpiderman) {
+      if (level >= 35) return { title: 'Spider-Verse Legend', tier: 'Tier V' };
+      if (level >= 20) return { title: 'Web-Slinger Champion', tier: 'Tier IV' };
+      if (level >= 10) return { title: 'Queens Vigilante', tier: 'Tier III' };
+      if (level >= 5) return { title: 'Midtown High Hero', tier: 'Tier II' };
+      return { title: 'Friendly Neighborhood Novice', tier: 'Tier I' };
+    }
+    if (isClassic) {
+      if (level >= 35) return { title: 'Grandmaster Coder', tier: 'Tier V' };
+      if (level >= 20) return { title: 'Lead Architect', tier: 'Tier IV' };
+      if (level >= 10) return { title: 'Code Vanguard', tier: 'Tier III' };
+      if (level >= 5) return { title: 'Adept Apprentice', tier: 'Tier II' };
+      return { title: 'Novice Adventurer', tier: 'Tier I' };
+    }
     if (level >= 35) return { title: 'Grandmaster Demigod', tier: 'Tier V' };
     if (level >= 20) return { title: 'Spartan Champion', tier: 'Tier IV' };
     if (level >= 10) return { title: 'Code Vanguard', tier: 'Tier III' };
     if (level >= 5) return { title: 'Adept Apprentice', tier: 'Tier II' };
     return { title: 'Novice Adventurer', tier: 'Tier I' };
-  }, [level]);
+  }, [level, isSpiderman, isClassic]);
 
   // Handle Achievement Claim
   const handleClaimAchievement = async (achievement: AchievementItem, e: React.MouseEvent) => {
@@ -243,7 +260,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     );
   }
 
-  const displayName = profile?.full_name || profile?.username || user?.email?.split('@')[0] || 'Adventurer';
+  const displayName = profile?.full_name || profile?.username || user?.email?.split('@')[0] || (isSpiderman ? 'Peter Parker' : isClassic ? 'Alex Morgan' : 'Adventurer');
 
   return (
     <div
@@ -269,11 +286,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             background: isClassic ? '#ffffff' : 'var(--theme-surface-card, #0E0606)',
           }}
         >
+          {isSpiderman && <SpiderNetDecal size={90} position="bottom-right" opacity={0.4} />}
+
           {/* Dynamic Theme Banner Backdrop */}
           <div
-            className="h-36 sm:h-48 w-full relative overflow-hidden transition-all duration-300"
+            className={cn(
+              "h-36 sm:h-48 w-full relative overflow-hidden transition-all duration-300",
+              isSpiderman && "animate-spider-banner"
+            )}
             style={{
-              background: isClassic
+              background: isSpiderman
+                ? 'linear-gradient(135deg, #FF1744 0%, #152452 40%, #0B1021 70%, #1A2E63 100%)'
+                : isClassic
                 ? 'linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%)'
                 : isSpace
                 ? 'linear-gradient(135deg, #4C1D95 0%, #1E1B4B 50%, #030712 100%)'
@@ -283,7 +307,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             }}
           >
             {/* Ambient decorative elements */}
-            {isClassic ? (
+            {isSpiderman ? (
+              <>
+                <SpiderNetDecal size={110} position="top-right" glowColor="rgba(0, 240, 255, 0.7)" />
+                <SpiderNetDecal size={80} position="top-left" glowColor="rgba(255, 42, 52, 0.7)" />
+                <div className="absolute right-28 top-3 hidden sm:block pointer-events-none animate-spider-sense">
+                  <SpiderSenseSticker size={46} />
+                </div>
+                <div className="absolute left-6 bottom-2 hidden sm:block pointer-events-none">
+                  <ThwipSticker size={62} rotate={-8} />
+                </div>
+                <div className="absolute right-6 bottom-3 hidden md:block pointer-events-none drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]">
+                  <SpiderMaskSticker size={54} />
+                </div>
+              </>
+            ) : isClassic ? (
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_2px,transparent_2px)] [background-size:16px_16px]" />
             ) : isMythic ? (
               <>
@@ -322,11 +360,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <div
                 className={cn(
                   'w-28 h-28 sm:w-36 sm:h-36 rounded-2xl sm:rounded-3xl border-4 flex items-center justify-center overflow-hidden transition-colors duration-300 shadow-xl relative',
-                  isClassic ? 'border-white bg-[#faf8f5]' : 'border-[var(--theme-surface-card,#0E0606)] bg-[#160A0A]'
+                  isClassic ? 'border-white bg-[#faf8f5]' : isSpiderman ? 'border-[#00F0FF]/60 bg-[#101730]' : 'border-[var(--theme-surface-card,#0E0606)] bg-[#160A0A]'
                 )}
               >
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : isSpiderman ? (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#101730] to-[#0B1021] p-3">
+                    <SpiderMaskSticker size={72} />
+                  </div>
                 ) : isClassic ? (
                   <img src="/extracted/alex_avatar.png" alt="Avatar" className="w-full h-full object-contain p-2" />
                 ) : (
@@ -338,7 +380,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <div
                 className={cn(
                   'absolute -bottom-2 -right-2 px-2.5 py-1 rounded-xl flex items-center justify-center font-black text-xs border-2 shadow-lg',
-                  isClassic
+                  isSpiderman
+                    ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                    : isClassic
                     ? 'bg-emerald-600 text-white border-white font-pixel'
                     : 'bg-[var(--theme-accent-primary,#DC2626)] text-white border-[#070505]'
                 )}
@@ -371,6 +415,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       'px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border',
                       profile?.role === 'admin'
                         ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-400/40'
+                        : isSpiderman
+                        ? 'bg-cyan-500/15 text-[#00F0FF] border-[#00F0FF]/40 font-bold'
                         : isClassic
                         ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                         : 'bg-amber-500/15 text-amber-500 border-amber-400/40'

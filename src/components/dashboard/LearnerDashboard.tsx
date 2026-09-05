@@ -121,6 +121,43 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
       )
     }
 
+    if (theme === 'spiderman') {
+      return (
+        <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 pb-12">
+          {/* Spider-HQ loading skeleton */}
+          <div
+            className="h-28 rounded-2xl animate-pulse"
+            style={{ background: 'linear-gradient(135deg, #151E3A, #0B1021)', border: '1px solid #2A3A65' }}
+          />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="h-28 rounded-2xl animate-pulse"
+                style={{ background: '#151E3A', border: '1px solid #2A3A65', animationDelay: `${i * 0.1}s` }}
+              />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+            <div
+              className="lg:col-span-3 h-56 rounded-2xl animate-pulse"
+              style={{ background: '#151E3A', border: '1px solid #2A3A65' }}
+            />
+            <div className="lg:col-span-2 flex flex-col gap-4">
+              <div className="h-24 rounded-xl animate-pulse" style={{ background: '#101730', border: '1px solid #2A3A65' }} />
+              <div className="h-24 rounded-xl animate-pulse" style={{ background: '#101730', border: '1px solid #2A3A65' }} />
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-3 py-6 text-[#00F0FF]">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="text-xs font-black tracking-widest text-[#00F0FF] uppercase">
+              CALIBRATING SPIDER-NETWORK HUD...
+            </span>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="w-full max-w-6xl mx-auto flex flex-col gap-6 pb-12">
         {/* Crucible loading skeleton */}

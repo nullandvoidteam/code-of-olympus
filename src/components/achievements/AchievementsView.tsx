@@ -5,6 +5,7 @@ import { useAchievementsAndNotifications, claimAchievement } from '../../lib/ach
 import { cn } from '../../lib/utils';
 import * as LucideIcons from 'lucide-react';
 import { Trophy, Lock, Star, Loader2 } from 'lucide-react';
+import { SpiderNetDecal } from '../ui/SpiderNetDecal';
 import confetti from 'canvas-confetti';
 
 export const AchievementsView: React.FC = () => {
@@ -67,6 +68,10 @@ export const AchievementsView: React.FC = () => {
                  style={{ background: 'radial-gradient(circle, var(--theme-accent-glow, #FF3D00) 0%, transparent 70%)' }} />
           )}
 
+          {theme === 'spiderman' && (
+            <SpiderNetDecal size={90} position="top-right" glow={true} />
+          )}
+
           <div className="flex items-center gap-5 z-10">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center border-2 transition-colors duration-300"
                  style={{
@@ -79,10 +84,10 @@ export const AchievementsView: React.FC = () => {
             <div className="flex flex-col">
               <h1 className="text-3xl font-extrabold tracking-widest uppercase drop-shadow-md transition-colors duration-300"
                   style={{ fontFamily: 'var(--theme-font-heading, "Cinzel", serif)', color: 'var(--theme-text-primary, #F5E8E8)' }}>
-                {theme === 'gow' ? 'Saga of Glory' : theme === 'classic' ? 'My Achievements' : 'Trophy Room'}
+                {theme === 'gow' ? 'Saga of Glory' : theme === 'spiderman' ? 'Spider-Sense Trophies' : theme === 'classic' ? 'My Achievements' : 'Trophy Room'}
               </h1>
               <p className="text-sm font-medium opacity-80 transition-colors duration-300" style={{ color: 'var(--theme-text-muted, #A89898)' }}>
-                {theme === 'gow' ? 'The legacy of your battles is written here.' : 'Track your progress and unlock rewards.'}
+                {theme === 'gow' ? 'The legacy of your battles is written here.' : theme === 'spiderman' ? 'With great coding power comes great responsibility.' : 'Track your progress and unlock rewards.'}
               </p>
             </div>
           </div>
