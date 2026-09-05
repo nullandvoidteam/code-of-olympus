@@ -93,6 +93,7 @@ export const ThemeCursor: React.FC<{ theme: ThemeKey }> = ({ theme }) => {
     >
       {(theme === 'classic' || theme === 'gow') && <ClassicSVG state={state} />}
       {theme === 'space' && <SpaceSVG state={state} />}
+      {theme === 'spiderman' && <SpiderWebCursor state={state} />}
     </div>
   )
 }
@@ -145,3 +146,123 @@ const SpaceSVG = ({ state }: { state: CursorState }) => {
     </div>
   )
 }
+
+const SpiderWebCursor = ({ state }: { state: CursorState }) => {
+  const scale = state === 'click' ? 0.85 : state === 'hover' ? 1.25 : 1.0
+  const isHover = state === 'hover'
+  const isClick = state === 'click'
+
+  return (
+    <div
+      style={{
+        width: 44,
+        height: 44,
+        transformOrigin: '22px 22px',
+        transform: `translate(-22px, -22px) scale(${scale})`,
+        transition: 'transform 90ms ease-out',
+      }}
+    >
+      <svg
+        viewBox="0 0 44 44"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ width: '100%', height: '100%', overflow: 'visible' }}
+      >
+        <defs>
+          <linearGradient id="cursorWebGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#E62429" />
+            <stop offset="50%" stopColor="#00D2FF" />
+            <stop offset="100%" stopColor="#0066FF" />
+          </linearGradient>
+          <filter id="cursorGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#E62429" floodOpacity="0.8" />
+            <feDropShadow dx="0" dy="0" stdDeviation="3.5" floodColor="#00D2FF" floodOpacity="0.6" />
+          </filter>
+        </defs>
+
+        {/* Spider-Sense Tingle Radar Wave (Active on hover) */}
+        {isHover && (
+          <g className="animate-tingle-arc" style={{ transformOrigin: '22px 14px' }}>
+            <path
+              d="M 12 12 Q 22 4 32 12"
+              stroke="#FFE600"
+              strokeWidth="2"
+              strokeLinecap="round"
+              fill="none"
+              style={{ filter: 'drop-shadow(0 0 6px #FFE600)' }}
+            />
+            <path
+              d="M 16 16 Q 22 9 28 16"
+              stroke="#FF3338"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              fill="none"
+              style={{ filter: 'drop-shadow(0 0 4px #FF3338)' }}
+            />
+          </g>
+        )}
+
+        {/* Outer Circular Web Netting Reticle */}
+        <circle
+          cx="22"
+          cy="22"
+          r={isHover ? 16 : 14}
+          stroke="url(#cursorWebGrad)"
+          strokeWidth="1.6"
+          strokeDasharray={isHover ? "4 2" : "none"}
+          filter="url(#cursorGlow)"
+          style={{
+            transition: 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            transformOrigin: '22px 22px',
+          }}
+        />
+
+        {/* Web Concentric Inner Ring */}
+        <circle
+          cx="22"
+          cy="22"
+          r="7"
+          stroke="#00D2FF"
+          strokeWidth="1"
+          strokeOpacity="0.75"
+        />
+
+        {/* Web Crosshair Spokes (N, S, E, W) */}
+        <line x1="22" y1="2" x2="22" y2="10" stroke="#E62429" strokeWidth="1.8" strokeLinecap="round" />
+        <line x1="22" y1="34" x2="22" y2="42" stroke="#E62429" strokeWidth="1.8" strokeLinecap="round" />
+        <line x1="2" y1="22" x2="10" y2="22" stroke="#0066FF" strokeWidth="1.8" strokeLinecap="round" />
+        <line x1="34" y1="22" x2="42" y2="22" stroke="#0066FF" strokeWidth="1.8" strokeLinecap="round" />
+
+        {/* Diagonal Web Strands */}
+        <line x1="12" y1="12" x2="17" y2="17" stroke="#00D2FF" strokeWidth="1" strokeOpacity="0.6" />
+        <line x1="32" y1="12" x2="27" y2="17" stroke="#00D2FF" strokeWidth="1" strokeOpacity="0.6" />
+        <line x1="12" y1="32" x2="17" y2="27" stroke="#00D2FF" strokeWidth="1" strokeOpacity="0.6" />
+        <line x1="32" y1="32" x2="27" y2="27" stroke="#00D2FF" strokeWidth="1" strokeOpacity="0.6" />
+
+        {/* Center Targeting Dot & Bio-Electric Core */}
+        <circle
+          cx="22"
+          cy="22"
+          r={isClick ? 5 : 2.5}
+          fill={isClick ? "#FFE600" : "#E62429"}
+          style={{
+            filter: isClick ? 'drop-shadow(0 0 10px #FFE600)' : 'drop-shadow(0 0 4px #00D2FF)',
+            transition: 'all 0.1s ease',
+          }}
+        />
+
+        {/* Click Web Blast Burst */}
+        {isClick && (
+          <g>
+            <line x1="22" y1="22" x2="6" y2="6" stroke="#00F0FF" strokeWidth="2" strokeLinecap="round" />
+            <line x1="22" y1="22" x2="38" y2="6" stroke="#00F0FF" strokeWidth="2" strokeLinecap="round" />
+            <line x1="22" y1="22" x2="6" y2="38" stroke="#00F0FF" strokeWidth="2" strokeLinecap="round" />
+            <line x1="22" y1="22" x2="38" y2="38" stroke="#00F0FF" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="22" cy="22" r="18" stroke="#FFE600" strokeWidth="2" opacity="0.9" />
+          </g>
+        )}
+      </svg>
+    </div>
+  )
+}
+

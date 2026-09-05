@@ -31,10 +31,13 @@ import {
   Camera,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
+import { SpiderNetDecal, SpiderEmblemIcon } from '../ui/SpiderNetDecal'
 import type { DashboardMode } from './CrucibleHeader'
 
 export const AppShell: React.FC = () => {
   const { user, profile, isAdmin } = useAuth()
+  const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState<NavItemKey>(isAdmin ? 'admin' : 'dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -105,9 +108,13 @@ export const AppShell: React.FC = () => {
         className="fixed inset-0 -z-10 pointer-events-none overflow-hidden"
         style={{ opacity: 'var(--theme-watermark-opacity, 1)' }}
       >
-        {/* Layer 1: Nordic mountain pass photo */}
+        {/* Layer 1: Background photo (NYC skyline for Spiderman, Nordic peaks for GoW) */}
         <img
-          src="https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=2400&q=85"
+          src={
+            theme === 'spiderman'
+              ? 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=2400&q=85'
+              : 'https://images.unsplash.com/photo-1517411032315-54ef2cb783bb?auto=format&fit=crop&w=2400&q=85'
+          }
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
@@ -117,7 +124,7 @@ export const AppShell: React.FC = () => {
             opacity: 'var(--theme-bg-image-opacity, 1)',
           }}
         />
-        {/* Layer 2: Blood-mist, frost-vignette & charred ash overlays */}
+        {/* Layer 2: Atmosphere radial overlay */}
         <div
           className="absolute inset-0 transition-opacity duration-300"
           style={{
@@ -125,26 +132,57 @@ export const AppShell: React.FC = () => {
             display: 'var(--theme-bg-overlay-display, block)',
           }}
         />
-        {/* Layer 3: Central Omega watermark */}
-        <div
-          className="absolute animate-omega-breathe pointer-events-none select-none transition-all duration-300"
-          aria-hidden="true"
-          style={{
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: '620px',
-            lineHeight: 1,
-            fontFamily: "'Cinzel Decorative', serif",
-            fontWeight: 900,
-            color: 'var(--theme-watermark-color, rgba(185,28,28,0.12))',
-            filter: 'drop-shadow(0 0 80px var(--theme-watermark-glow, rgba(220,38,38,0.45)))',
-            userSelect: 'none',
-            display: 'var(--theme-watermark-display, block)',
-          }}
-        >
-          Ω
-        </div>
+
+        {/* Spider-Man ambient web nets on viewport corners */}
+        {theme === 'spiderman' && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <SpiderNetDecal position="top-right" size={240} glow={true} />
+            <SpiderNetDecal position="top-left" size={240} glow={true} />
+            <SpiderNetDecal position="bottom-right" size={200} glow={true} />
+            <SpiderNetDecal position="bottom-left" size={200} glow={true} />
+          </div>
+        )}
+
+        {/* Layer 3: Central Watermark */}
+        {theme === 'spiderman' ? (
+          <div
+            className="absolute pointer-events-none select-none transition-all duration-300 flex items-center justify-center animate-spider-sense"
+            aria-hidden="true"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              userSelect: 'none',
+              display: 'var(--theme-watermark-display, block)',
+              opacity: 0.18,
+            }}
+          >
+            <SpiderEmblemIcon
+              size={560}
+              glowColor="rgba(0, 210, 255, 0.5)"
+            />
+          </div>
+        ) : (
+          <div
+            className="absolute animate-omega-breathe pointer-events-none select-none transition-all duration-300"
+            aria-hidden="true"
+            style={{
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              fontSize: '620px',
+              lineHeight: 1,
+              fontFamily: "'Cinzel Decorative', serif",
+              fontWeight: 900,
+              color: 'var(--theme-watermark-color, rgba(185,28,28,0.12))',
+              filter: 'drop-shadow(0 0 80px var(--theme-watermark-glow, rgba(220,38,38,0.45)))',
+              userSelect: 'none',
+              display: 'var(--theme-watermark-display, block)',
+            }}
+          >
+            Ω
+          </div>
+        )}
       </div>
       {/* 1. LEFT PERSISTENT SIDEBAR (Desktop / Tablet) */}
       <div className="hidden md:block shrink-0">

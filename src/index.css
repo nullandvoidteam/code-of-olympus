@@ -364,6 +364,90 @@
     --theme-bg-radial-overlay: none;
   }
 
+  /* ====================================================================
+     5. SPIDER-MAN (spiderman) - INTERACTIVE GAMING SPIDER-MAN THEME
+     Iconic Marvel crimson, electric web-shooter cobalt, bio-electric cyan,
+     radioactive spider-sense gold, and dark stealth-suit charcoal.
+     ==================================================================== */
+  [data-theme='spiderman'] {
+    --theme-font-display: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-mono: 'JetBrains Mono', monospace;
+
+    --theme-bg-canvas: #06070B;
+    --theme-bg-page: #0A0D15;
+    --theme-bg-subtle: #0E1322;
+
+    --theme-surface-card: #0D111D;
+    --theme-surface-card-alt: #131A2E;
+    --theme-surface-card-translucent: rgba(13, 17, 29, 0.94);
+    --theme-surface-panel: rgba(16, 21, 38, 0.92);
+    --theme-surface-hover: rgba(230, 36, 41, 0.08);
+
+    --theme-border-subtle: #1C243B;
+    --theme-border-default: #253356;
+    --theme-border-strong: #E62429;
+    --theme-border-hot: #00E5FF;
+
+    --theme-text-primary: #F8FAFC;
+    --theme-text-secondary: #CBD5E1;
+    --theme-text-muted: #8E9EBE;
+    --theme-text-dim: #4B5B7E;
+
+    --theme-accent-primary: #E62429;
+    --theme-accent-primary-hover: #FF3338;
+    --theme-accent-primary-dim: rgba(230, 36, 41, 0.16);
+    --theme-accent-glow: #00D2FF;
+    --theme-accent-secondary: #0066FF;
+    --theme-accent-cyan: #00F0FF;
+
+    --theme-status-easy: #00F0FF;
+    --theme-status-easy-bg: #07222B;
+    --theme-status-med: #FFE600;
+    --theme-status-med-bg: #2B2607;
+    --theme-status-hard: #E62429;
+    --theme-status-hard-bg: #2B0709;
+
+    --theme-hud-streak-bg: rgba(230, 36, 41, 0.15);
+    --theme-hud-streak-border: #E62429;
+    --theme-hud-streak-text: #FF3338;
+    --theme-hud-xp-bg: rgba(0, 102, 255, 0.15);
+    --theme-hud-xp-border: #0066FF;
+    --theme-hud-xp-text: #60A5FA;
+    --theme-hud-lvl-bg: rgba(19, 26, 46, 0.9);
+    --theme-hud-lvl-border: #253356;
+    --theme-hud-lvl-text: #F8FAFC;
+
+    --theme-input-bg: #0A0D15;
+    --theme-input-border: #253356;
+    --theme-input-focus: #E62429;
+    --theme-input-placeholder: #4B5B7E;
+
+    --theme-btn-primary-gradient: linear-gradient(90deg, #990000 0%, #E62429 50%, #0066FF 100%);
+    --theme-btn-primary-border: #E62429;
+    --theme-btn-secondary-bg: #131A2E;
+    --theme-btn-secondary-border: #253356;
+    --theme-btn-secondary-hover: #1C243B;
+
+    --theme-sidebar-bg: linear-gradient(180deg, rgba(13, 17, 29, 0.98) 0%, rgba(6, 7, 11, 0.98) 100%);
+    --theme-sidebar-border: rgba(230, 36, 41, 0.35);
+    --theme-sidebar-active-bg: linear-gradient(90deg, rgba(230, 36, 41, 0.28) 0%, rgba(0, 102, 255, 0.12) 100%);
+    --theme-sidebar-active-border: #E62429;
+    --theme-sidebar-flame: linear-gradient(180deg, #E62429 0%, #0066FF 100%);
+
+    --theme-shadow-card: 0 8px 32px rgba(6, 7, 11, 0.9);
+    --theme-glow-ambient: rgba(230, 36, 41, 0.25);
+    --theme-watermark-color: rgba(230, 36, 41, 0.14);
+    --theme-watermark-glow: rgba(0, 210, 255, 0.4);
+    --theme-watermark-display: block;
+    --theme-bg-image-display: block;
+    --theme-bg-image-filter: brightness(0.20) contrast(1.25) saturate(1.1);
+    --theme-bg-image-opacity: 0.65;
+    --theme-bg-overlay-display: block;
+    --theme-bg-radial-overlay: radial-gradient(circle at 50% 12%, rgba(230, 36, 41, 0.30) 0%, transparent 55%), radial-gradient(circle at 85% 85%, rgba(0, 102, 255, 0.24) 0%, transparent 50%), radial-gradient(circle at 15% 75%, rgba(0, 240, 255, 0.16) 0%, transparent 45%), linear-gradient(to bottom, rgba(6, 7, 11, 0.72) 0%, rgba(6, 7, 11, 0.96) 100%);
+  }
+
   /* ---- GLOBAL HARDWARE CURSOR ---- */
   html.custom-cursor,
   html.custom-cursor * {
@@ -560,3 +644,82 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ======================================================================
+   SPIDER-MAN THEME SPECIAL FX & GAMING ANIMATIONS
+   ====================================================================== */
+@keyframes spider-sense-pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.35;
+    filter: drop-shadow(0 0 4px #FFE600);
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+    filter: drop-shadow(0 0 16px #E62429) drop-shadow(0 0 28px #FFE600);
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.35;
+    filter: drop-shadow(0 0 4px #FFE600);
+  }
+}
+
+@keyframes spider-web-shimmer {
+  0%, 100% {
+    opacity: 0.25;
+    filter: drop-shadow(0 0 3px rgba(0, 229, 255, 0.4));
+  }
+  50% {
+    opacity: 0.75;
+    filter: drop-shadow(0 0 10px rgba(230, 36, 41, 0.8));
+  }
+}
+
+@keyframes web-filament-glow {
+  0%, 100% {
+    stroke: #E62429;
+    stroke-opacity: 0.4;
+  }
+  50% {
+    stroke: #00F0FF;
+    stroke-opacity: 0.85;
+  }
+}
+
+@keyframes web-tingle-arc {
+  0% {
+    transform: scale(0.8) translateY(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.25) translateY(-6px);
+    opacity: 0;
+  }
+}
+
+.animate-spider-sense {
+  animation: spider-sense-pulse 2.2s ease-in-out infinite;
+}
+
+.animate-web-shimmer {
+  animation: spider-web-shimmer 3.5s ease-in-out infinite;
+}
+
+.animate-web-filament {
+  animation: web-filament-glow 3s ease-in-out infinite;
+}
+
+.animate-tingle-arc {
+  animation: web-tingle-arc 1.2s ease-out infinite;
+}
+
+/* Spider-Man interactive button enhancements */
+[data-theme='spiderman'] button:hover {
+  filter: drop-shadow(0 0 10px rgba(230, 36, 41, 0.35));
+}
+

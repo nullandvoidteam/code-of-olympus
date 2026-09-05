@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
+import { SpiderNetDecal } from '../ui/SpiderNetDecal'
 import { cn } from '../../lib/utils'
 import { CodeQuestLogo } from '../brand/CodeQuestLogo'
 
@@ -92,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className="h-screen sticky top-0 w-64 px-4 py-5 flex flex-col justify-between select-none z-30 overflow-y-auto hide-scrollbar"
+      className="relative overflow-hidden h-screen sticky top-0 w-64 px-4 py-5 flex flex-col justify-between select-none z-30 overflow-y-auto hide-scrollbar"
       style={{
         background: 'var(--theme-sidebar-bg, linear-gradient(180deg, rgba(14, 8, 8, 0.98) 0%, rgba(8, 4, 4, 0.98) 100%))',
         backdropFilter: 'blur(20px)',
@@ -102,6 +103,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
         fontFamily: 'var(--theme-font-body, "Inter", sans-serif)',
       }}
     >
+      {theme === 'spiderman' && <SpiderNetDecal size={65} position="top-right" />}
+
       {/* ── TOP SECTION: Brand & Navigation ── */}
       <div className="flex flex-col gap-5">
         {/* Brand Header */}
