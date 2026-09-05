@@ -62,12 +62,17 @@ export const BattleLobbyView: React.FC<BattleLobbyViewProps> = ({
     return () => clearInterval(timer)
   }, [])
 
-  // Auto finalize rankings on match conclusion
+  const startMs = battle ? new Date(battle.start_time).getTime() : 0
+  const endMs = battle ? new Date(battle.end_time).getTime() : 0
+  const isConcluded = battle ? (battle.effective_status === 'ended' || (endMs > 0 && now > endMs)) : false
+
+  // Auto finalize rankings on match conclusion & switch to leaderboard
   useEffect(() => {
-    if (battle?.effective_status === 'ended') {
+    if (isConcluded) {
+      setArenaTab('leaderboard')
       finalizeBattleRankings(battleId)
     }
-  }, [battle?.effective_status, battleId])
+  }, [isConcluded, battleId])
 
   if (loading) {
     return (
@@ -80,8 +85,8 @@ export const BattleLobbyView: React.FC<BattleLobbyViewProps> = ({
     )
   }
 
-  // Case A: Access Blocked
-  if (!access || !access.allowed) {
+  // Case A: Access Blocked (allowed if match has concluded to review standings)
+  if (!access || (!access.allowed && !isConcluded)) {
     return (
       <div className="w-full max-w-4xl mx-auto flex flex-col gap-6 py-6 text-left animate-in fade-in duration-200">
         <button
@@ -132,8 +137,6 @@ export const BattleLobbyView: React.FC<BattleLobbyViewProps> = ({
     )
   }
 
-  const startMs = new Date(battle.start_time).getTime()
-  const endMs = new Date(battle.end_time).getTime()
   const isUpcoming = now < startMs
   const isLive = now >= startMs && now <= endMs
   const isEnded = now > endMs
@@ -592,11 +595,11 @@ export const BattleLobbyView: React.FC<BattleLobbyViewProps> = ({
 
               {/* Right: Real-time Collaborative Workspace (8 cols) */}
               <div className="lg:col-span-8 flex flex-col gap-4">
-                {activeExercise && access.team_id ? (
+                {activeExercise && (access.team_id || teamMembers[0]?.team_id) ? (
                   <BattleCollabWorkspace
-                    key={`${battle.id}_${access.team_id}_${activeExercise.exercise_id}`}
+                    key={`${battle.id}_${access.team_id || teamMembers[0]?.team_id}_${activeExercise.exercise_id}`}
                     battleId={battle.id}
-                    teamId={access.team_id}
+                    teamId={access.team_id || teamMembers[0]?.team_id || ''}
                     exercise={activeExercise}
                     isLive={isLive}
                     progress={teamProgress.find((p) => p.exercise_id === activeExercise.exercise_id)}

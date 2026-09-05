@@ -15,6 +15,7 @@ import {
   type BattleLeaderboardEntry,
 } from '../lib/arcade'
 import { BloodArenaBattleView } from '../components/crucible/BloodArenaBattleView'
+import { BattleLobbyView } from '../components/arcade/BattleLobbyView'
 import { RagnarokFestLobby, ClanProfileCard } from '../components/crucible/RagnarokFestLobby'
 import { C, formatCountdown, formatDateTime, relativeTime, statusBadgeStyle } from '../components/crucible/crucibleTokens'
 import { BattleLeaderboardTable } from '../components/arcade/BattleLeaderboardTable'
@@ -28,6 +29,7 @@ import { useTheme } from '../context/ThemeContext'
 
 export const TeamArcadePage: React.FC = () => {
   const { user } = useAuth()
+  const { theme } = useTheme()
   const {
     team,
     members,
@@ -191,6 +193,15 @@ export const TeamArcadePage: React.FC = () => {
 
   // Active Lobbies
   if (activeLobbyBattleId) {
+    if (theme === 'classic') {
+      return (
+        <BattleLobbyView
+          battleId={activeLobbyBattleId}
+          userId={user?.id}
+          onExit={() => setActiveLobbyBattleId(null)}
+        />
+      )
+    }
     return (
       <BloodArenaBattleView
         battleId={activeLobbyBattleId}
@@ -232,8 +243,6 @@ export const TeamArcadePage: React.FC = () => {
     if (activeFestTab === 'ended') return eff === 'ended'
     return true
   })
-
-  const { theme } = useTheme()
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6 md:p-8 flex flex-col gap-10" style={{ color: C.textPrimary }}>

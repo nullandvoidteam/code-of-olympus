@@ -219,7 +219,7 @@ export const BloodArenaBattleView: React.FC<BloodArenaBattleViewProps> = ({ batt
 
   const { bg: statusBg, color: statusColor, label: statusLabel, pulse: statusPulse } = statusBadgeStyle(effStatus)
   const selectedExercise = exercises[selectedExerciseIndex]
-  const myTeamId = teamMembers[0]?.team_id
+  const myTeamId = access?.team_id || teamMembers[0]?.team_id
 
 
   return (
@@ -357,6 +357,7 @@ export const BloodArenaBattleView: React.FC<BloodArenaBattleViewProps> = ({ batt
         <div className="flex-1 p-0">
           {arenaTab === 'workspace' && selectedExercise && (
             <BattleCollabWorkspace
+              key={`${battleId}_${myTeamId}_${selectedExercise.exercise_id}`}
               battleId={battleId}
               teamId={myTeamId ?? ''}
               exercise={selectedExercise}

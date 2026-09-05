@@ -2210,13 +2210,22 @@ export function useBattleCollabWorkspace({
   const [presenceUsers, setPresenceUsers] = useState<CollabPresenceUser[]>([])
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(true)
 
+  const clientIdRef = useRef<string>(
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : Math.random().toString(36).substring(2) + Date.now().toString(36)
+  )
   const isRemoteUpdateRef = useRef(false)
   const latestCodeRef = useRef(initialCode)
   const versionRef = useRef(1)
-  const lastReceivedTimestampRef = useRef(0)
+  const peerVersionsRef = useRef<Map<string, number>>(new Map())
   const dirtyRef = useRef(false)
   const channelRef = useRef<any>(null)
+  const isSubscribedRef = useRef(false)
   const saveTimeoutRef = useRef<any>(null)
+
+  const userProfileRef = useRef(userProfile)
+  userProfileRef.current = userProfile
 
   // Keep latestCodeRef in sync
   latestCodeRef.current = code
@@ -2227,17 +2236,25 @@ export function useBattleCollabWorkspace({
     setIsLoadingWorkspace(true)
 
     const init = async () => {
-      if (!battleId || !teamId || !exerciseId || !userId) return
-
-      const res = await fetchBattleWorkspace(battleId, teamId, exerciseId, userId)
-      if (isMounted && res.success && res.code !== undefined) {
-        setCode(res.code)
-        latestCodeRef.current = res.code
-        versionRef.current = res.version || 1
-        dirtyRef.current = false
+      if (!battleId || !teamId || !exerciseId || !userId) {
+        if (isMounted) setIsLoadingWorkspace(false)
+        return
       }
-      if (isMounted) {
-        setIsLoadingWorkspace(false)
+
+      try {
+        const res = await fetchBattleWorkspace(battleId, teamId, exerciseId, userId)
+        if (isMounted && res.success && res.code !== undefined) {
+          // Only adopt DB snapshot if no live peer broadcast has provided newer code
+          if (versionRef.current <= (res.version || 1) && !dirtyRef.current) {
+            setCode(res.code)
+            latestCodeRef.current = res.code
+            versionRef.current = res.version || 1
+          }
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingWorkspace(false)
+        }
       }
     }
 
@@ -2268,14 +2285,17 @@ export function useBattleCollabWorkspace({
     }
   }, [battleId, teamId, exerciseId, userId, language, isLive])
 
-  // 3. Realtime Channel & Broadcast Subscription
+  const flushSnapshotRef = useRef<() => Promise<void>>(() => Promise.resolve())
+  flushSnapshotRef.current = flushSnapshot
+
+  // 3. Realtime Channel & Broadcast Subscription (Stable lifecycle)
   useEffect(() => {
     if (!battleId || !teamId || !exerciseId || !userId) return
 
     const channelName = `collab_${battleId}_${teamId}_${exerciseId}`
     const channel = supabase.channel(channelName, {
       config: {
-        broadcast: { ack: false },
+        broadcast: { ack: false, self: false },
         presence: { key: userId },
       },
     })
@@ -2304,10 +2324,18 @@ export function useBattleCollabWorkspace({
 
     // Listen to code_update broadcasts
     channel.on('broadcast', { event: 'code_update' }, ({ payload }: any) => {
-      if (!payload || payload.senderId === userId) return
-      if (payload.timestamp < lastReceivedTimestampRef.current) return
+      // Discard our own broadcasts; accept peers (even in multi-tab testing)
+      if (!payload || payload.clientId === clientIdRef.current) return
 
-      lastReceivedTimestampRef.current = payload.timestamp
+      // Out-of-order protection per client
+      const prevPeerVer = peerVersionsRef.current.get(payload.clientId) || 0
+      if (payload.version && payload.version <= prevPeerVer) return
+      if (payload.version) {
+        peerVersionsRef.current.set(payload.clientId, payload.version)
+      }
+
+      if (payload.code === latestCodeRef.current) return
+
       versionRef.current = Math.max(versionRef.current, payload.version || 1)
       latestCodeRef.current = payload.code
 
@@ -2315,15 +2343,15 @@ export function useBattleCollabWorkspace({
       setCode(payload.code)
       setSyncStatus('synced')
 
-      // Reset remote update lock next tick
+      // Reset remote update lock after Monaco processes update
       setTimeout(() => {
         isRemoteUpdateRef.current = false
-      }, 30)
+      }, 100)
     })
 
     // Listen to request_state broadcast from joining peers
     channel.on('broadcast', { event: 'request_state' }, ({ payload }: any) => {
-      if (!payload || payload.senderId === userId) return
+      if (!payload || payload.clientId === clientIdRef.current) return
       // Send current in-memory state to newcomer
       channel.send({
         type: 'broadcast',
@@ -2332,18 +2360,18 @@ export function useBattleCollabWorkspace({
           code: latestCodeRef.current,
           version: versionRef.current,
           senderId: userId,
-          targetId: payload.senderId,
-          timestamp: Date.now(),
+          clientId: clientIdRef.current,
+          targetClientId: payload.clientId,
         },
       })
     })
 
     // Listen to current_state replies
     channel.on('broadcast', { event: 'current_state' }, ({ payload }: any) => {
-      if (!payload || payload.targetId !== userId) return
-      if (payload.timestamp < lastReceivedTimestampRef.current) return
+      if (!payload || payload.clientId === clientIdRef.current) return
+      if (payload.targetClientId && payload.targetClientId !== clientIdRef.current) return
+      if (payload.code === latestCodeRef.current) return
 
-      lastReceivedTimestampRef.current = payload.timestamp
       versionRef.current = Math.max(versionRef.current, payload.version || 1)
       latestCodeRef.current = payload.code
 
@@ -2353,51 +2381,92 @@ export function useBattleCollabWorkspace({
 
       setTimeout(() => {
         isRemoteUpdateRef.current = false
-      }, 30)
+      }, 100)
     })
+
+    // Dual-Layer Redundancy: PostgreSQL replication listener
+    channel.on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'arcade_battle_workspaces',
+        filter: `battle_id=eq.${battleId}`,
+      },
+      (payload: any) => {
+        const row = payload.new
+        if (
+          row &&
+          row.team_id === teamId &&
+          row.exercise_id === exerciseId &&
+          row.updated_by !== userId
+        ) {
+          if (row.code && row.code !== latestCodeRef.current) {
+            latestCodeRef.current = row.code
+            versionRef.current = Math.max(versionRef.current, row.version || 1)
+            isRemoteUpdateRef.current = true
+            setCode(row.code)
+            setSyncStatus('synced')
+            setTimeout(() => {
+              isRemoteUpdateRef.current = false
+            }, 100)
+          }
+        }
+      }
+    )
 
     // Subscribe and track presence
     channel.subscribe(async (status: string) => {
       if (status === 'SUBSCRIBED') {
+        isSubscribedRef.current = true
         setSyncStatus(isLive ? 'synced' : 'readonly')
-        await channel.track({
-          user_id: userId,
-          username: userProfile?.username,
-          full_name: userProfile?.full_name,
-          avatar_url: userProfile?.avatar_url,
-          online_at: Date.now(),
-        })
+        try {
+          await channel.track({
+            user_id: userId,
+            username: userProfileRef.current?.username,
+            full_name: userProfileRef.current?.full_name,
+            avatar_url: userProfileRef.current?.avatar_url,
+            online_at: Date.now(),
+          })
+        } catch {}
 
         // Request latest live state from any active peer
         channel.send({
           type: 'broadcast',
           event: 'request_state',
-          payload: { senderId: userId },
+          payload: {
+            senderId: userId,
+            clientId: clientIdRef.current,
+          },
         })
       } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
+        isSubscribedRef.current = false
         setSyncStatus('reconnecting')
       }
     })
 
     return () => {
+      isSubscribedRef.current = false
       // Flush dirty snapshot before channel leave
-      flushSnapshot()
+      flushSnapshotRef.current()
       channel.untrack()
       supabase.removeChannel(channel)
       channelRef.current = null
     }
-  }, [battleId, teamId, exerciseId, userId, userProfile, isLive, flushSnapshot])
+  }, [battleId, teamId, exerciseId, userId, isLive])
 
   // 4. Local editor change handler (broadcasts via WebSocket, queues debounced DB snapshot)
   const handleCodeChange = useCallback(
     (nextCode: string | undefined) => {
       const val = nextCode ?? ''
+      // If code is already identical to what we have, skip to prevent echoes
+      if (val === latestCodeRef.current) return
+
       setCode(val)
       latestCodeRef.current = val
 
       // If this update was triggered by incoming peer broadcast, do not echo back
       if (isRemoteUpdateRef.current) return
-      if (!isLive) return
 
       versionRef.current += 1
       dirtyRef.current = true
@@ -2410,7 +2479,7 @@ export function useBattleCollabWorkspace({
           payload: {
             code: val,
             senderId: userId,
-            timestamp: Date.now(),
+            clientId: clientIdRef.current,
             version: versionRef.current,
           },
         })
@@ -2421,10 +2490,10 @@ export function useBattleCollabWorkspace({
         clearTimeout(saveTimeoutRef.current)
       }
       saveTimeoutRef.current = setTimeout(() => {
-        flushSnapshot()
+        flushSnapshotRef.current()
       }, 3000)
     },
-    [userId, isLive, flushSnapshot]
+    [userId]
   )
 
   // 5. Force save helper

@@ -76,6 +76,12 @@ export const BattleCollabWorkspace: React.FC<BattleCollabWorkspaceProps> = ({
 
   const monacoLanguage = getMonacoLanguage(challenge?.language || challenge?.category)
 
+  const userProfile = React.useMemo(() => ({
+    username: profile?.username || undefined,
+    full_name: profile?.full_name || undefined,
+    avatar_url: profile?.avatar_url || undefined,
+  }), [profile?.username, profile?.full_name, profile?.avatar_url])
+
   const {
     code,
     handleCodeChange,
@@ -90,11 +96,7 @@ export const BattleCollabWorkspace: React.FC<BattleCollabWorkspaceProps> = ({
     initialCode: '',
     language: monacoLanguage,
     userId: user?.id,
-    userProfile: {
-      username: profile?.username || undefined,
-      full_name: profile?.full_name || undefined,
-      avatar_url: profile?.avatar_url || undefined,
-    },
+    userProfile,
     isLive,
   })
 
