@@ -194,6 +194,116 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
 
   return (
     <div className="w-full max-w-[1400px] mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
+      {/* ── 1. MASTER PROJECTS HERO BANNER WITH SHADED ANIMATION & CARTOONISH IMAGE ── */}
+      {theme === 'classic' ? (
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 bg-gradient-to-r from-[#2E1065] via-[#4C1D95] to-[#1E1B4B] text-white shadow-xl border border-purple-800/50 flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep">
+          {/* Shaded Ambient Glow Overlays */}
+          <div className="absolute -right-16 -top-16 w-96 h-96 rounded-full bg-purple-400/20 blur-3xl pointer-events-none animate-shade-glow" />
+          <div className="absolute left-1/3 bottom-0 w-80 h-40 bg-indigo-500/15 blur-2xl pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/5 pointer-events-none" />
+
+          {/* Left Text Column */}
+          <div className="relative z-10 flex flex-col gap-3 max-w-xl text-left">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-purple-950/80 border border-purple-400/40 text-purple-200 shadow-sm backdrop-blur-md">
+              <Hammer className="w-3.5 h-3.5 text-purple-300" />
+              <span>PROJECT STUDIO • CODE WORKBENCH</span>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm font-pixel">
+              Project Studio
+            </h1>
+            <p className="text-xs sm:text-sm text-purple-100/90 leading-relaxed font-medium">
+              Transform your coding skills into real interactive web applications, games, and developer tools with step-by-step guided blueprints or freeform sandbox crafting.
+            </p>
+            <div className="flex items-center gap-3 pt-2">
+              <span className="px-3 py-1 rounded-xl bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs font-mono font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" /> Multi-Stage Software Engineering
+              </span>
+            </div>
+          </div>
+
+          {/* Right Cartoonish Mascot Column */}
+          <div className="relative z-10 shrink-0 flex items-center justify-center">
+            <div className="relative animate-cartoon-float">
+              <div className="absolute inset-0 rounded-full bg-purple-500/30 blur-2xl scale-95" />
+              <img
+                src="/extracted/hero1_alex_desk.png"
+                alt="Alex Project Workbench"
+                className="w-48 sm:w-60 md:w-72 h-auto object-contain relative z-10 drop-shadow-[0_16px_28px_rgba(0,0,0,0.5)] transition-transform hover:scale-105"
+              />
+              <div className="absolute -bottom-2 -left-2 bg-purple-900/90 border border-purple-400/60 px-3 py-1 rounded-2xl shadow-lg backdrop-blur-sm flex items-center gap-1.5 z-20">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span className="text-[10px] font-pixel font-bold text-purple-200">BUILD & SHIP</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep"
+          style={{
+            background: 'linear-gradient(135deg, rgba(28,12,12,0.98) 0%, rgba(18,8,8,0.98) 50%, rgba(10,4,4,0.98) 100%)',
+            borderColor: '#8C2828',
+            boxShadow: `0 0 40px rgba(255,61,0,0.15) inset, 0 12px 36px rgba(0,0,0,0.85)`,
+          }}
+        >
+          {/* Shaded Ambient Glow Overlays */}
+          <div className="absolute right-12 top-0 w-96 h-96 rounded-full bg-amber-600/20 blur-3xl pointer-events-none animate-shade-glow" />
+          <div className="absolute left-1/4 bottom-0 w-80 h-36 bg-red-600/15 blur-2xl pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF3D00] to-transparent" />
+          <div className="absolute -bottom-6 right-1/3 text-[140px] font-serif font-black text-red-950/20 pointer-events-none select-none leading-none">
+            Ω
+          </div>
+
+          {/* Left Text Column */}
+          <div className="relative z-10 flex flex-col gap-4 max-w-xl text-left">
+            <div
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest w-fit shadow-md"
+              style={{ fontFamily: "'Cinzel', serif", background: 'rgba(220,38,38,0.18)', color: '#FF5722', border: '1px solid rgba(220,38,38,0.45)' }}
+            >
+              <Hammer className="w-3.5 h-3.5 text-amber-400" />
+              <span>DWARVEN FORGE • CODE ARTIFACTS</span>
+            </div>
+            <h1
+              className="text-3xl md:text-5xl font-black text-[#F5E8E8] tracking-wider uppercase"
+              style={{ fontFamily: "'Cinzel Decorative', serif", textShadow: '0 2px 20px rgba(255,61,0,0.45)' }}
+            >
+              The Dwarven Forge
+            </h1>
+            <p className="text-xs sm:text-sm leading-relaxed text-[#A89898]">
+              Transform raw algorithmic knowledge into sovereign software artifacts, game engines, and divine tools alongside the legendary smiths Brok & Sindri.
+            </p>
+            <div className="flex items-center gap-3 pt-1">
+              <span
+                className="px-3 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-2 border"
+                style={{ background: 'rgba(30,14,14,0.8)', borderColor: '#8C2828', color: '#F5D060' }}
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" /> Sacred Blueprints Ready
+              </span>
+            </div>
+          </div>
+
+          {/* Right Cartoonish Mascot Column */}
+          <div className="relative z-10 shrink-0 flex items-center justify-center">
+            <div className="relative animate-cartoon-float">
+              <div className="absolute inset-0 rounded-full bg-amber-500/25 blur-2xl scale-95" />
+              <img
+                src="/extracted/hero1_alex_desk.png"
+                alt="Forge Workbench"
+                className="w-48 sm:w-60 md:w-72 h-auto object-contain relative z-10 drop-shadow-[0_16px_32px_rgba(255,61,0,0.4)] transition-transform hover:scale-105"
+              />
+              <div
+                className="absolute -bottom-2 -left-2 px-3 py-1 rounded-xl shadow-lg border backdrop-blur-md flex items-center gap-1.5 z-20"
+                style={{ background: 'rgba(14,6,6,0.92)', borderColor: '#8C2828' }}
+              >
+                <span className="text-[10px] font-black tracking-widest text-amber-400" style={{ fontFamily: "'Cinzel', serif" }}>
+                  FORGE RELIC
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Studio Navigation Switcher */}
       {theme === 'classic' ? (
         <div className="flex items-center gap-2 p-1.5 bg-white rounded-xl w-fit border border-slate-200 shadow-sm">
@@ -256,6 +366,7 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
       {studioMode === 'guided' ? (
         <StudentGuidedProjectsLibrary
           onSelectProject={(id) => onSelectGuidedProject?.(id)}
+          hideHero={true}
         />
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">

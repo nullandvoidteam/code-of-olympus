@@ -668,27 +668,49 @@ export const ClassicCommunityFeed: React.FC = () => {
 
   return (
     <div className="w-full max-w-5xl mx-auto p-4 md:p-8 flex flex-col gap-6 pb-20 select-none font-sans animate-in fade-in duration-300">
-      {/* ── 1. Gamified Community Hero ── */}
-      <div className="relative bg-[#faf7f2] border border-[#ece7df] rounded-3xl p-6 sm:p-8 overflow-hidden shadow-xs flex items-center justify-between">
-        <div className="relative z-10 flex flex-col gap-2 max-w-xl">
-          <div className="flex items-center gap-1.5 text-amber-600 font-pixel text-[10px] font-bold tracking-wider uppercase bg-amber-50 border border-amber-200 px-3 py-1 rounded-full w-fit">
+      {/* ── 1. Gamified Community Hero with Shaded Animation & Cartoonish Image ── */}
+      <div className="relative bg-gradient-to-r from-[#FAF5FF] via-[#F3E8FF] to-[#EDE9FE] border border-purple-200/80 rounded-3xl p-6 sm:p-8 md:p-10 overflow-hidden shadow-md flex flex-col md:flex-row items-center justify-between gap-6 animate-shade-sweep">
+        {/* Shaded Ambient Glow Overlays */}
+        <div className="absolute -right-12 -top-12 w-80 h-80 rounded-full bg-purple-300/30 blur-3xl pointer-events-none animate-shade-glow" />
+        <div className="absolute left-1/3 bottom-0 w-72 h-32 bg-indigo-300/20 blur-2xl pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-purple-900/5 via-transparent to-white/40 pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col gap-2.5 max-w-xl text-left">
+          <div className="flex items-center gap-1.5 text-purple-700 font-pixel text-[10px] font-bold tracking-wider uppercase bg-white/90 border border-purple-200 px-3 py-1 rounded-full w-fit shadow-xs backdrop-blur-sm">
             <span>✦</span>
-            <span>CODÉDEX COMMUNITY</span>
+            <span>CODÉDEX COMMUNITY GUILD</span>
             <span>✦</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-stone-900 tracking-tight font-pixel">
             Community Hub ✨
           </h1>
 
           <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
-            Explore discussions, read community blog articles, and browse creative project showcases built by fellow coders!
+            Explore discussions, share advice, read community blog articles, and browse creative project showcases built by fellow coders!
           </p>
+
+          <div className="flex items-center gap-3 pt-2">
+            <span className="px-3 py-1 rounded-xl bg-white/90 border border-purple-200 text-purple-700 text-xs font-mono font-bold flex items-center gap-1.5 shadow-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Global Developer Lounge
+            </span>
+          </div>
         </div>
 
-        {/* Decorative art */}
-        <div className="hidden md:flex items-center justify-end w-2/5 shrink-0 pointer-events-none">
-          <img src="/extracted/hero2_art_clean.png" alt="" className="h-28 w-auto object-contain opacity-90" />
+        {/* Cartoonish Image */}
+        <div className="relative z-10 shrink-0 flex items-center justify-center">
+          <div className="relative animate-cartoon-float">
+            <div className="absolute inset-0 rounded-full bg-purple-400/25 blur-xl scale-95" />
+            <img
+              src="/extracted/community_space.png"
+              alt="Community Coders"
+              className="w-48 sm:w-56 md:w-64 h-auto object-contain relative z-10 drop-shadow-[0_12px_24px_rgba(100,50,150,0.25)] transition-transform hover:scale-105"
+            />
+            <div className="absolute -bottom-2 -left-2 bg-white/95 border border-purple-300 px-3 py-1 rounded-2xl shadow-sm backdrop-blur-sm flex items-center gap-1.5 z-20">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span className="text-[10px] font-pixel font-bold text-purple-800">CONNECT</span>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -21,7 +21,6 @@ export interface AchievementItem {
   targetCount: number
   progressCount: number
   rewardXp: number
-  rewardXp: number
   isUnlocked: boolean
   isClaimed: boolean
   claimedAt?: string

@@ -21,10 +21,12 @@ import { GuidedProjectDetailModal } from './GuidedProjectDetailModal'
 
 interface StudentGuidedProjectsLibraryProps {
   onSelectProject: (projectId: string) => void
+  hideHero?: boolean
 }
 
 export const StudentGuidedProjectsLibrary: React.FC<StudentGuidedProjectsLibraryProps> = ({
   onSelectProject,
+  hideHero = false,
 }) => {
   const { user } = useAuth()
   const [projects, setProjects] = useState<GuidedProjectWithStudentProgress[]>([])
@@ -72,22 +74,24 @@ export const StudentGuidedProjectsLibrary: React.FC<StudentGuidedProjectsLibrary
     return (
       <div className="space-y-6">
         {/* Hero Header matching Screenshot 4 */}
-        <div className="relative bg-gradient-to-r from-[#2E1065] via-[#1E1B4B] to-[#0F172A] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-purple-900/40 overflow-hidden">
-          <div className="relative z-10 max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/70 border border-purple-400/30 text-[10px] uppercase font-bold text-purple-200">
-              <span className="text-purple-400 font-black">@</span>
-              <span>MULTI-STAGE CODING JOURNEYS</span>
+        {!hideHero && (
+          <div className="relative bg-gradient-to-r from-[#2E1065] via-[#1E1B4B] to-[#0F172A] text-white rounded-3xl p-6 sm:p-8 shadow-md border border-purple-900/40 overflow-hidden">
+            <div className="relative z-10 max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-950/70 border border-purple-400/30 text-[10px] uppercase font-bold text-purple-200">
+                <span className="text-purple-400 font-black">@</span>
+                <span>MULTI-STAGE CODING JOURNEYS</span>
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-wider text-white font-pixel">
+                GUIDED PROJECTS
+              </h1>
+
+              <p className="text-xs sm:text-sm text-purple-200/80 leading-relaxed max-w-xl">
+                Build real interactive applications step-by-step. Each stage unlocks sequentially as you master algorithms, data structures, and practical software design.
+              </p>
             </div>
-
-            <h1 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-wider text-white font-pixel">
-              GUIDED PROJECTS
-            </h1>
-
-            <p className="text-xs sm:text-sm text-purple-200/80 leading-relaxed max-w-xl">
-              Build real interactive applications step-by-step. Each stage unlocks sequentially as you master algorithms, data structures, and practical software design.
-            </p>
           </div>
-        </div>
+        )}
 
         {/* Filter and Search Bar */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -275,28 +279,30 @@ export const StudentGuidedProjectsLibrary: React.FC<StudentGuidedProjectsLibrary
   return (
     <div className="space-y-6">
       {/* Hero Header */}
-      <div className="relative bg-gradient-to-br from-[#180A0A] via-[#0E0505] to-[#0A0404] text-white rounded-2xl p-6 sm:p-8 overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.85)] border-2 border-[#8C2828]">
-        <div className="absolute top-0 right-1/4 w-96 h-36 bg-[#FF3D00]/15 blur-[90px] pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF3D00] to-transparent" />
+      {!hideHero && (
+        <div className="relative bg-gradient-to-br from-[#180A0A] via-[#0E0505] to-[#0A0404] text-white rounded-2xl p-6 sm:p-8 overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.85)] border-2 border-[#8C2828]">
+          <div className="absolute top-0 right-1/4 w-96 h-36 bg-[#FF3D00]/15 blur-[90px] pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF3D00] to-transparent" />
 
-        <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#2A0E0E] border border-[#8C2828] text-[10px] uppercase font-bold text-[#FF8A80]">
-            <Compass className="w-3.5 h-3.5 text-[#FF3D00]" />
-            <span style={{ fontFamily: "'Cinzel', serif" }}>Multi-Stage Dwarven Blueprints</span>
+          <div className="relative z-10 max-w-2xl space-y-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-[#2A0E0E] border border-[#8C2828] text-[10px] uppercase font-bold text-[#FF8A80]">
+              <Compass className="w-3.5 h-3.5 text-[#FF3D00]" />
+              <span style={{ fontFamily: "'Cinzel', serif" }}>Multi-Stage Dwarven Blueprints</span>
+            </div>
+
+            <h1
+              style={{ fontFamily: "'Cinzel', serif" }}
+              className="text-2xl sm:text-4xl font-black uppercase tracking-wider text-[#F5E8E8] leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+            >
+              Sacred Guided Blueprints
+            </h1>
+
+            <p className="text-xs sm:text-sm text-[#A89898] leading-relaxed max-w-xl">
+              Forge sovereign interactive software step-by-step. Each chamber unlocks sequentially as you master algorithms, data structures, and practical software design.
+            </p>
           </div>
-
-          <h1
-            style={{ fontFamily: "'Cinzel', serif" }}
-            className="text-2xl sm:text-4xl font-black uppercase tracking-wider text-[#F5E8E8] leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
-          >
-            Sacred Guided Blueprints
-          </h1>
-
-          <p className="text-xs sm:text-sm text-[#A89898] leading-relaxed max-w-xl">
-            Forge sovereign interactive software step-by-step. Each chamber unlocks sequentially as you master algorithms, data structures, and practical software design.
-          </p>
         </div>
-      </div>
+      )}
 
       {/* Filter and Search Bar */}
       <div className="bg-[#0E0606] p-4 rounded-xl border border-[#3D1C1C] shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">

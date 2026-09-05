@@ -119,45 +119,113 @@ export const TeamArcadePage: React.FC = () => {
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6 md:p-8 flex flex-col gap-10" style={{ color: C.textPrimary }}>
-      {/* ── 1. HERO BANNER ── */}
+      {/* ── 1. HERO BANNER WITH SHADED ANIMATION & CARTOONISH IMAGE ── */}
       {theme === 'classic' ? (
-        <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 bg-gradient-to-r from-[#064E3B] to-[#022C22] text-white shadow-md border border-emerald-900/40">
-          <div className="relative z-10 flex flex-col gap-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-emerald-950/70 border border-emerald-400/40 text-emerald-300">
-              <Gamepad2 className="w-3.5 h-3.5" />
+        <div className="relative overflow-hidden rounded-3xl p-8 md:p-10 bg-gradient-to-r from-[#064E3B] via-[#047857] to-[#022C22] text-white shadow-xl border border-emerald-800/50 flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep">
+          {/* Shaded Ambient Glow Overlays */}
+          <div className="absolute -right-16 -top-16 w-96 h-96 rounded-full bg-emerald-400/20 blur-3xl pointer-events-none animate-shade-glow" />
+          <div className="absolute left-1/3 bottom-0 w-80 h-40 bg-teal-500/15 blur-2xl pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-white/5 pointer-events-none" />
+
+          {/* Left Text Column */}
+          <div className="relative z-10 flex flex-col gap-3 max-w-xl text-left">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 shadow-sm backdrop-blur-md">
+              <Gamepad2 className="w-3.5 h-3.5 text-emerald-400" />
               <span>TEAM ARCADE • SQUAD CHALLENGE ARENA</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm font-pixel">
               Squad Challenge Arena
             </h1>
-            <p className="text-sm text-emerald-100/80 leading-relaxed max-w-xl">
+            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-medium">
               Form 4-player squads, challenge rival teams to real-time coding duels, and conquer quests together to capture enemy turf.
             </p>
+            <div className="flex items-center gap-3 pt-2">
+              <span className="px-3 py-1 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Live Squad Battles
+              </span>
+            </div>
+          </div>
+
+          {/* Right Cartoonish Mascot Column */}
+          <div className="relative z-10 shrink-0 flex items-center justify-center">
+            <div className="relative animate-cartoon-float">
+              <div className="absolute inset-0 rounded-full bg-emerald-400/30 blur-xl scale-95" />
+              <img
+                src="/questbot.png"
+                alt="Arcade Battle Bot"
+                className="w-44 sm:w-56 md:w-64 h-auto object-contain relative z-10 drop-shadow-[0_16px_28px_rgba(0,0,0,0.5)] transition-transform hover:scale-105"
+              />
+              <div className="absolute -bottom-2 -right-2 bg-emerald-900/90 border border-emerald-400/60 p-2 rounded-2xl shadow-lg backdrop-blur-sm flex items-center gap-1.5 z-20">
+                <img src="/extracted/icon_gamepad.png" alt="" className="w-5 h-5 object-contain" />
+                <span className="text-[10px] font-pixel font-bold text-emerald-200">READY</span>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
-        <div className="relative overflow-hidden rounded-2xl p-8 md:p-12"
+        <div
+          className="relative overflow-hidden rounded-3xl p-8 md:p-12 border-2 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 animate-shade-sweep"
           style={{
-            background: 'linear-gradient(135deg, rgba(20,12,12,0.95) 0%, rgba(14,10,10,0.95) 100%)',
-            border: `1px solid ${C.border}`,
-            boxShadow: `0 0 30px rgba(220,38,38,0.15) inset`
-          }}>
-          <div className="relative z-10 flex flex-col gap-4 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest w-fit"
-              style={{ fontFamily: "'Cinzel', serif", background: C.crimsonDim, color: C.crimson, border: `1px solid ${C.borderHot}` }}>
-              <Swords className="w-3 h-3" /> The Blood Arena
+            background: 'linear-gradient(135deg, rgba(30,12,12,0.98) 0%, rgba(20,8,8,0.98) 50%, rgba(10,4,4,0.98) 100%)',
+            borderColor: C.borderHot,
+            boxShadow: `0 0 40px rgba(220,38,38,0.2) inset, 0 12px 36px rgba(0,0,0,0.85)`,
+          }}
+        >
+          {/* Shaded Ambient Glow Overlays */}
+          <div className="absolute right-12 top-0 w-96 h-96 rounded-full bg-red-600/25 blur-3xl pointer-events-none animate-shade-glow" />
+          <div className="absolute left-1/4 bottom-0 w-80 h-36 bg-orange-600/15 blur-2xl pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#FF3D00] to-transparent" />
+          <div className="absolute -bottom-6 right-1/3 text-[140px] font-serif font-black text-red-950/20 pointer-events-none select-none leading-none">
+            Ω
+          </div>
+
+          {/* Left Text Column */}
+          <div className="relative z-10 flex flex-col gap-4 max-w-xl text-left">
+            <div
+              className="inline-flex items-center gap-2 px-3.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest w-fit shadow-md"
+              style={{ fontFamily: "'Cinzel', serif", background: C.crimsonDim, color: C.crimson, border: `1px solid ${C.borderHot}` }}
+            >
+              <Swords className="w-3.5 h-3.5 text-red-400" />
+              <span>THE BLOOD ARENA • SQUAD COMBAT</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black" style={{ fontFamily: "'Cinzel Decorative', serif", textShadow: '0 2px 20px rgba(220,38,38,0.4)' }}>
+            <h1
+              className="text-3xl md:text-5xl font-black text-[#F5E8E8] tracking-wider uppercase"
+              style={{ fontFamily: "'Cinzel Decorative', serif", textShadow: '0 2px 20px rgba(220,38,38,0.5)' }}
+            >
               Prove Your Valor
             </h1>
-            <p className="text-sm leading-relaxed max-w-xl" style={{ color: C.textSecondary }}>
+            <p className="text-xs sm:text-sm leading-relaxed" style={{ color: C.textSecondary }}>
               Forge a war clan and spill blood in real-time competitive duels. Only the strong survive the Crucible.
             </p>
+            <div className="flex items-center gap-3 pt-1">
+              <span
+                className="px-3 py-1 rounded-lg text-xs font-mono font-bold flex items-center gap-2 border"
+                style={{ background: 'rgba(30,14,14,0.8)', borderColor: C.border, color: C.goldBright }}
+              >
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> Ranked Arena Duels Active
+              </span>
+            </div>
           </div>
-          <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none"
-            style={{
-              background: 'radial-gradient(ellipse at right, rgba(220,38,38,0.4) 0%, transparent 70%)',
-            }} />
+
+          {/* Right Cartoonish Mascot Column */}
+          <div className="relative z-10 shrink-0 flex items-center justify-center">
+            <div className="relative animate-cartoon-float">
+              <div className="absolute inset-0 rounded-full bg-red-600/30 blur-2xl scale-95" />
+              <img
+                src="/questbot.png"
+                alt="Crucible Combat Bot"
+                className="w-44 sm:w-56 md:w-64 h-auto object-contain relative z-10 drop-shadow-[0_16px_32px_rgba(220,38,38,0.45)] transition-transform hover:scale-105"
+              />
+              <div
+                className="absolute -bottom-2 -left-2 px-3 py-1 rounded-xl shadow-lg border backdrop-blur-md flex items-center gap-1.5 z-20"
+                style={{ background: 'rgba(14,6,6,0.92)', borderColor: C.borderHot }}
+              >
+                <span className="text-[10px] font-black tracking-widest text-amber-400" style={{ fontFamily: "'Cinzel', serif" }}>
+                  CLAN DUELS
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
