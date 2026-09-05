@@ -33,12 +33,13 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { saveCourseProgress } from '../../lib/courseProgress'
+import { recordLessonCompletion } from '../../lib/learning'
 import { useTheme } from '../../context/ThemeContext'
 import { SpiderNetDecal, SpiderEmblemIcon } from '../ui/SpiderNetDecal'
 import type { DashboardMode } from './CrucibleHeader'
 
 export const AppShell: React.FC = () => {
-  const { user, profile, isAdmin } = useAuth()
+  const { user, profile, isAdmin, addXP } = useAuth()
   const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState<NavItemKey>(isAdmin ? 'admin' : 'dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -301,6 +302,10 @@ export const AppShell: React.FC = () => {
                 <QuestIDEView
                   onBackToLesson={() => setSelectedQuestId(null)}
                   onNextLesson={() => {
+                    addXP(250) // Give XP for quest completion
+                    if (user?.id && selectedCourseId && selectedQuestId) {
+                      recordLessonCompletion(user.id, selectedCourseId, selectedQuestId, true)
+                    }
                     setSelectedQuestId(null)
                     setSelectedChallengeId(null)
                     setSelectedLessonId(null)
@@ -310,6 +315,10 @@ export const AppShell: React.FC = () => {
                 <CodingChallengeView
                   onBackToLesson={() => setSelectedChallengeId(null)}
                   onNextLesson={() => {
+                    addXP(100) // Give XP for challenge completion
+                    if (user?.id && selectedCourseId && selectedChallengeId) {
+                      recordLessonCompletion(user.id, selectedCourseId, selectedChallengeId, true)
+                    }
                     setSelectedQuestId('ch4-quest03')
                   }}
                 />
@@ -317,7 +326,13 @@ export const AppShell: React.FC = () => {
                 <InteractiveLessonView
                   onBackToCourse={() => setSelectedLessonId(null)}
                   onPreviousLesson={() => setSelectedLessonId(null)}
-                  onNextLesson={() => setSelectedChallengeId('ch4-ex03')}
+                  onNextLesson={() => {
+                    addXP(50) // Give XP for lesson completion
+                    if (user?.id && selectedCourseId && selectedLessonId) {
+                      recordLessonCompletion(user.id, selectedCourseId, selectedLessonId, true)
+                    }
+                    setSelectedChallengeId('ch4-ex03')
+                  }}
                 />
               ) : selectedCourseId ? (
                 <CourseDetailView
@@ -358,7 +373,10 @@ export const AppShell: React.FC = () => {
                 challenge={getCrucibleChallenge(crucibleChallengeId) ?? getCrucibleChallenge('reverse-string')!}
                 userId={user?.id}
                 onBack={() => setCrucibleChallengeId(null)}
-                onNextChallenge={() => setCrucibleChallengeId(null)}
+                onNextChallenge={() => {
+                  addXP(150) // Give XP for completing a crucible challenge
+                  setCrucibleChallengeId(null)
+                }}
               />
             ) : practiceBriefingId ? (
               <ChallengeBriefingView

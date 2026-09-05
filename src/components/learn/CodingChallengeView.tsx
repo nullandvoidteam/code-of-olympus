@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { LumiPixelBot, PixelPythonIcon } from '../brand/PixelArtAvatars'
 import confetti from 'canvas-confetti'
+import { useAuth } from '../../context/AuthContext'
 
 type RunStatus = 'idle' | 'running' | 'success' | 'error'
 
@@ -54,6 +55,16 @@ export const CodingChallengeView: React.FC<CodingChallengeViewProps> = ({
   onBackToLesson,
   onNextLesson,
 }) => {
+  const { profile } = useAuth()
+  
+  const level = profile?.level || 1
+  const xp = profile?.xp || 0
+  const nextLevelXP = level * 1000
+  const currentLevelBaseXP = (level - 1) * 1000
+  const xpIntoCurrentLevel = Math.max(0, xp - currentLevelBaseXP)
+  const xpNeeded = Math.max(1, nextLevelXP - currentLevelBaseXP)
+  const progressPercent = Math.min(100, Math.max(0, Math.round((xpIntoCurrentLevel / xpNeeded) * 100)))
+
   const [code, setCode] = useState(STARTER_CODE)
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [output, setOutput] = useState<string[]>([])
@@ -467,10 +478,10 @@ export const CodingChallengeView: React.FC<CodingChallengeViewProps> = ({
                 <div className="flex flex-col gap-1 px-3 py-2 rounded-xl bg-white border border-slate-200 min-w-[120px]">
                   <div className="flex items-center justify-between text-[10px] font-pixel text-slate-500 uppercase tracking-wide">
                     <span>Current XP</span>
-                    <span className="text-emerald-600 font-bold">4,970</span>
+                    <span className="text-emerald-600 font-bold">{xp.toLocaleString()}</span>
                   </div>
                   <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden w-full">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '72%' }} />
+                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-700" style={{ width: `${progressPercent}%` }} />
                   </div>
                 </div>
                 <Medal className="w-8 h-8 text-amber-500 shrink-0" />
