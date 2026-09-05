@@ -1,0 +1,101 @@
+export interface CourseCatalogItem {
+  id: string
+  title: string
+  category: 'programming' | 'web' | 'ai' | 'game' | 'tools' | 'career'
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
+  hours: string
+  chapters: number
+  xp: number
+  icon: string
+  rating: string
+  students: string
+  description: string
+  rewardTitle: string
+}
+
+export const COURSE_CATALOG: CourseCatalogItem[] = [
+  {
+    id: 'python',
+    title: 'Python Adventure',
+    category: 'programming',
+    difficulty: 'Beginner',
+    hours: '8–10 Hours',
+    chapters: 18,
+    xp: 2400,
+    icon: '🐍',
+    rating: '4.9',
+    students: '12,400+',
+    description: 'Master programming fundamentals by completing quests, solving challenges, and building real projects.',
+    rewardTitle: 'Python Explorer',
+  },
+  {
+    id: 'html-css',
+    title: 'The HTML & CSS Odyssey',
+    category: 'web',
+    difficulty: 'Beginner',
+    hours: '6–8 Hours',
+    chapters: 16,
+    xp: 1800,
+    icon: '🌐',
+    rating: '4.9',
+    students: '18,200+',
+    description: 'Build modern responsive web pages from scratch with semantic HTML5 and modern CSS techniques.',
+    rewardTitle: 'Web Weaver',
+  },
+  {
+    id: 'javascript',
+    title: 'JavaScript Realms',
+    category: 'web',
+    difficulty: 'Intermediate',
+    hours: '10–12 Hours',
+    chapters: 20,
+    xp: 3200,
+    icon: '⚡',
+    rating: '4.8',
+    students: '9,500+',
+    description: 'Unlock interactive programming, DOM manipulation, asynchronous fetching, and modern ES6+ magic.',
+    rewardTitle: 'JS Sorcerer',
+  },
+  {
+    id: 'react',
+    title: 'React & Frontend Mastery',
+    category: 'web',
+    difficulty: 'Intermediate',
+    hours: '12–14 Hours',
+    chapters: 14,
+    xp: 3600,
+    icon: '⚛️',
+    rating: '4.9',
+    students: '7,100+',
+    description: 'Component architecture, state management, hooks, and scalable frontend single page apps.',
+    rewardTitle: 'React Architect',
+  },
+  {
+    id: 'sql',
+    title: 'SQL & Data Vaults',
+    category: 'programming',
+    difficulty: 'Beginner',
+    hours: '5–6 Hours',
+    chapters: 10,
+    xp: 1500,
+    icon: '🗄️',
+    rating: '4.7',
+    students: '5,800+',
+    description: 'Querying databases, relational models, joins, group by, and backend data design patterns.',
+    rewardTitle: 'Data Miner',
+  },
+  {
+    id: 'ai',
+    title: 'AI & Prompt Engineering',
+    category: 'ai',
+    difficulty: 'Intermediate',
+    hours: '8–10 Hours',
+    chapters: 12,
+    xp: 2800,
+    icon: '🤖',
+    rating: '4.9',
+    students: '8,300+',
+    description: 'Build generative AI apps, structured prompting, API workflows, and intelligent coding assistants.',
+    rewardTitle: 'AI Whisperer',
+  },
+]

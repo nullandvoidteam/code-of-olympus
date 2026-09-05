@@ -27,7 +27,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { cn } from '../../lib/utils'
 import { CodeQuestLogo } from '../brand/CodeQuestLogo'
 
-export type NavItemKey = 'dashboard' | 'learn' | 'practice' | 'build' | 'arcade' | 'community' | 'profile' | 'quests' | 'achievements' | 'badges' | 'theme' | 'settings' | 'help' | 'admin'
+export type NavItemKey = 'dashboard' | 'learn' | 'practice' | 'build' | 'arcade' | 'community' | 'profile' | 'quests' | 'achievements' | 'badges' | 'levels' | 'theme' | 'settings' | 'help' | 'admin'
 
 interface SidebarProps {
   activeTab: NavItemKey
