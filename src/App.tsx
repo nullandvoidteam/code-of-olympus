@@ -87,14 +87,27 @@ const MainApp: React.FC = () => {
     )
   }
 
-  // 3. Authenticated -> Check Onboarding for Students
-  const hasOnboarded = localStorage.getItem(`onboarded_${user.id}`) === 'true' || hasCompletedOnboarding
+  // 3. Authenticated -> Check Onboarding ONLY for NEW signup users
+  // CRITICAL: The onboarding screen must ONLY be shown to newly registered signups!
+  // Existing users logging in or returning MUST NEVER be shown the onboarding screen.
+  const isNewSignup =
+    Boolean(user?.id) &&
+    (sessionStorage.getItem(`just_signed_up_${user.id}`) === 'true' ||
+      localStorage.getItem(`new_signup_pending_onboarding_${user.id}`) === 'true')
 
-  if (!hasOnboarded && !isAdmin) {
+  const hasAlreadyOnboarded =
+    Boolean(user?.id) &&
+    (localStorage.getItem(`onboarded_${user.id}`) === 'true' || hasCompletedOnboarding)
+
+  const shouldShowOnboarding = isNewSignup && !hasAlreadyOnboarded && !isAdmin
+
+  if (shouldShowOnboarding) {
     return (
       <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: 'var(--theme-bg-canvas, #070505)' }}>
         <CodeQuestOnboardingFlow onComplete={() => {
           localStorage.setItem(`onboarded_${user.id}`, 'true')
+          localStorage.removeItem(`new_signup_pending_onboarding_${user.id}`)
+          sessionStorage.removeItem(`just_signed_up_${user.id}`)
           setHasCompletedOnboarding(true)
         }} />
       </div>
