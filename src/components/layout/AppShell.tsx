@@ -66,14 +66,14 @@ export const AppShell: React.FC = () => {
       setSelectedChallengeId(null)
       setSelectedQuestId(null)
     } else {
-      setSelectedCourseId('python')
+      setSelectedCourseId(null)
       setSelectedLessonId(null)
       setSelectedChallengeId(null)
       setSelectedQuestId(null)
     }
   }
-  const [selectedCourseId, setSelectedCourseId] = useState<string | null>('python')
-  const [selectedLessonId, setSelectedLessonId] = useState<string | null>('ch4-lesson3')
+  const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null)
   const [selectedQuestId, setSelectedQuestId] = useState<string | null>(null)
   const [practiceBriefingId, setPracticeBriefingId] = useState<string | null>(null)
