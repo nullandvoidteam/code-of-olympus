@@ -86,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { key: 'build' as NavItemKey, label: 'Projects', icon: Hammer },
     { key: 'arcade' as NavItemKey, label: 'Arcade', icon: Flame },
     { key: 'community' as NavItemKey, label: 'Community', icon: Users },
-    { key: 'quests' as NavItemKey, label: 'Quests', icon: Target },
+    { key: 'profile' as NavItemKey, label: 'Profile', icon: User },
     { key: 'theme' as NavItemKey, label: 'Theme', icon: Palette },
   ]
 

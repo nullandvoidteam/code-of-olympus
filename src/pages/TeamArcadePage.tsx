@@ -1,22 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import {
   useTeamArcade,
-  useArcadeFests,
-  computeEffectiveFestStatus,
-  type ArcadeFest,
   type ArcadeTeamMatch,
 } from '../lib/arcade'
-import { RagnarokFestLobby, ClanProfileCard } from '../components/crucible/RagnarokFestLobby'
+import { ClanProfileCard } from '../components/crucible/RagnarokFestLobby'
 import { TeamChallengeSection } from '../components/arcade/TeamChallengeSection'
 import { TeamMatchLobbyModal } from '../components/arcade/TeamMatchLobbyModal'
-import { C, formatCountdown, formatDateTime, relativeTime, statusBadgeStyle } from '../components/crucible/crucibleTokens'
+import { C } from '../components/crucible/crucibleTokens'
 import confetti from 'canvas-confetti'
 import {
-  Swords, Flame, Trophy, Clock, CheckCircle2,
-  Users, UserPlus, LogOut, Loader2, AlertCircle,
-  Copy, Shield, X, Calendar, Crown, Gamepad2
+  Swords, Users, UserPlus, LogOut, AlertCircle,
+  Copy, Shield, Gamepad2
 } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
 
@@ -26,44 +22,14 @@ export const TeamArcadePage: React.FC = () => {
   const {
     team,
     members,
-    registeredFestIds,
     loading: teamLoading,
     isCaptain,
     createTeamAction,
     joinTeamAction,
     leaveTeamAction,
-    registerFestAction,
   } = useTeamArcade(user?.id)
 
-  const { fests, loading: festsLoading, liveFests, upcomingFests, endedFests } = useArcadeFests()
-
-  const [now, setNow] = useState(() => Date.now())
   const [activeTeamMatch, setActiveTeamMatch] = useState<ArcadeTeamMatch | null>(null)
-  const [activeArcadeTab, setActiveArcadeTab] = useState<'duels' | 'fests'>('duels')
-
-  // 1-second interval ensures live status transitions and countdowns without page refresh
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const [activeFestTab, setActiveFestTab] = useState<'all' | 'live' | 'upcoming' | 'ended'>('all')
-  const [selectedFest, setSelectedFest] = useState<ArcadeFest | null>(null)
-  const [activeLobbyFest, setActiveLobbyFest] = useState<ArcadeFest | null>(null)
-  const [isRegisteringFest, setIsRegisteringFest] = useState(false)
-
-  const handleRegisterFest = async (festId: string) => {
-    setIsRegisteringFest(true)
-    const result = await registerFestAction(festId)
-    setIsRegisteringFest(false)
-
-    if (!result.success) {
-      toast.error(result.error || 'Failed to pledge to Ragnarök.')
-    } else {
-      toast.success(`Clan registered for ${result.fest_title || 'Ragnarök'}! 🏆`)
-      confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 }, colors: [C.crimson, C.gold, '#fff'] })
-    }
-  }
 
   const [teamNameInput, setTeamNameInput] = useState('')
   const [teamCodeInput, setTeamCodeInput] = useState('')
@@ -140,7 +106,7 @@ export const TeamArcadePage: React.FC = () => {
   }
 
   // Loading state
-  if (teamLoading || festsLoading) {
+  if (teamLoading) {
     return (
       <div className="w-full flex flex-col items-center justify-center py-32 gap-4" style={{ color: C.textPrimary }}>
         <div className="text-4xl animate-pulse" style={{ fontFamily: "'Cinzel Decorative', serif", color: C.crimson }}>⚔</div>
@@ -151,27 +117,6 @@ export const TeamArcadePage: React.FC = () => {
     )
   }
 
-
-  if (activeLobbyFest) {
-    return (
-      <RagnarokFestLobby
-        fest={activeLobbyFest}
-        team={team}
-        members={members}
-        userId={user?.id}
-        onExit={() => setActiveLobbyFest(null)}
-      />
-    )
-  }
-
-  const displayedFests = fests.filter((f) => {
-    const eff = computeEffectiveFestStatus(f.start_time, f.end_time, now)
-    if (activeFestTab === 'live') return eff === 'live'
-    if (activeFestTab === 'upcoming') return eff === 'upcoming'
-    if (activeFestTab === 'ended') return eff === 'ended'
-    return true
-  })
-
   return (
     <div className="w-full max-w-6xl mx-auto p-6 md:p-8 flex flex-col gap-10" style={{ color: C.textPrimary }}>
       {/* ── 1. HERO BANNER ── */}
@@ -180,13 +125,13 @@ export const TeamArcadePage: React.FC = () => {
           <div className="relative z-10 flex flex-col gap-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit bg-emerald-950/70 border border-emerald-400/40 text-emerald-300">
               <Gamepad2 className="w-3.5 h-3.5" />
-              <span>TEAM ARCADE • COMPETITIVE ARENA</span>
+              <span>TEAM ARCADE • SQUAD CHALLENGE ARENA</span>
             </div>
             <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight">
-              Team Arcade Arena
+              Squad Challenge Arena
             </h1>
             <p className="text-sm text-emerald-100/80 leading-relaxed max-w-xl">
-              Form 4-player squads, register for upcoming competitive coding battles, and join the pre-match lobby to conquer ordered quests together.
+              Form 4-player squads, challenge rival teams to real-time coding duels, and conquer quests together to capture enemy turf.
             </p>
           </div>
         </div>
@@ -206,7 +151,7 @@ export const TeamArcadePage: React.FC = () => {
               Prove Your Valor
             </h1>
             <p className="text-sm leading-relaxed max-w-xl" style={{ color: C.textSecondary }}>
-              Forge a war clan, pledge fealty to Ragnarök tournaments, and spill blood in real-time competitive duels. Only the strong survive the Crucible.
+              Forge a war clan and spill blood in real-time competitive duels. Only the strong survive the Crucible.
             </p>
           </div>
           <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none"
@@ -217,199 +162,92 @@ export const TeamArcadePage: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* ── LEFT: MAIN ARENA TABS ── */}
+        {/* ── LEFT: SQUAD CHALLENGE ARENA ── */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          {/* Tab selector */}
+          {/* Header */}
           {theme === 'classic' ? (
             <div className="flex items-center gap-3">
-              {[
-                { key: 'duels', label: 'DIRECT TEAM DUELS', icon: <Swords className="w-3.5 h-3.5" /> },
-                { key: 'fests', label: 'CODING FESTS', icon: <Flame className="w-3.5 h-3.5" />, count: fests.length },
-              ].map(t => (
-                <button
-                  key={t.key}
-                  onClick={() => setActiveArcadeTab(t.key as any)}
-                  className={`px-4 py-2.5 rounded-xl font-pixel text-xs tracking-wider flex items-center gap-2 transition-all cursor-pointer ${
-                    activeArcadeTab === t.key
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  {t.icon} {t.label} {t.count !== undefined ? `(${t.count})` : ''}
-                </button>
-              ))}
+              <div className="px-4 py-2 rounded-xl font-pixel text-xs tracking-wider flex items-center gap-2 bg-purple-600 text-white shadow-sm">
+                <Swords className="w-3.5 h-3.5" />
+                <span>SQUAD BATTLES</span>
+              </div>
             </div>
           ) : (
             <div className="flex gap-0" style={{ borderBottom: `1px solid ${C.border}` }}>
-              {[
-                { key: 'duels', label: 'Squad Battle Arena', icon: <Swords className="w-4 h-4" /> },
-                { key: 'fests', label: 'Ragnarök Tournaments', icon: <Flame className="w-4 h-4" />, count: fests.length },
-              ].map(t => (
-                <button
-                  key={t.key}
-                  onClick={() => setActiveArcadeTab(t.key as any)}
-                  className="relative px-6 py-3 text-[11px] uppercase font-bold tracking-widest flex items-center gap-2 transition-all cursor-pointer"
-                  style={{
-                    fontFamily: "'Cinzel', serif",
-                    color: activeArcadeTab === t.key ? C.crimson : C.textSecondary,
-                    borderBottom: activeArcadeTab === t.key ? `2px solid ${C.crimson}` : '2px solid transparent',
-                  }}>
-                  {t.icon} {t.label} {t.count !== undefined ? <span className="text-[9px]" style={{ color: activeArcadeTab === t.key ? C.crimson : C.textMuted }}>({t.count})</span> : null}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* ── DIRECT TEAM DUELS ARENA (SOURCE OF TRUTH) ── */}
-          {activeArcadeTab === 'duels' && (
-            <div className="flex flex-col gap-6">
-              {team ? (
-                <TeamChallengeSection
-                  team={team}
-                  isCaptain={isCaptain}
-                  userId={user?.id}
-                  onEnterMatch={(match) => setActiveTeamMatch(match)}
-                />
-              ) : (
-                <div
-                  className={`rounded-2xl p-8 flex flex-col items-center text-center gap-5 border shadow-sm ${
-                    theme === 'classic'
-                      ? 'bg-slate-50 border-slate-200 text-slate-900'
-                      : 'border'
-                  }`}
-                  style={
-                    theme !== 'classic'
-                      ? {
-                          background: C.bgCard,
-                          borderColor: C.borderHot,
-                          boxShadow: '0 0 25px rgba(220,38,38,0.15)',
-                        }
-                      : undefined
-                  }
-                >
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner"
-                    style={{
-                      background: theme === 'classic' ? '#dcfce7' : 'linear-gradient(135deg, #7F1D1D, #DC2626)',
-                      color: theme === 'classic' ? '#15803d' : '#fff',
-                    }}
-                  >
-                    ⚔️
-                  </div>
-                  <div className="flex flex-col gap-2 max-w-lg">
-                    <h2
-                      className="text-xl md:text-2xl font-black text-white"
-                      style={theme !== 'classic' ? { fontFamily: "'Cinzel', serif" } : undefined}
-                    >
-                      Team-vs-Team Battle Arena
-                    </h2>
-                    <p className="text-xs md:text-sm text-slate-400 leading-relaxed">
-                      Forge or join a 4-player squad to challenge rival teams directly. Both squads duel independently on identical coding questions, earning match-local Combat Points. The squad with the higher average score claims victory and captures enemy turf!
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-xl text-xs font-mono pt-2">
-                    <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
-                      <span className="text-rose-400 font-bold">1. Challenge Squads</span>
-                      <span className="text-[10px] text-slate-400 text-center">Search & dispatch direct match duels</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
-                      <span className="text-amber-400 font-bold">2. Independent Solves</span>
-                      <span className="text-[10px] text-slate-400 text-center">Personal Monaco workspace, 100 CP per quest</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
-                      <span className="text-emerald-400 font-bold">3. Turf Capture</span>
-                      <span className="text-[10px] text-slate-400 text-center">Higher team average captures enemy turf</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── FESTS CONTENT ── */}
-          {activeArcadeTab === 'fests' && (
-            <div className="flex flex-col gap-6">
-              {/* Filter Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                {(['all', 'live', 'upcoming', 'ended'] as const).map(f => (
-                  <button
-                    key={f}
-                    onClick={() => setActiveFestTab(f)}
-                    className="px-4 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-widest transition-all whitespace-nowrap"
-                    style={{
-                      fontFamily: "'Cinzel', serif",
-                      background: activeFestTab === f ? C.crimsonDim : 'rgba(20,12,12,0.6)',
-                      color: activeFestTab === f ? C.crimson : C.textMuted,
-                      border: `1px solid ${activeFestTab === f ? C.borderHot : C.border}`,
-                    }}>
-                    {f}
-                  </button>
-                ))}
+              <div className="relative px-6 py-3 text-[11px] uppercase font-bold tracking-widest flex items-center gap-2"
+                style={{
+                  fontFamily: "'Cinzel', serif",
+                  color: C.crimson,
+                  borderBottom: `2px solid ${C.crimson}`,
+                }}>
+                <Swords className="w-4 h-4" /> Squad Battle Arena
               </div>
-
-              {displayedFests.length === 0 ? (
-                <div className="text-center py-16 rounded-2xl" style={{ border: `1px dashed ${C.border}` }}>
-                  <div className="text-3xl opacity-40 mb-3 text-white">🏆</div>
-                  <p className="text-sm" style={{ color: C.textSecondary, fontFamily: "'Cinzel', serif" }}>No tournaments echo in the halls.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {displayedFests.map(fest => {
-                    const isRegistered = registeredFestIds.includes(fest.id)
-                    const { bg: statusBg, color: statusColor, label: statusLabel, pulse: statusPulse } = statusBadgeStyle(fest.effective_status)
-
-                    return (
-                      <div key={fest.id} className="rounded-2xl flex flex-col overflow-hidden transition-all group"
-                        style={{ background: C.bgCard, border: `1px solid ${C.border}` }}>
-                        
-                        {/* Banner */}
-                        <div className="h-24 relative overflow-hidden flex items-end p-4">
-                          {fest.banner_url ? (
-                            <img src={fest.banner_url} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105" style={{ filter: 'brightness(0.5)' }} />
-                          ) : (
-                            <div className="absolute inset-0 bg-gradient-to-br from-red-900 to-black" />
-                          )}
-                          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(14,10,10,1) 0%, transparent 100%)' }} />
-                          
-                          <div className="relative z-10 w-full flex justify-between items-end">
-                            <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold ${statusPulse ? 'animate-pulse' : ''}`}
-                              style={{ background: statusBg, color: statusColor, fontFamily: "'Cinzel', serif", border: `1px solid ${statusColor}44` }}>
-                              ● {statusLabel}
-                            </span>
-                            {isRegistered && (
-                              <span className="px-2 py-0.5 rounded text-[9px] uppercase font-bold"
-                                style={{ background: 'rgba(0,229,255,0.1)', color: C.frost, border: `1px solid ${C.frost}44` }}>
-                                <CheckCircle2 className="w-2.5 h-2.5 inline mr-1" /> Pledged
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="p-5 flex flex-col gap-3 flex-1">
-                          <h3 className="font-bold text-lg" style={{ fontFamily: "'Cinzel', serif", color: C.textPrimary }}>{fest.title}</h3>
-                          <p className="text-xs line-clamp-2" style={{ color: C.textSecondary }}>{fest.description}</p>
-                          
-                          <div className="mt-auto pt-4" style={{ borderTop: `1px solid ${C.border}` }}>
-                            {isRegistered ? (
-                              <button onClick={() => setActiveLobbyFest(fest)} className="w-full py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all"
-                                style={{ background: fest.effective_status === 'live' ? 'linear-gradient(135deg, #DC2626, #FF3D00)' : 'rgba(20,12,12,0.8)', color: fest.effective_status === 'live' ? '#fff' : C.crimson, border: `1px solid ${fest.effective_status === 'live' ? 'transparent' : C.borderHot}`, fontFamily: "'Cinzel', serif" }}>
-                                {fest.effective_status === 'live' ? 'Enter Live Fest ⚔️' : fest.effective_status === 'ended' ? 'View Standings' : 'Enter Lobby'}
-                              </button>
-                            ) : (
-                              <button onClick={() => setSelectedFest(fest)} className="w-full py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all"
-                                style={{ background: 'rgba(20,12,12,0.8)', border: `1px solid ${C.border}`, color: C.textSecondary, fontFamily: "'Cinzel', serif" }}>
-                                View Runes
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
             </div>
           )}
+
+          {/* ── DIRECT TEAM DUELS / SQUAD CHALLENGES ── */}
+          <div className="flex flex-col gap-6">
+            {team ? (
+              <TeamChallengeSection
+                team={team}
+                isCaptain={isCaptain}
+                userId={user?.id}
+                onEnterMatch={(match) => setActiveTeamMatch(match)}
+              />
+            ) : (
+              <div
+                className={`rounded-2xl p-8 flex flex-col items-center text-center gap-5 border shadow-sm ${
+                  theme === 'classic'
+                    ? 'bg-slate-50 border-slate-200 text-slate-900'
+                    : 'border'
+                }`}
+                style={
+                  theme !== 'classic'
+                    ? {
+                        background: C.bgCard,
+                        borderColor: C.borderHot,
+                        boxShadow: '0 0 25px rgba(220,38,38,0.15)',
+                      }
+                    : undefined
+                }
+              >
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner"
+                  style={{
+                    background: theme === 'classic' ? '#dcfce7' : 'linear-gradient(135deg, #7F1D1D, #DC2626)',
+                    color: theme === 'classic' ? '#15803d' : '#fff',
+                  }}
+                >
+                  ⚔️
+                </div>
+                <div className="flex flex-col gap-2 max-w-lg">
+                  <h2
+                    className="text-xl md:text-2xl font-black text-white"
+                    style={theme !== 'classic' ? { fontFamily: "'Cinzel', serif" } : undefined}
+                  >
+                    Team-vs-Team Battle Arena
+                  </h2>
+                  <p className="text-xs md:text-sm text-slate-400 leading-relaxed">
+                    Forge or join a 4-player squad to challenge rival teams directly. Both squads duel independently on identical coding questions, earning match-local Combat Points. The squad with the higher average score claims victory and captures enemy turf!
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-xl text-xs font-mono pt-2">
+                  <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
+                    <span className="text-rose-400 font-bold">1. Challenge Squads</span>
+                    <span className="text-[10px] text-slate-400 text-center">Search & dispatch direct match duels</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
+                    <span className="text-amber-400 font-bold">2. Independent Solves</span>
+                    <span className="text-[10px] text-slate-400 text-center">Personal Monaco workspace, 100 CP per quest</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
+                    <span className="text-emerald-400 font-bold">3. Turf Capture</span>
+                    <span className="text-[10px] text-slate-400 text-center">Higher team average captures enemy turf</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── RIGHT: CLAN / SQUAD MANAGEMENT (SIDEBAR) ── */}
@@ -522,7 +360,7 @@ export const TeamArcadePage: React.FC = () => {
                       Squad Up for Battle
                     </h3>
                     <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                      Create or join a 4-player team to register and compete in arcade battles together.
+                      Create or join a 4-player team to compete in squad challenges together.
                     </p>
                   </div>
 
@@ -591,7 +429,6 @@ export const TeamArcadePage: React.FC = () => {
 
               {team ? (
                 <div className="flex flex-col gap-4">
-                  {/* Using the phase 4 Crucible Clan Profile Card */}
                   <ClanProfileCard team={team} members={members} isCaptain={isCaptain} />
                   
                   <div className="rounded-2xl p-4 flex flex-col gap-3" style={{ background: C.bgCard, border: `1px solid ${C.border}` }}>
@@ -623,7 +460,7 @@ export const TeamArcadePage: React.FC = () => {
                       🛡
                     </div>
                     <h3 className="font-bold text-sm" style={{ fontFamily: "'Cinzel', serif", color: C.textPrimary }}>Forge a Clan</h3>
-                    <p className="text-xs mt-1" style={{ color: C.textSecondary }}>You must swear allegiance to a clan before spilling blood.</p>
+                    <p className="text-xs mt-1" style={{ color: C.textSecondary }}>You must swear allegiance to a clan before entering squad battles.</p>
                   </div>
 
                   {actionError && (
@@ -679,55 +516,6 @@ export const TeamArcadePage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── FEST BRIEFING MODAL ── */}
-      {selectedFest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-black rounded-2xl w-full max-w-lg flex flex-col shadow-2xl"
-            style={{ border: `1px solid ${C.border}`, boxShadow: `0 0 30px rgba(220,38,38,0.2)` }}>
-            <div className="p-4 flex items-center justify-between" style={{ borderBottom: `1px solid ${C.border}` }}>
-              <h3 className="font-bold text-lg" style={{ fontFamily: "'Cinzel', serif", color: C.textPrimary }}>Tournament Runes</h3>
-              <button onClick={() => setSelectedFest(null)} className="p-1 text-xs" style={{ color: C.textMuted }}>✕</button>
-            </div>
-            
-            <div className="p-6 flex flex-col gap-5">
-              <div>
-                <h4 className="text-sm font-bold mb-1" style={{ color: C.gold, fontFamily: "'Cinzel', serif" }}>{selectedFest.title}</h4>
-                <p className="text-xs leading-relaxed" style={{ color: C.textSecondary }}>{selectedFest.description}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 text-xs font-mono" style={{ color: C.textMuted }}>
-                <div className="p-3 rounded-xl" style={{ background: 'rgba(20,12,12,0.6)', border: `1px solid ${C.border}` }}>
-                  <div className="text-[9px] uppercase mb-1 font-sans font-bold">Dawn</div>
-                  <div className="text-white">{new Date(selectedFest.start_time).toLocaleString()}</div>
-                </div>
-                <div className="p-3 rounded-xl" style={{ background: 'rgba(20,12,12,0.6)', border: `1px solid ${C.border}` }}>
-                  <div className="text-[9px] uppercase mb-1 font-sans font-bold">Dusk</div>
-                  <div className="text-white">{new Date(selectedFest.end_time).toLocaleString()}</div>
-                </div>
-              </div>
-
-              <div className="pt-2">
-                {selectedFest.effective_status === 'upcoming' && team && isCaptain ? (
-                  <button onClick={() => { handleRegisterFest(selectedFest.id); setSelectedFest(null) }}
-                    className="w-full py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
-                    style={{ background: C.crimsonDim, border: `1px solid ${C.borderHot}`, color: C.crimson, fontFamily: "'Cinzel', serif" }}>
-                    Pledge Clan to Ragnarök
-                  </button>
-                ) : selectedFest.effective_status === 'upcoming' && team && !isCaptain ? (
-                  <div className="p-3 rounded-xl text-xs text-center" style={{ border: `1px dashed ${C.border}`, color: C.textMuted }}>
-                    Only the Warlord (Captain) can pledge the clan.
-                  </div>
-                ) : selectedFest.effective_status === 'upcoming' && !team ? (
-                  <div className="p-3 rounded-xl text-xs text-center" style={{ border: `1px dashed ${C.border}`, color: C.textMuted }}>
-                    Forge or join a clan to compete.
-                  </div>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── LEAVE SQUAD / BREAK OATH MODAL ── */}
       {showLeaveConfirm && team && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
@@ -782,8 +570,6 @@ export const TeamArcadePage: React.FC = () => {
           )}
         </div>
       )}
-
-
 
       {/* ── TEAM MATCH LOBBY MODAL ── */}
       {activeTeamMatch && (
