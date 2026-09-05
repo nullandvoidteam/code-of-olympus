@@ -256,13 +256,6 @@ export const AppShell: React.FC = () => {
               }}
             />
           )}
-          setSelectedCourseId('python')
-          setSelectedLessonId(lessonId)
-          setSelectedChallengeId(null)
-          setSelectedQuestId(null)
-              }}
-            />
-          )}
 
           {activeTab === 'learn' && (
             <>
