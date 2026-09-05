@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Editor from '@monaco-editor/react'
 import confetti from 'canvas-confetti'
 import { toast } from 'react-hot-toast'
@@ -32,6 +32,7 @@ import {
   Users,
   Flame,
   Award,
+  Lock,
 } from 'lucide-react'
 
 interface TeamMatchLobbyModalProps {
@@ -81,6 +82,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
     startMatch,
     concludeMatch,
     reloadMatch,
+    addOrUpdateSubmission,
   } = useTeamMatchGameplay(initialMatch.id, initialMatch, activeUserId)
 
   // Current selected question index (0-based)
@@ -98,11 +100,48 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
   const [showRoster, setShowRoster] = useState(false)
   const [isStartingMatch, setIsStartingMatch] = useState(false)
   const [isConcluding, setIsConcluding] = useState(false)
-  const [viewMode, setViewMode] = useState<'arena' | 'result'>('result')
+  const [viewMode, setViewMode] = useState<'arena' | 'result'>(
+    initialMatch.status === 'completed' ? 'result' : 'arena'
+  )
 
   const activeQuestion = questions[selectedQuestionIndex]
-
   const matchId = match?.id || initialMatch.id
+
+  // Track whether initial question has been positioned on refresh/reconnect (Requirement 4 & 6)
+  const hasRestoredQuestionIndex = useRef(false)
+
+  // Restore the player's current unanswered/answered question state after refresh or reconnect
+  useEffect(() => {
+    if (loading || !questions || questions.length === 0 || hasRestoredQuestionIndex.current) return
+
+    // Find the first question that has not been answered by the player yet
+    const firstUnanswered = questions.findIndex(
+      (q) => !mySubmissions.some((s) => s.exercise_id === q.id)
+    )
+
+    if (firstUnanswered !== -1) {
+      setSelectedQuestionIndex(firstUnanswered)
+      setViewMode('arena')
+    } else {
+      // All questions are answered by this player, immediately show Game Result screen (Requirement 4 & 7)
+      setSelectedQuestionIndex(Math.max(0, questions.length - 1))
+      setViewMode('result')
+    }
+    hasRestoredQuestionIndex.current = true
+  }, [loading, questions, mySubmissions])
+
+  // Check which questions are accessible to this player (Requirement 7 & 9)
+  const isQuestionAccessible = (targetIdx: number) => {
+    if (targetIdx <= 0) return true
+    // Every question prior to targetIdx must have a recorded submission by this player
+    for (let i = 0; i < targetIdx; i++) {
+      const qId = questions[i]?.id
+      if (!qId || !mySubmissions.some((s) => s.exercise_id === qId)) {
+        return false
+      }
+    }
+    return true
+  }
 
   // Initialize starter code or restored draft when questions load or switch
   useEffect(() => {
@@ -133,13 +172,18 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
   const currentCode = activeQuestion ? codes[activeQuestion.id] ?? activeQuestion.starter_code ?? '' : ''
   const monacoLang = getMonacoLanguage(activeQuestion?.language || match?.language || initialMatch.language)
 
-  // Check if current user has solved the active question
-  const currentQuestionSolved = activeQuestion
-    ? mySubmissions.some((s) => s.exercise_id === activeQuestion.id && s.status === 'passed')
-    : false
+  // Current question submission state & results (Requirement 1, 2, 5)
+  const activeSubmission = activeQuestion
+    ? mySubmissions.find((s) => s.exercise_id === activeQuestion.id)
+    : undefined
+  const isCurrentQuestionAnswered = Boolean(activeSubmission)
+  const isCurrentCorrect =
+    activeSubmission?.status === 'passed' || activeSubmission?.result === 'correct'
+  const currentCombatPoints =
+    activeSubmission?.combat_points ?? (isCurrentCorrect ? 100 : 0)
 
   const handleCodeChange = (val?: string) => {
-    if (!activeQuestion || isExpired) return
+    if (!activeQuestion || isExpired || isCurrentQuestionAnswered) return
     const newCode = val ?? ''
     setCodes((prev) => ({
       ...prev,
@@ -166,7 +210,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
 
   // Run tests locally without submitting
   const handleRunTests = async () => {
-    if (!activeQuestion) return
+    if (!activeQuestion || isCurrentQuestionAnswered) return
     setIsRunning(true)
     setTestResults([])
     setTestStatus(null)
@@ -177,7 +221,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
       setTestStatus(result.status)
 
       if (result.status === 'passed') {
-        toast.success(`All ${result.totalCount} tests passed!`)
+        toast.success(`All ${result.totalCount} tests passed! Click Submit Solution to lock in points.`)
       } else if (result.status === 'failed') {
         toast.error(`Passed ${result.passedCount}/${result.totalCount} tests.`)
       } else {
@@ -190,7 +234,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
     }
   }
 
-  // Submit solution independently for this match
+  // Submit solution independently for this match (Requirement 1, 3, 4, 5, 8, 9)
   const handleSubmitSolution = async () => {
     if (!activeQuestion || !match || !activeUserId) {
       toast.error('Unable to submit solution.')
@@ -202,6 +246,13 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
       return
     }
 
+    if (isCurrentQuestionAnswered) {
+      toast.error('This question has already been answered and submitted.')
+      return
+    }
+
+    const isLastQuestion = selectedQuestionIndex === questions.length - 1
+
     setIsSubmitting(true)
     setTestResults([])
     setTestStatus(null)
@@ -212,7 +263,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
       setTestResults(evalRes.testResults)
       setTestStatus(evalRes.status)
 
-      // 2. Record submission in arcade_team_match_submissions
+      // 2. Submit must save its Correct/Wrong result first (Requirement 4)
       const recordRes = await recordTeamMatchSubmissionAction({
         matchId: match.id,
         exerciseId: activeQuestion.id,
@@ -226,12 +277,34 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
 
       if (!recordRes.success) {
         toast.error(recordRes.error || 'Failed to record match submission.')
-      } else if (evalRes.status === 'passed') {
-        confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } })
-        toast.success(`Quest Solved! Point scored for your squad! 🏆`, { duration: 4000 })
-        reloadMatch()
       } else {
-        toast.error(`Submission failed: ${evalRes.passedCount}/${evalRes.totalCount} tests passed.`)
+        // Immediately add to local submissions so UI updates without waiting for network/realtime
+        if (recordRes.submission) {
+          addOrUpdateSubmission(recordRes.submission)
+        }
+
+        // Immediate visual feedback (Requirement 1 & 2)
+        if (evalRes.status === 'passed') {
+          confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 } })
+          toast.success(`Correct! +100 Combat Points earned! 🎯`, { duration: 4000 })
+        } else {
+          toast.error(`Wrong: 0 Combat Points. Passed ${evalRes.passedCount}/${evalRes.totalCount} tests.`, { duration: 4000 })
+        }
+
+        // On the LAST question (Requirement 6, 7, 8):
+        // * Save its result first (already saved in recordRes above)
+        // * Do NOT show Next Question
+        // * Immediately show the total score/result screen
+        // * If match is fully completed (both squads done), reload match to show finalized winners
+        // * If opponent has not finished yet, do NOT prematurely force-conclude the match
+        if (isLastQuestion) {
+          if (recordRes.match_completed) {
+            await reloadMatch()
+          }
+          setViewMode('result')
+        } else {
+          await reloadMatch()
+        }
       }
     } catch {
       toast.error('An unexpected error occurred during submission.')
@@ -311,11 +384,17 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
     ? currentTeamId === match?.team_b_id
     : submissions.some((s) => s.user_id === activeUserId && s.team_id === match?.team_b_id)
 
-  let resultHeadline: 'KILLER COMBAT' | 'WE ARE SAFE' | 'YOUR TURF CAPTURED' = 'WE ARE SAFE'
-  let resultSubtext = 'Deadlock! Scores are equal. No territory was lost or captured.'
-  let resultTypeTheme: 'win' | 'loss' | 'safe' = 'safe'
+  const isMatchFinished = match?.status === 'completed'
 
-  if (teamAAvgScore === teamBAvgScore) {
+  let resultHeadline: 'KILLER COMBAT' | 'WE ARE SAFE' | 'YOUR TURF CAPTURED' | 'WAITING FOR OPPONENT' = 'WE ARE SAFE'
+  let resultSubtext = 'Deadlock! Scores are equal. No territory was lost or captured.'
+  let resultTypeTheme: 'win' | 'loss' | 'safe' | 'waiting' = 'safe'
+
+  if (!isMatchFinished) {
+    resultHeadline = 'WAITING FOR OPPONENT'
+    resultSubtext = 'You have completed all challenge quests! Waiting for the opponent squad to finish or match timer to expire.'
+    resultTypeTheme = 'waiting'
+  } else if (teamAAvgScore === teamBAvgScore) {
     resultHeadline = 'WE ARE SAFE'
     resultSubtext = 'Both squads fought with equal valor! No turf was captured or lost.'
     resultTypeTheme = 'safe'
@@ -541,7 +620,8 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
   // ═══════════════════════════════════════════════════════════════════════════
   // 2. MATCH RESULT SCREEN (Concluded Battle)
   // ═══════════════════════════════════════════════════════════════════════════
-  if (match.status === 'completed' && viewMode === 'result') {
+  const allQuestionsAnswered = questions.length > 0 && mySubmissions.length >= questions.length
+  if ((match.status === 'completed' || allQuestionsAnswered) && viewMode === 'result') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in overflow-y-auto">
         <div className="w-full max-w-3xl my-6 rounded-3xl p-6 md:p-8 flex flex-col gap-6 shadow-2xl border bg-[#0E1322] border-slate-800 text-slate-100">
@@ -570,7 +650,9 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
           {/* Result Hero Banner */}
           <div
             className={`p-6 rounded-2xl border flex flex-col items-center text-center gap-3 shadow-lg ${
-              resultTypeTheme === 'win'
+              resultTypeTheme === 'waiting'
+                ? 'bg-gradient-to-b from-slate-900 to-amber-950/40 border-amber-500/50 text-amber-200'
+                : resultTypeTheme === 'win'
                 ? 'bg-gradient-to-b from-rose-950/80 to-red-950/40 border-rose-600/60 text-white'
                 : resultTypeTheme === 'loss'
                 ? 'bg-gradient-to-b from-slate-900 to-rose-950/30 border-rose-900/50 text-slate-200'
@@ -578,7 +660,11 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
             }`}
           >
             <div className="flex items-center gap-2">
-              {resultTypeTheme === 'win' ? (
+              {resultTypeTheme === 'waiting' ? (
+                <div className="p-2.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse">
+                  <Clock className="w-6 h-6" />
+                </div>
+              ) : resultTypeTheme === 'win' ? (
                 <div className="p-2.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse">
                   <Flame className="w-6 h-6" />
                 </div>
@@ -811,13 +897,27 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
             >
               Review Code Solutions
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 transition-all cursor-pointer shadow-md"
-            >
-              Return to Arcade Hub
-            </button>
+            <div className="flex items-center gap-2">
+              {!isMatchFinished && (
+                <button
+                  type="button"
+                  disabled={isConcluding}
+                  onClick={handleConcludeMatch}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/80 transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                  title="Conclude duel if opponent has abandoned"
+                >
+                  {isConcluding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Swords className="w-3.5 h-3.5" />}
+                  <span>Conclude Duel</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-2.5 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 transition-all cursor-pointer shadow-md"
+              >
+                Return to Arcade Hub
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -879,7 +979,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
             </span>
           </div>
 
-          {match.status === 'completed' ? (
+          {match.status === 'completed' || (questions.length > 0 && mySubmissions.length >= questions.length) ? (
             <button
               type="button"
               onClick={() => setViewMode('result')}
@@ -959,27 +1059,47 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
       <div className="px-4 md:px-6 py-2 bg-[#0A0E17] border-b border-slate-800/80 flex items-center gap-2 overflow-x-auto shrink-0">
         {questions.map((q, idx) => {
           const isSelected = idx === selectedQuestionIndex
-          const isSolved = mySubmissions.some((s) => s.exercise_id === q.id && s.status === 'passed')
+          const qSub = mySubmissions.find((s) => s.exercise_id === q.id)
+          const isAnswered = Boolean(qSub)
+          const isPassed = qSub?.status === 'passed' || qSub?.result === 'correct'
+          const accessible = isQuestionAccessible(idx)
 
           return (
             <button
               key={q.id}
               type="button"
+              disabled={!accessible}
               onClick={() => {
+                if (!accessible) return
                 setSelectedQuestionIndex(idx)
                 setTestResults([])
                 setTestStatus(null)
               }}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap border ${
-                isSelected
+                !accessible
+                  ? 'bg-slate-950/40 text-slate-600 border-slate-900 cursor-not-allowed opacity-50'
+                  : isSelected
                   ? 'bg-rose-600 text-white border-rose-500 shadow-sm'
                   : 'bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border-slate-800'
               }`}
+              title={!accessible ? `Complete quest #${idx} first to unlock` : q.title}
             >
               <span className="font-mono text-[11px]">#{idx + 1}</span>
               <span className="truncate max-w-32">{q.title}</span>
-              {isSolved ? (
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              {!accessible ? (
+                <Lock className="w-3 h-3 text-slate-600 shrink-0" />
+              ) : isAnswered ? (
+                isPassed ? (
+                  <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-mono">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>+100 CP</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10px] text-rose-400 font-mono">
+                    <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span>0 CP</span>
+                  </span>
+                )
               ) : (
                 renderQuestionTypeBadge(q.question_type)
               )}
@@ -1012,11 +1132,41 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
                 </h1>
               </div>
 
-              {/* Solved Banner */}
-              {currentQuestionSolved && (
-                <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>You have successfully solved this quest!</span>
+              {/* Persistent Answer Result Banner (Requirement 1, 2, 3) */}
+              {isCurrentQuestionAnswered && activeSubmission && (
+                <div
+                  className={`p-3.5 rounded-xl border flex flex-col gap-2 ${
+                    isCurrentCorrect
+                      ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-200'
+                      : 'bg-rose-950/40 border-rose-500/50 text-rose-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 font-bold text-xs">
+                      {isCurrentCorrect ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                      )}
+                      <span className="uppercase tracking-wider">
+                        {isCurrentCorrect ? 'Correct Result' : 'Wrong Result'}
+                      </span>
+                    </div>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono font-black ${
+                        isCurrentCorrect
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      }`}
+                    >
+                      {isCurrentCorrect ? '+100 Combat Points' : '+0 Combat Points'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    {isCurrentCorrect
+                      ? `Passed all ${activeSubmission.total_count} test cases. Result locked in permanently.`
+                      : `Passed ${activeSubmission.passed_count}/${activeSubmission.total_count} test cases. Result locked in permanently.`}
+                  </p>
                 </div>
               )}
 
@@ -1092,11 +1242,26 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
         <div className="w-full md:w-7/12 flex flex-col bg-[#070A10]">
           {/* Editor Header Bar */}
           <div className="h-10 px-4 bg-[#0B0F19] border-b border-slate-800 flex items-center justify-between shrink-0">
-            <span className="text-xs font-mono text-slate-400 font-bold">
-              Individual Workspace ({monacoLang})
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-slate-400 font-bold">
+                Individual Workspace ({monacoLang})
+              </span>
+              {isCurrentQuestionAnswered && (
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    isCurrentCorrect
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                  }`}
+                >
+                  {isCurrentCorrect ? '✓ CORRECT (+100 CP)' : '✗ WRONG (0 CP)'}
+                </span>
+              )}
+            </div>
             <span className="text-[10px] text-slate-500 font-mono">
-              Independent coding • No shared sync
+              {isCurrentQuestionAnswered
+                ? 'Answer locked • Read only'
+                : 'Independent coding • No shared sync'}
             </span>
           </div>
 
@@ -1114,7 +1279,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
                 lineNumbers: 'on',
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
-                readOnly: isExpired,
+                readOnly: isExpired || isCurrentQuestionAnswered,
               }}
             />
           </div>
@@ -1172,34 +1337,83 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
             </div>
           )}
 
-          {/* Editor Action Bottom Bar */}
-          <div className="p-3 bg-[#0B0F19] border-t border-slate-800 flex items-center justify-end gap-3 shrink-0">
-            <button
-              type="button"
-              disabled={isRunning || isSubmitting || isExpired}
-              onClick={handleRunTests}
-              className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-            >
-              {isRunning ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          {/* Editor Action Bottom Bar (Requirement 3, 4, 5, 7, 8) */}
+          <div className="p-3 bg-[#0B0F19] border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2">
+              {isCurrentQuestionAnswered ? (
+                <span className="text-xs font-bold font-mono text-slate-300 flex items-center gap-2">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isCurrentCorrect ? 'bg-emerald-400' : 'bg-rose-500'
+                    }`}
+                  />
+                  <span>
+                    Answer Recorded: {isCurrentCorrect ? 'Correct (+100 CP)' : 'Wrong (0 CP)'}
+                  </span>
+                </span>
               ) : (
-                <Play className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                  Test locally or submit solution
+                </span>
               )}
-              <span>Run Tests</span>
-            </button>
-            <button
-              type="button"
-              disabled={isRunning || isSubmitting || isExpired}
-              onClick={handleSubmitSolution}
-              className="px-5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 flex items-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            </div>
+
+            <div className="flex items-center gap-3">
+              {isCurrentQuestionAnswered ? (
+                selectedQuestionIndex < questions.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedQuestionIndex(selectedQuestionIndex + 1)
+                      setTestResults([])
+                      setTestStatus(null)
+                    }}
+                    className="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-emerald-500 hover:bg-emerald-400 text-black flex items-center gap-2 shadow-lg transition-all cursor-pointer"
+                  >
+                    <span>Next Question (#{selectedQuestionIndex + 2})</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('result')}
+                    className="px-6 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-amber-500 hover:bg-amber-400 text-black flex items-center gap-2 shadow-lg transition-all cursor-pointer"
+                  >
+                    <Trophy className="w-4 h-4" />
+                    <span>View Challenge Results</span>
+                  </button>
+                )
               ) : (
-                <Send className="w-3.5 h-3.5" />
+                <>
+                  <button
+                    type="button"
+                    disabled={isRunning || isSubmitting || isExpired}
+                    onClick={handleRunTests}
+                    className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {isRunning ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Play className="w-3.5 h-3.5 text-emerald-400" />
+                    )}
+                    <span>Run Tests</span>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isRunning || isSubmitting || isExpired}
+                    onClick={handleSubmitSolution}
+                    className="px-5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider text-white bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 flex items-center gap-2 transition-all cursor-pointer shadow-md disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Send className="w-3.5 h-3.5" />
+                    )}
+                    <span>Submit Solution</span>
+                  </button>
+                </>
               )}
-              <span>Submit Solution</span>
-            </button>
+            </div>
           </div>
         </div>
 

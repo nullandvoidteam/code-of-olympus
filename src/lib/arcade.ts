@@ -3352,10 +3352,12 @@ export interface ArcadeTeamMatchSubmission {
   code: string
   language: string
   status: 'passed' | 'failed' | 'execution_error' | 'timeout'
+  result?: 'correct' | 'wrong'
   passed_count: number
   total_count: number
   execution_time_ms: number
   combat_points?: number
+  submitted_at?: string
   created_at: string
   updated_at: string
   profile?: {
@@ -3468,11 +3470,37 @@ export async function fetchTeamMatchSubmissions(
       .eq('match_id', matchId)
       .order('created_at', { ascending: false })
 
-    if (error || !data) {
+    if (!error && data) {
+      return data as ArcadeTeamMatchSubmission[]
+    }
+
+    // Fallback if join has any issue: select raw submissions then fetch profiles
+    const { data: rawData, error: rawError } = await supabase
+      .from('arcade_team_match_submissions')
+      .select('*')
+      .eq('match_id', matchId)
+      .order('created_at', { ascending: false })
+
+    if (rawError || !rawData) {
       return []
     }
 
-    return data as ArcadeTeamMatchSubmission[]
+    const userIds = Array.from(new Set(rawData.map((s: any) => s.user_id).filter(Boolean)))
+    let profileMap = new Map<string, any>()
+    if (userIds.length > 0) {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url')
+        .in('id', userIds)
+      if (profs) {
+        profileMap = new Map(profs.map((p: any) => [p.id, p]))
+      }
+    }
+
+    return rawData.map((s: any) => ({
+      ...s,
+      profile: profileMap.get(s.user_id) || undefined,
+    })) as ArcadeTeamMatchSubmission[]
   } catch (err) {
     console.error('fetchTeamMatchSubmissions exception:', err)
     return []
@@ -3491,8 +3519,12 @@ export async function recordTeamMatchSubmissionAction(params: {
 }): Promise<{
   success: boolean
   submission?: ArcadeTeamMatchSubmission
+  result?: 'correct' | 'wrong'
+  combat_points?: number
   team_a_score?: number
   team_b_score?: number
+  player_completed?: boolean
+  match_completed?: boolean
   error?: string
 }> {
   try {
@@ -3518,8 +3550,12 @@ export async function recordTeamMatchSubmissionAction(params: {
     return {
       success: true,
       submission: data.submission as ArcadeTeamMatchSubmission,
+      result: data.result,
+      combat_points: data.combat_points,
       team_a_score: data.team_a_score,
       team_b_score: data.team_b_score,
+      player_completed: data.player_completed,
+      match_completed: data.match_completed,
     }
   } catch (err: any) {
     return { success: false, error: err.message || 'Unexpected error recording submission.' }
@@ -3563,11 +3599,35 @@ export function useTeamMatchGameplay(
 
       // 3. Fetch all player submissions for this match
       const subs = await fetchTeamMatchSubmissions(matchId)
-      setSubmissions(subs)
+      setSubmissions((prev) => {
+        const incomingMap = new Map(subs.map((s) => [`${s.user_id}_${s.exercise_id}`, s]))
+        const merged = [...subs]
+        for (const p of prev) {
+          const key = `${p.user_id}_${p.exercise_id}`
+          if (!incomingMap.has(key)) {
+            merged.push(p)
+          }
+        }
+        return merged
+      })
     } finally {
       setLoading(false)
     }
   }, [matchId])
+
+  const addOrUpdateSubmission = useCallback((sub: ArcadeTeamMatchSubmission) => {
+    setSubmissions((prev) => {
+      const idx = prev.findIndex(
+        (s) => s.match_id === sub.match_id && s.user_id === sub.user_id && s.exercise_id === sub.exercise_id
+      )
+      if (idx !== -1) {
+        const copy = [...prev]
+        copy[idx] = { ...copy[idx], ...sub }
+        return copy
+      }
+      return [sub, ...prev]
+    })
+  }, [])
 
   useEffect(() => {
     loadData()
@@ -3666,6 +3726,7 @@ export function useTeamMatchGameplay(
     startMatch,
     concludeMatch,
     reloadMatch: loadData,
+    addOrUpdateSubmission,
   }
 }
 
