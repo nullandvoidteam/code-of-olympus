@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
+import { NotificationProvider } from './context/NotificationContext'
 import { AuthPage } from './pages/AuthPage'
 import { AppShell } from './components/layout/AppShell'
 import { AdminShell } from './components/layout/AdminShell'
@@ -74,6 +75,7 @@ const MainApp: React.FC = () => {
   if (!user) {
     return (
       <>
+        {bladeCursorActive && <ThemeCursor theme={theme} />}
         <AuthPage onOpenOnboarding={() => setShowPreviewOnboarding(true)} />
         {showPreviewOnboarding && (
           <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: 'var(--theme-bg-canvas, #070505)' }}>
@@ -112,7 +114,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <MainApp />
+        <NotificationProvider>
+          <MainApp />
+        </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
   )

@@ -9,8 +9,8 @@ export const ThemeCursor: React.FC<{ theme: ThemeKey }> = ({ theme }) => {
   const [state, setCursorState] = useState<CursorState>('idle')
 
   useEffect(() => {
-    // The BladeOfChaosCursor handles its own logic, and Light theme uses the default browser cursor.
-    if (theme === 'gow' || theme === 'light') return
+    // Light theme uses the default browser cursor.
+    if (theme === 'light') return
 
     const onMove = (e: MouseEvent) => {
       if (containerRef.current) {
@@ -39,9 +39,23 @@ export const ThemeCursor: React.FC<{ theme: ThemeKey }> = ({ theme }) => {
         })
     }
 
+    const onMouseLeaveWindow = () => {
+      if (containerRef.current) {
+        containerRef.current.style.opacity = '0'
+      }
+    }
+
+    const onMouseEnterWindow = () => {
+      if (containerRef.current) {
+        containerRef.current.style.opacity = '1'
+      }
+    }
+
     window.addEventListener('mousemove', onMove, { passive: true })
     window.addEventListener('mousedown', onMouseDown)
     window.addEventListener('mouseup', onMouseUp)
+    document.addEventListener('mouseleave', onMouseLeaveWindow)
+    document.addEventListener('mouseenter', onMouseEnterWindow)
 
     attachHoverListeners()
     const observer = new MutationObserver(attachHoverListeners)
@@ -51,13 +65,13 @@ export const ThemeCursor: React.FC<{ theme: ThemeKey }> = ({ theme }) => {
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mousedown', onMouseDown)
       window.removeEventListener('mouseup', onMouseUp)
+      document.removeEventListener('mouseleave', onMouseLeaveWindow)
+      document.removeEventListener('mouseenter', onMouseEnterWindow)
       observer.disconnect()
     }
   }, [theme])
 
-  if (theme === 'gow') {
-    return <BladeOfChaosCursor />
-  }
+
 
   if (theme === 'light') {
     return null // use default system cursor
@@ -77,7 +91,7 @@ export const ThemeCursor: React.FC<{ theme: ThemeKey }> = ({ theme }) => {
         willChange: 'transform',
       }}
     >
-      {theme === 'classic' && <ClassicSVG state={state} />}
+      {(theme === 'classic' || theme === 'gow') && <ClassicSVG state={state} />}
       {theme === 'space' && <SpaceSVG state={state} />}
     </div>
   )

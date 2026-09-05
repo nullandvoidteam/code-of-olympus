@@ -4,6 +4,10 @@ import {
   Check,
   Swords,
   Sliders,
+  Flame,
+  Gamepad2,
+  Rocket,
+  Sun,
 } from 'lucide-react'
 import { useTheme, type ThemeKey } from '../../context/ThemeContext'
 
@@ -11,7 +15,7 @@ interface ThemePreset {
   id: ThemeKey
   name: string
   subtitle: string
-  icon: string
+  icon: React.ElementType
   accentColor: string
   secondaryColor: string
   previewGradient: string
@@ -42,7 +46,7 @@ export const ThemeStudioView: React.FC = () => {
       id: 'gow',
       name: 'God of War: Ragnarök',
       subtitle: 'Charred Basalt & Spartan Wrath',
-      icon: 'Ω',
+      icon: Flame,
       accentColor: '#FF3D00',
       secondaryColor: '#DC2626',
       previewGradient: 'linear-gradient(135deg, #180A0A 0%, #3D1C1C 50%, #FF3D00 100%)',
@@ -55,7 +59,7 @@ export const ThemeStudioView: React.FC = () => {
       id: 'classic',
       name: 'Classic Gamified',
       subtitle: 'Old CodeDex Retro Warmth',
-      icon: '🎮',
+      icon: Gamepad2,
       accentColor: '#10B981',
       secondaryColor: '#FBBF24',
       previewGradient: 'linear-gradient(135deg, #FBF9F4 0%, #ECE7DF 50%, #10B981 100%)',
@@ -68,7 +72,7 @@ export const ThemeStudioView: React.FC = () => {
       id: 'space',
       name: 'Cosmic Space Explorer',
       subtitle: 'Nebula Void & Cyber Starlight',
-      icon: '🚀',
+      icon: Rocket,
       accentColor: '#6366F1',
       secondaryColor: '#00E5FF',
       previewGradient: 'linear-gradient(135deg, #060813 0%, #14193B 50%, #6366F1 100%)',
@@ -81,7 +85,7 @@ export const ThemeStudioView: React.FC = () => {
       id: 'light',
       name: 'Minimal Light',
       subtitle: 'Clean Slate & Focused Code',
-      icon: '☀️',
+      icon: Sun,
       accentColor: '#0284C7',
       secondaryColor: '#334155',
       previewGradient: 'linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 50%, #0284C7 100%)',
@@ -189,7 +193,7 @@ export const ThemeStudioView: React.FC = () => {
                     className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0 border shadow-inner"
                     style={{ background: preset.previewGradient, borderColor: 'var(--theme-border-default)' }}
                   >
-                    <span>{preset.icon}</span>
+                    <preset.icon className="w-7 h-7 text-white drop-shadow-md" />
                   </div>
 
                   <div className="flex flex-col gap-1 flex-1">

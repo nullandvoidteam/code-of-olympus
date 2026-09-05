@@ -83,6 +83,7 @@ export function CodeQuestMonogram({
 export function CodeQuestLogo({
   className,
   size = "md",
+  variant = "dark",
   showTagline = false,
   ...props
 }: LogoProps) {
@@ -114,14 +115,14 @@ export function CodeQuestLogo({
       {/* Brand Text Lockup */}
       <div className="flex flex-col">
         <div className={cn("font-black tracking-tight flex items-center leading-none", titleSizes[size])}>
-          <span className="text-slate-900">Code</span>
+          <span className={variant === "light" ? "text-slate-100" : "text-slate-900"}>Code</span>
           <span className="bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-500 bg-clip-text text-transparent">
             Quest
           </span>
         </div>
 
         {showTagline && (
-          <span className="text-[8px] sm:text-[9.5px] font-extrabold uppercase tracking-[0.24em] text-slate-500 mt-1">
+          <span className={cn("text-[8px] sm:text-[9.5px] font-extrabold uppercase tracking-[0.24em] mt-1", variant === "light" ? "text-slate-300" : "text-slate-500")}>
             LEARN <span className="text-emerald-500">•</span> CODE{" "}
             <span className="text-purple-500">•</span> LEVEL UP
           </span>
