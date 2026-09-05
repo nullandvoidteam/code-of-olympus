@@ -103,6 +103,7 @@ import {
   Compass,
   FileText,
   Sparkles,
+  Swords,
 } from 'lucide-react'
 
 interface LearnerRecord {
@@ -141,7 +142,9 @@ export const AdminDashboard: React.FC = () => {
   const [exTitle, setExTitle] = useState('')
   const [exSlug, setExSlug] = useState('')
   const [exLanguage, setExLanguage] = useState('javascript')
-  const [exDifficulty, setExDifficulty] = useState('Beginner')
+  const [exDifficulty, setExDifficulty] = useState('Easy')
+  const [exQuestionType, setExQuestionType] = useState('code')
+  const [exIsPublished, setExIsPublished] = useState(true)
   const [exLessonId, setExLessonId] = useState('')
   const [exInstructions, setExInstructions] = useState('')
   const [exStarterCode, setExStarterCode] = useState('')
@@ -151,6 +154,12 @@ export const AdminDashboard: React.FC = () => {
   const [exSolutionCode, setExSolutionCode] = useState('')
   const [exXpReward, setExXpReward] = useState(75)
   const [exerciseAlert, setExerciseAlert] = useState<string | null>(null)
+
+  // Coding Exercises Arcade & Filter State
+  const [exFilterLanguage, setExFilterLanguage] = useState('all')
+  const [exFilterDifficulty, setExFilterDifficulty] = useState('all')
+  const [exFilterStatus, setExFilterStatus] = useState<'all' | 'published' | 'draft'>('all')
+  const [exFilterSearch, setExFilterSearch] = useState('')
 
   // Test Case Management State
   const [selectedExerciseForTests, setSelectedExerciseForTests] = useState<Challenge | null>(null)
@@ -474,6 +483,7 @@ A comprehensive explanation of the solution logic.`
       language: exLanguage,
       category: exLanguage === 'python' ? 'Python' : exLanguage === 'cpp' ? 'C++' : exLanguage === 'java' ? 'Java' : 'JavaScript',
       difficulty: exDifficulty,
+      question_type: exQuestionType,
       description: exInstructions,
       instructions: exInstructions,
       starter_code: exStarterCode,
@@ -484,15 +494,15 @@ A comprehensive explanation of the solution logic.`
       solution_explanation: exSolution.trim() || undefined,
       solution_code: exSolutionCode.trim() || undefined,
       xp_reward: exXpReward >= 0 ? exXpReward : 75,
-      is_published: true,
+      is_published: exIsPublished,
       order_index: adminChallenges.length + 1,
     })
 
     if (created) {
       if (user?.id) {
-        await logAdminAction(user.id, 'CREATE_CHALLENGE', 'challenge', created.id, { title: exTitle, language: exLanguage })
+        await logAdminAction(user.id, 'CREATE_CHALLENGE', 'challenge', created.id, { title: exTitle, language: exLanguage, difficulty: exDifficulty })
       }
-      setExerciseAlert('Coding exercise successfully authored and published!')
+      setExerciseAlert('Coding exercise successfully authored and deployed!')
       setShowAddExercise(false)
       setExTitle('')
       setExSlug('')
@@ -504,6 +514,9 @@ A comprehensive explanation of the solution logic.`
       setExSolution('')
       setExSolutionCode('')
       setExXpReward(75)
+      setExDifficulty('Easy')
+      setExQuestionType('code')
+      setExIsPublished(true)
       await loadAdminChallenges()
       setTimeout(() => setExerciseAlert(null), 4000)
     }
@@ -514,7 +527,9 @@ A comprehensive explanation of the solution logic.`
     setExTitle(ch.title)
     setExSlug(ch.slug)
     setExLanguage(ch.language || 'javascript')
-    setExDifficulty(ch.difficulty || 'Beginner')
+    setExDifficulty(ch.difficulty || 'Easy')
+    setExQuestionType(ch.question_type || 'code')
+    setExIsPublished(ch.is_published ?? true)
     setExLessonId(ch.lesson_id || '')
     setExInstructions(ch.instructions || ch.description || '')
     setExStarterCode(ch.starter_code || '')
@@ -537,6 +552,8 @@ A comprehensive explanation of the solution logic.`
       language: exLanguage,
       category: exLanguage === 'python' ? 'Python' : exLanguage === 'cpp' ? 'C++' : exLanguage === 'java' ? 'Java' : 'JavaScript',
       difficulty: exDifficulty,
+      question_type: exQuestionType,
+      is_published: exIsPublished,
       description: exInstructions,
       instructions: exInstructions,
       starter_code: exStarterCode,
@@ -551,7 +568,7 @@ A comprehensive explanation of the solution logic.`
 
     if (ok) {
       if (user?.id) {
-        await logAdminAction(user.id, 'UPDATE_CHALLENGE', 'challenge', editingExercise.id, { title: exTitle })
+        await logAdminAction(user.id, 'UPDATE_CHALLENGE', 'challenge', editingExercise.id, { title: exTitle, difficulty: exDifficulty, is_published: exIsPublished })
       }
       setExerciseAlert('Coding exercise successfully updated!')
       setEditingExercise(null)
@@ -1596,7 +1613,7 @@ A comprehensive explanation of the solution logic.`
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Language</label>
                   <select
@@ -1619,9 +1636,22 @@ A comprehensive explanation of the solution logic.`
                     onChange={(e) => setExDifficulty(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:ring-2 focus:ring-purple-500 outline-none"
                   >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
+                    <option value="Easy">Easy (Arcade Standard)</option>
+                    <option value="Medium">Medium (Arcade Standard)</option>
+                    <option value="Hard">Hard (Arcade Standard)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Question Type</label>
+                  <select
+                    value={exQuestionType}
+                    onChange={(e) => setExQuestionType(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:ring-2 focus:ring-purple-500 outline-none"
+                  >
+                    <option value="code">Coding Exercise</option>
+                    <option value="algorithm">Algorithm Challenge</option>
+                    <option value="debugging">Bug Fix / Debugging</option>
                   </select>
                 </div>
 
@@ -1652,6 +1682,20 @@ A comprehensive explanation of the solution logic.`
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Published State Checkbox */}
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-purple-50/60 border border-purple-100">
+                <input
+                  type="checkbox"
+                  id="editExPublished"
+                  checked={exIsPublished}
+                  onChange={(e) => setExIsPublished(e.target.checked)}
+                  className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500"
+                />
+                <label htmlFor="editExPublished" className="text-xs font-bold text-purple-900 cursor-pointer">
+                  Published & Active in Team Arcade & Practice Arena
+                </label>
               </div>
 
               <div>
@@ -3501,7 +3545,7 @@ A comprehensive explanation of the solution logic.`
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Programming Language</label>
                   <select
@@ -3524,9 +3568,22 @@ A comprehensive explanation of the solution logic.`
                     onChange={(e) => setExDifficulty(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:ring-2 focus:ring-purple-500 outline-none"
                   >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
+                    <option value="Easy">Easy (Arcade Standard)</option>
+                    <option value="Medium">Medium (Arcade Standard)</option>
+                    <option value="Hard">Hard (Arcade Standard)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Question Type</label>
+                  <select
+                    value={exQuestionType}
+                    onChange={(e) => setExQuestionType(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium focus:ring-2 focus:ring-purple-500 outline-none"
+                  >
+                    <option value="code">Coding Exercise</option>
+                    <option value="algorithm">Algorithm Challenge</option>
+                    <option value="debugging">Bug Fix / Debugging</option>
                   </select>
                 </div>
 
@@ -3557,6 +3614,20 @@ A comprehensive explanation of the solution logic.`
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Published State Checkbox */}
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-purple-50/60 border border-purple-100">
+                <input
+                  type="checkbox"
+                  id="addExPublished"
+                  checked={exIsPublished}
+                  onChange={(e) => setExIsPublished(e.target.checked)}
+                  className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 cursor-pointer"
+                />
+                <label htmlFor="addExPublished" className="text-xs font-bold text-purple-900 cursor-pointer">
+                  Published & Active in Team Arcade & Practice Arena
+                </label>
               </div>
 
               <div>
@@ -3646,113 +3717,297 @@ A comprehensive explanation of the solution logic.`
             </form>
           )}
 
-          {/* Exercises Roster Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-pixel text-[10px]">
-                  <th className="py-3 px-4">#</th>
-                  <th className="py-3 px-4">CHALLENGE</th>
-                  <th className="py-3 px-4">LINKED LESSON</th>
-                  <th className="py-3 px-4">LANGUAGE</th>
-                  <th className="py-3 px-4">DIFFICULTY</th>
-                  <th className="py-3 px-4">XP</th>
-                  <th className="py-3 px-4">STATUS</th>
-                  <th className="py-3 px-4 text-right">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {adminChallenges.map((ch, idx) => {
-                  const matchedLesson = adminLessons.find((l) => l.id === ch.lesson_id)
-                  const testCasesCount = exerciseTestCases.filter((t) => t.exercise_id === ch.id).length
+          {/* Arcade Question Pool Health Bar */}
+          {(() => {
+            const arcadePublished = adminChallenges.filter((c) => c.is_published)
+            const jsCount = arcadePublished.filter((c) => (c.language || c.category || '').toLowerCase().includes('javascript')).length
+            const pyCount = arcadePublished.filter((c) => (c.language || c.category || '').toLowerCase().includes('python')).length
+            const easyCount = arcadePublished.filter((c) => ['easy', 'beginner'].includes((c.difficulty || '').toLowerCase())).length
+            const medCount = arcadePublished.filter((c) => ['medium', 'intermediate'].includes((c.difficulty || '').toLowerCase())).length
+            const hardCount = arcadePublished.filter((c) => ['hard', 'advanced', 'expert'].includes((c.difficulty || '').toLowerCase())).length
 
-                  return (
-                    <tr key={ch.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{ch.order_index ?? idx + 1}</td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900">{ch.title}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">/{ch.slug}</div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-600">
-                        {matchedLesson ? (
-                          <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-medium truncate max-w-40 block">
-                            {matchedLesson.title}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-slate-400 italic">Standalone</span>
-                        )}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-pixel uppercase font-bold bg-purple-100 text-purple-700">
-                          {ch.language || ch.category}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-500 font-medium">{ch.difficulty}</td>
-                      <td className="py-3.5 px-4 font-bold text-amber-600">+{ch.xp_reward ?? 75} XP</td>
-                      <td className="py-3.5 px-4">
-                        <button
-                          type="button"
-                          onClick={() => handleTogglePublishExercise(ch)}
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors ${
-                            ch.is_published ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                          }`}
-                        >
-                          {ch.is_published ? 'Published' : 'Draft'}
-                        </button>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleMoveChallenge(ch.id, 'up')}
-                            disabled={idx === 0}
-                            className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
-                            title="Move Up"
-                          >
-                            <ArrowUp className="w-3 h-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleMoveChallenge(ch.id, 'down')}
-                            disabled={idx === adminChallenges.length - 1}
-                            className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
-                            title="Move Down"
-                          >
-                            <ArrowDown className="w-3 h-3" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenTestCases(ch)}
-                            className="p-1.5 rounded-lg border border-purple-200 hover:bg-purple-50 text-purple-700 transition-colors cursor-pointer flex items-center gap-1 font-pixel text-[10px]"
-                            title="Manage Test Cases"
-                          >
-                            <ListChecks className="w-3.5 h-3.5" />
-                            <span>Tests ({testCasesCount})</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditExercise(ch)}
-                            className="p-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                            title="Edit Challenge"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteExercise(ch.id)}
-                            className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Delete Exercise"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            return (
+              <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50 to-emerald-50 border border-purple-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <Swords className="w-5 h-5" />
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <span className="font-pixel text-xs font-bold text-purple-950 uppercase tracking-wider">
+                        Team Arcade Battle Pool
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        {arcadePublished.length} Active / Published
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-500">
+                      Dynamically sampled during Team-vs-Team challenges by matching language and difficulty.
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+                  <span className="px-2.5 py-1 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                    JS: <strong className="text-purple-700">{jsCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-xl bg-white border border-slate-200 text-slate-700 shadow-2xs">
+                    Python: <strong className="text-emerald-700">{pyCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700">
+                    Easy: <strong>{easyCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-700">
+                    Med: <strong>{medCount}</strong>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-xl bg-rose-50 border border-rose-200 text-rose-700">
+                    Hard: <strong>{hardCount}</strong>
+                  </span>
+                </div>
+              </div>
+            )
+          })()}
+
+          {/* Search and Filters Bar */}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80">
+            <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Filter challenges by title or slug..."
+                  value={exFilterSearch}
+                  onChange={(e) => setExFilterSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 outline-none focus:border-purple-500"
+                />
+              </div>
+
+              {/* Language Filter */}
+              <select
+                value={exFilterLanguage}
+                onChange={(e) => setExFilterLanguage(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 outline-none focus:border-purple-500 cursor-pointer"
+              >
+                <option value="all">All Languages</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+                <option value="html">HTML</option>
+              </select>
+
+              {/* Difficulty Filter */}
+              <select
+                value={exFilterDifficulty}
+                onChange={(e) => setExFilterDifficulty(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 outline-none focus:border-purple-500 cursor-pointer"
+              >
+                <option value="all">All Difficulties</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={exFilterStatus}
+                onChange={(e) => setExFilterStatus(e.target.value as any)}
+                className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-700 outline-none focus:border-purple-500 cursor-pointer"
+              >
+                <option value="all">All Statuses</option>
+                <option value="published">Published Only</option>
+                <option value="draft">Drafts Only</option>
+              </select>
+            </div>
+
+            {(exFilterSearch || exFilterLanguage !== 'all' || exFilterDifficulty !== 'all' || exFilterStatus !== 'all') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setExFilterSearch('')
+                  setExFilterLanguage('all')
+                  setExFilterDifficulty('all')
+                  setExFilterStatus('all')
+                }}
+                className="text-xs font-bold text-purple-600 hover:text-purple-800 underline cursor-pointer"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
+
+          {/* Exercises Roster Table */}
+          {(() => {
+            const filteredChallenges = adminChallenges.filter((ch) => {
+              if (exFilterLanguage !== 'all') {
+                const lang = (ch.language || ch.category || '').toLowerCase()
+                if (!lang.includes(exFilterLanguage.toLowerCase())) return false
+              }
+              if (exFilterDifficulty !== 'all') {
+                const diff = (ch.difficulty || '').toLowerCase()
+                if (exFilterDifficulty === 'Easy' && !['easy', 'beginner'].includes(diff)) return false
+                if (exFilterDifficulty === 'Medium' && !['medium', 'intermediate'].includes(diff)) return false
+                if (exFilterDifficulty === 'Hard' && !['hard', 'advanced', 'expert'].includes(diff)) return false
+              }
+              if (exFilterStatus === 'published' && !ch.is_published) return false
+              if (exFilterStatus === 'draft' && ch.is_published) return false
+              if (exFilterSearch.trim()) {
+                const q = exFilterSearch.toLowerCase()
+                const titleMatch = ch.title.toLowerCase().includes(q)
+                const slugMatch = ch.slug.toLowerCase().includes(q)
+                if (!titleMatch && !slugMatch) return false
+              }
+              return true
+            })
+
+            return (
+              <div className="overflow-x-auto border border-slate-200 rounded-2xl">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 font-pixel text-[10px]">
+                      <th className="py-3 px-4">#</th>
+                      <th className="py-3 px-4">CHALLENGE</th>
+                      <th className="py-3 px-4">LINKED LESSON</th>
+                      <th className="py-3 px-4">LANGUAGE</th>
+                      <th className="py-3 px-4">DIFFICULTY</th>
+                      <th className="py-3 px-4">TYPE</th>
+                      <th className="py-3 px-4">ARCADE POOL</th>
+                      <th className="py-3 px-4">XP</th>
+                      <th className="py-3 px-4">STATUS</th>
+                      <th className="py-3 px-4 text-right">ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredChallenges.length === 0 ? (
+                      <tr>
+                        <td colSpan={10} className="text-center py-10 text-slate-400 font-medium">
+                          No challenges match the current filters.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredChallenges.map((ch, idx) => {
+                        const matchedLesson = adminLessons.find((l) => l.id === ch.lesson_id)
+                        const testCasesCount = exerciseTestCases.filter((t) => t.exercise_id === ch.id).length
+                        const isArcadeReady = ch.is_published && Boolean(ch.language)
+
+                        const diffLower = (ch.difficulty || '').toLowerCase()
+                        const diffBadge = ['easy', 'beginner'].includes(diffLower)
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : ['medium', 'intermediate'].includes(diffLower)
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
+
+                        return (
+                          <tr key={ch.id} className="border-b border-slate-50 hover:bg-slate-50/60 transition-colors">
+                            <td className="py-3.5 px-4 font-mono font-bold text-slate-400">{ch.order_index ?? idx + 1}</td>
+                            <td className="py-3.5 px-4">
+                              <div className="font-bold text-slate-900">{ch.title}</div>
+                              <div className="text-[10px] text-slate-400 font-mono">/{ch.slug}</div>
+                            </td>
+                            <td className="py-3.5 px-4 text-slate-600">
+                              {matchedLesson ? (
+                                <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-medium truncate max-w-40 block">
+                                  {matchedLesson.title}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-slate-400 italic">Standalone</span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className="px-2 py-0.5 rounded text-[9px] font-pixel uppercase font-bold bg-purple-100 text-purple-700">
+                                {ch.language || ch.category}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${diffBadge}`}>
+                                {ch.difficulty}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <span className="px-2 py-0.5 rounded text-[9px] uppercase font-bold bg-slate-100 text-slate-600 font-mono">
+                                {ch.question_type || 'code'}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              {isArcadeReady ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                  <Swords className="w-2.5 h-2.5 text-emerald-600" />
+                                  <span>Ready</span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">
+                                  <span>Inactive</span>
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3.5 px-4 font-bold text-amber-600">+{ch.xp_reward ?? 75} XP</td>
+                            <td className="py-3.5 px-4">
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePublishExercise(ch)}
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors ${
+                                  ch.is_published ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                                }`}
+                              >
+                                {ch.is_published ? 'Published' : 'Draft'}
+                              </button>
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveChallenge(ch.id, 'up')}
+                                  disabled={idx === 0}
+                                  className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                                  title="Move Up"
+                                >
+                                  <ArrowUp className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleMoveChallenge(ch.id, 'down')}
+                                  disabled={idx === filteredChallenges.length - 1}
+                                  className="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                                  title="Move Down"
+                                >
+                                  <ArrowDown className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenTestCases(ch)}
+                                  className="p-1.5 rounded-lg border border-purple-200 hover:bg-purple-50 text-purple-700 transition-colors cursor-pointer flex items-center gap-1 font-pixel text-[10px]"
+                                  title="Manage Test Cases"
+                                >
+                                  <ListChecks className="w-3.5 h-3.5" />
+                                  <span>Tests ({testCasesCount})</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleEditExercise(ch)}
+                                  className="p-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                  title="Edit Challenge"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteExercise(ch.id)}
+                                  className="p-1.5 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete Exercise"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )
+          })()}
         </div>
 
         {/* Guided Projects Section */}

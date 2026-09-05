@@ -4,21 +4,14 @@ import { useAuth } from '../context/AuthContext'
 import {
   useTeamArcade,
   useArcadeFests,
-  useStudentFestHistory,
-  useStudentBattles,
-  registerBattleAction,
-  deriveBattleEffectiveStatus,
   computeEffectiveFestStatus,
-  fetchBattleLeaderboard,
   type ArcadeFest,
-  type ArcadeBattle,
-  type BattleLeaderboardEntry,
+  type ArcadeTeamMatch,
 } from '../lib/arcade'
-import { BloodArenaBattleView } from '../components/crucible/BloodArenaBattleView'
-import { BattleLobbyView } from '../components/arcade/BattleLobbyView'
 import { RagnarokFestLobby, ClanProfileCard } from '../components/crucible/RagnarokFestLobby'
+import { TeamChallengeSection } from '../components/arcade/TeamChallengeSection'
+import { TeamMatchLobbyModal } from '../components/arcade/TeamMatchLobbyModal'
 import { C, formatCountdown, formatDateTime, relativeTime, statusBadgeStyle } from '../components/crucible/crucibleTokens'
-import { BattleLeaderboardTable } from '../components/arcade/BattleLeaderboardTable'
 import confetti from 'canvas-confetti'
 import {
   Swords, Flame, Trophy, Clock, CheckCircle2,
@@ -43,49 +36,16 @@ export const TeamArcadePage: React.FC = () => {
   } = useTeamArcade(user?.id)
 
   const { fests, loading: festsLoading, liveFests, upcomingFests, endedFests } = useArcadeFests()
-  const { battles, registeredBattleIds, refreshBattles } = useStudentBattles(user?.id)
 
   const [now, setNow] = useState(() => Date.now())
-  const [resultsBattle, setResultsBattle] = useState<ArcadeBattle | null>(null)
-  const [resultsData, setResultsData] = useState<BattleLeaderboardEntry[]>([])
-  const [isLoadingResults, setIsLoadingResults] = useState(false)
+  const [activeTeamMatch, setActiveTeamMatch] = useState<ArcadeTeamMatch | null>(null)
+  const [activeArcadeTab, setActiveArcadeTab] = useState<'duels' | 'fests'>('duels')
 
   // 1-second interval ensures live status transitions and countdowns without page refresh
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(timer)
   }, [])
-
-  const handleViewResults = async (b: ArcadeBattle) => {
-    setResultsBattle(b)
-    setIsLoadingResults(true)
-    const data = await fetchBattleLeaderboard(b.id)
-    setResultsData(data)
-    setIsLoadingResults(false)
-  }
-
-  const [activeArcadeTab, setActiveArcadeTab] = useState<'battles' | 'fests'>('battles')
-  const [activeBattleTab, setActiveBattleTab] = useState<'all' | 'live' | 'upcoming' | 'ended'>('all')
-  const [activeLobbyBattleId, setActiveLobbyBattleId] = useState<string | null>(null)
-  const [isRegisteringBattle, setIsRegisteringBattle] = useState(false)
-
-  const handleRegisterBattle = async (battleId: string) => {
-    if (!user?.id) {
-      toast.error('You must log in to join the slaughter.')
-      return
-    }
-    setIsRegisteringBattle(true)
-    const result = await registerBattleAction(battleId, user.id)
-    setIsRegisteringBattle(false)
-
-    if (!result.success) {
-      toast.error(result.error || 'Failed to enter the Blood Arena.')
-    } else {
-      toast.success(`Clan Registered for ${result.battle_title || 'Battle'}! ⚔️`)
-      confetti({ particleCount: 75, spread: 65, origin: { y: 0.6 }, colors: [C.crimson, C.gold, '#fff'] })
-      refreshBattles()
-    }
-  }
 
   const [activeFestTab, setActiveFestTab] = useState<'all' | 'live' | 'upcoming' | 'ended'>('all')
   const [selectedFest, setSelectedFest] = useState<ArcadeFest | null>(null)
@@ -191,25 +151,6 @@ export const TeamArcadePage: React.FC = () => {
     )
   }
 
-  // Active Lobbies
-  if (activeLobbyBattleId) {
-    if (theme === 'classic') {
-      return (
-        <BattleLobbyView
-          battleId={activeLobbyBattleId}
-          userId={user?.id}
-          onExit={() => setActiveLobbyBattleId(null)}
-        />
-      )
-    }
-    return (
-      <BloodArenaBattleView
-        battleId={activeLobbyBattleId}
-        userId={user?.id}
-        onExit={() => setActiveLobbyBattleId(null)}
-      />
-    )
-  }
 
   if (activeLobbyFest) {
     return (
@@ -222,19 +163,6 @@ export const TeamArcadePage: React.FC = () => {
       />
     )
   }
-
-  // Dynamic Live Filtering relative to current timestamp
-  const liveBattles = battles.filter((b) => deriveBattleEffectiveStatus(b.status, b.start_time, b.end_time, now) === 'live')
-  const upcomingBattles = battles.filter((b) => deriveBattleEffectiveStatus(b.status, b.start_time, b.end_time, now) === 'upcoming')
-  const endedBattles = battles.filter((b) => deriveBattleEffectiveStatus(b.status, b.start_time, b.end_time, now) === 'ended')
-
-  const displayedBattles = battles.filter((b) => {
-    const eff = deriveBattleEffectiveStatus(b.status, b.start_time, b.end_time, now)
-    if (activeBattleTab === 'live') return eff === 'live'
-    if (activeBattleTab === 'upcoming') return eff === 'upcoming'
-    if (activeBattleTab === 'ended') return eff === 'ended'
-    return true
-  })
 
   const displayedFests = fests.filter((f) => {
     const eff = computeEffectiveFestStatus(f.start_time, f.end_time, now)
@@ -295,7 +223,7 @@ export const TeamArcadePage: React.FC = () => {
           {theme === 'classic' ? (
             <div className="flex items-center gap-3">
               {[
-                { key: 'battles', label: 'COMPETITIVE BATTLES', icon: <Swords className="w-3.5 h-3.5" />, count: battles.length },
+                { key: 'duels', label: 'DIRECT TEAM DUELS', icon: <Swords className="w-3.5 h-3.5" /> },
                 { key: 'fests', label: 'CODING FESTS', icon: <Flame className="w-3.5 h-3.5" />, count: fests.length },
               ].map(t => (
                 <button
@@ -307,336 +235,92 @@ export const TeamArcadePage: React.FC = () => {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  {t.icon} {t.label} ({t.count})
+                  {t.icon} {t.label} {t.count !== undefined ? `(${t.count})` : ''}
                 </button>
               ))}
             </div>
           ) : (
             <div className="flex gap-0" style={{ borderBottom: `1px solid ${C.border}` }}>
               {[
-                { key: 'battles', label: 'Gladiatorial Battles', icon: <Swords className="w-4 h-4" />, count: battles.length },
+                { key: 'duels', label: 'Squad Battle Arena', icon: <Swords className="w-4 h-4" /> },
                 { key: 'fests', label: 'Ragnarök Tournaments', icon: <Flame className="w-4 h-4" />, count: fests.length },
               ].map(t => (
                 <button
                   key={t.key}
                   onClick={() => setActiveArcadeTab(t.key as any)}
-                  className="relative px-6 py-3 text-[11px] uppercase font-bold tracking-widest flex items-center gap-2 transition-all"
+                  className="relative px-6 py-3 text-[11px] uppercase font-bold tracking-widest flex items-center gap-2 transition-all cursor-pointer"
                   style={{
                     fontFamily: "'Cinzel', serif",
                     color: activeArcadeTab === t.key ? C.crimson : C.textSecondary,
                     borderBottom: activeArcadeTab === t.key ? `2px solid ${C.crimson}` : '2px solid transparent',
                   }}>
-                  {t.icon} {t.label} <span className="text-[9px]" style={{ color: activeArcadeTab === t.key ? C.crimson : C.textMuted }}>({t.count})</span>
+                  {t.icon} {t.label} {t.count !== undefined ? <span className="text-[9px]" style={{ color: activeArcadeTab === t.key ? C.crimson : C.textMuted }}>({t.count})</span> : null}
                 </button>
               ))}
             </div>
           )}
 
-          {/* ── BATTLES CONTENT ── */}
-          {activeArcadeTab === 'battles' && (
+          {/* ── DIRECT TEAM DUELS ARENA (SOURCE OF TRUTH) ── */}
+          {activeArcadeTab === 'duels' && (
             <div className="flex flex-col gap-6">
-              {/* Filter Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                {(['all', 'live', 'upcoming', 'ended'] as const).map(f => {
-                  const labelMap: Record<string, string> = {
-                    all: `All (${battles.length})`,
-                    live: `Live (${liveBattles.length})`,
-                    upcoming: `Upcoming (${upcomingBattles.length})`,
-                    ended: `Concluded (${endedBattles.length})`,
-                  }
-                  if (theme === 'classic') {
-                    return (
-                      <button
-                        key={f}
-                        onClick={() => setActiveBattleTab(f)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
-                          activeBattleTab === f
-                            ? 'bg-slate-900 text-white shadow-sm'
-                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
-                        }`}
-                      >
-                        {labelMap[f] || f}
-                      </button>
-                    )
-                  }
-                  return (
-                    <button
-                      key={f}
-                      onClick={() => setActiveBattleTab(f)}
-                      className="px-4 py-1.5 rounded-lg text-[10px] uppercase font-bold tracking-widest transition-all whitespace-nowrap"
-                      style={{
-                        fontFamily: "'Cinzel', serif",
-                        background: activeBattleTab === f ? C.crimsonDim : 'rgba(20,12,12,0.6)',
-                        color: activeBattleTab === f ? C.crimson : C.textMuted,
-                        border: `1px solid ${activeBattleTab === f ? C.borderHot : C.border}`,
-                      }}>
-                      {f}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {displayedBattles.length === 0 ? (
-                <div className="text-center py-16 rounded-2xl" style={{ border: `1px dashed ${C.border}` }}>
-                  <div className="text-3xl opacity-40 mb-3 text-white">⚔</div>
-                  <p className="text-sm" style={{ color: C.textSecondary, fontFamily: "'Cinzel', serif" }}>No blood currently spilled here.</p>
-                </div>
+              {team ? (
+                <TeamChallengeSection
+                  team={team}
+                  isCaptain={isCaptain}
+                  userId={user?.id}
+                  onEnterMatch={(match) => setActiveTeamMatch(match)}
+                />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {displayedBattles.map(battle => {
-                    const startMs = new Date(battle.start_time).getTime()
-                    const endMs = new Date(battle.end_time).getTime()
-                    const effStatus = deriveBattleEffectiveStatus(battle.status, battle.start_time, battle.end_time, now)
-                    const isLive = effStatus === 'live'
-                    const isUpcoming = effStatus === 'upcoming'
-                    const isEnded = effStatus === 'ended'
-                    const isRegistered = registeredBattleIds.includes(battle.id)
-                    const { bg: statusBg, color: statusColor, label: statusLabel, pulse: statusPulse } = statusBadgeStyle(effStatus)
-                    const timeUntilStart = Math.max(0, startMs - now)
-                    const timeUntilEnd = Math.max(0, endMs - now)
-
-                    if (theme === 'classic') {
-                      return (
-                        <div
-                          key={battle.id}
-                          className="bg-white rounded-2xl p-5 flex flex-col gap-4 border-2 border-slate-200 hover:border-emerald-500 shadow-sm transition-all"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className={`px-2.5 py-0.5 rounded-md text-[10px] uppercase font-bold border flex items-center gap-1.5 ${
-                              isEnded
-                                ? 'bg-slate-100 text-slate-600 border-slate-200'
-                                : isLive
-                                ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
-                                : 'bg-blue-50 text-blue-700 border-blue-200'
-                            }`}>
-                              {isEnded ? '✓ CONCLUDED' : isLive ? '● LIVE' : 'UPCOMING'}
-                            </span>
-                            <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                              {battle.exercise_count || 2} Quests
-                            </span>
-                          </div>
-
-                          <div>
-                            <h3 className="font-extrabold text-base text-slate-900 leading-tight">
-                              {battle.title}
-                            </h3>
-                            <p className="text-xs text-slate-500 line-clamp-2 mt-1">
-                              {battle.description || 'Collaborative competitive coding battle.'}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                              +{battle.base_points} Base
-                            </span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                              +{battle.speed_bonus_max} Speed
-                            </span>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                              -{battle.wrong_answer_penalty} Penalty
-                            </span>
-                          </div>
-
-                          <div className="space-y-1.5 text-xs text-slate-600 pt-1 border-t border-slate-100">
-                            {isUpcoming && (
-                              <>
-                                <div className="flex items-center gap-1.5 text-slate-500">
-                                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>Starts: {formatDateTime(battle.start_time)}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 font-bold text-amber-700">
-                                  <Clock className="w-3.5 h-3.5 text-amber-600" />
-                                  <span>Starts in: {formatCountdown(timeUntilStart)}</span>
-                                  <span className="text-[10px] text-slate-400 font-normal">({battle.duration_minutes}m)</span>
-                                </div>
-                              </>
-                            )}
-
-                            {isLive && (
-                              <>
-                                <div className="flex items-center gap-1.5 text-slate-500">
-                                  <Calendar className="w-3.5 h-3.5 text-emerald-500" />
-                                  <span>Started: {formatDateTime(battle.start_time)}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 font-bold text-rose-600 animate-pulse">
-                                  <Clock className="w-3.5 h-3.5 text-rose-600" />
-                                  <span>Ends in: {formatCountdown(timeUntilEnd)}</span>
-                                </div>
-                              </>
-                            )}
-
-                            {isEnded && (
-                              <>
-                                <div className="flex items-center gap-1.5 text-slate-500">
-                                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>Concluded: {formatDateTime(battle.end_time)}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-slate-400 font-medium">
-                                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                  <span>Duration: {battle.duration_minutes} Minutes</span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                          <div className="mt-auto pt-3 border-t border-slate-100">
-                            {isLive && isRegistered ? (
-                              <button
-                                type="button"
-                                onClick={() => setActiveLobbyBattleId(battle.id)}
-                                className="btn-gamified-3d btn-gamified-3d-primary w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer"
-                              >
-                                <Swords className="w-3.5 h-3.5" />
-                                <span>ENTER THE ARENA ⚔️</span>
-                              </button>
-                            ) : isUpcoming && isRegistered ? (
-                              <button
-                                type="button"
-                                onClick={() => setActiveLobbyBattleId(battle.id)}
-                                className="w-full py-2.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                              >
-                                <Users className="w-3.5 h-3.5" />
-                                <span>ENTER WAITING ROOM</span>
-                              </button>
-                            ) : isUpcoming && !isRegistered ? (
-                              <button
-                                type="button"
-                                onClick={() => handleRegisterBattle(battle.id)}
-                                disabled={!team || !isCaptain || isRegisteringBattle}
-                                className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 transition-colors"
-                              >
-                                <span>
-                                  {isRegisteringBattle
-                                    ? 'REGISTERING...'
-                                    : !team
-                                    ? 'FORM A SQUAD FIRST'
-                                    : isCaptain
-                                    ? 'REGISTER SQUAD'
-                                    : 'CAPTAIN ONLY'}
-                                </span>
-                              </button>
-                            ) : isLive && !isRegistered ? (
-                              <button
-                                type="button"
-                                disabled
-                                className="w-full py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-400 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-not-allowed"
-                              >
-                                <span>LIVE • REGISTRATION CLOSED</span>
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => handleViewResults(battle)}
-                                className="btn-gamified-3d btn-gamified-3d-primary w-full py-2.5 rounded-xl font-black text-xs uppercase tracking-wider text-white flex items-center justify-center gap-2 cursor-pointer"
-                              >
-                                <Trophy className="w-3.5 h-3.5 text-amber-300" />
-                                <span>VIEW RESULTS</span>
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    }
-
-                    return (
-                      <div key={battle.id} className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
-                        style={{ background: C.bgCard, border: `1px solid ${isLive ? C.borderHot : C.border}`, boxShadow: isLive ? `0 0 20px rgba(220,38,38,0.1)` : 'none' }}>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold ${statusPulse ? 'animate-pulse' : ''}`}
-                            style={{ background: statusBg, color: statusColor, fontFamily: "'Cinzel', serif", border: `1px solid ${statusColor}44` }}>
-                            ● {statusLabel}
-                          </span>
-                          {isRegistered && (
-                            <span className="px-2 py-0.5 rounded text-[9px] uppercase font-bold"
-                              style={{ background: 'rgba(0,229,255,0.1)', color: C.frost, border: `1px solid ${C.frost}44` }}>
-                              <CheckCircle2 className="w-2.5 h-2.5 inline mr-1" /> Pledged
-                            </span>
-                          )}
-                        </div>
-
-                        <div>
-                          <h3 className="font-bold text-lg mb-1" style={{ fontFamily: "'Cinzel', serif", color: C.textPrimary }}>{battle.title}</h3>
-                          <p className="text-xs line-clamp-2" style={{ color: C.textSecondary }}>{battle.description || 'Collaborative competitive coding battle.'}</p>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="flex items-center gap-3 text-[10px] font-mono" style={{ color: C.textMuted }}>
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {battle.duration_minutes}m</span>
-                          <span className="flex items-center gap-1"><Crown className="w-3 h-3 text-yellow-600" /> {battle.base_points} Base XP</span>
-                          <span className="flex items-center gap-1"><AlertCircle className="w-3 h-3 text-red-600" /> -{battle.wrong_answer_penalty} Pen</span>
-                        </div>
-
-                        {/* Schedule & Timing */}
-                        <div className="flex flex-col gap-1 text-[11px] font-mono pt-1" style={{ color: C.textSecondary }}>
-                          {isUpcoming && (
-                            <>
-                              <div className="flex items-center gap-1.5">
-                                <Calendar className="w-3 h-3 text-slate-400" />
-                                <span>Starts: {formatDateTime(battle.start_time)}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5 font-bold" style={{ color: C.goldBright }}>
-                                <Clock className="w-3 h-3" />
-                                <span>Starts in: {formatCountdown(timeUntilStart)}</span>
-                              </div>
-                            </>
-                          )}
-                          {isLive && (
-                            <>
-                              <div className="flex items-center gap-1.5">
-                                <Calendar className="w-3 h-3" style={{ color: C.frost }} />
-                                <span>Started: {formatDateTime(battle.start_time)}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5 font-bold animate-pulse" style={{ color: C.crimson }}>
-                                <Clock className="w-3 h-3" />
-                                <span>Ends in: {formatCountdown(timeUntilEnd)}</span>
-                              </div>
-                            </>
-                          )}
-                          {isEnded && (
-                            <>
-                              <div className="flex items-center gap-1.5 text-stone-400">
-                                <Calendar className="w-3 h-3" />
-                                <span>Concluded: {formatDateTime(battle.end_time)}</span>
-                              </div>
-                            </>
-                          )}
-                        </div>
-
-                        {/* Actions */}
-                        <div className="mt-auto pt-4" style={{ borderTop: `1px solid ${C.border}` }}>
-                          {isLive && isRegistered ? (
-                            <button onClick={() => setActiveLobbyBattleId(battle.id)} className="w-full py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all"
-                              style={{ background: 'linear-gradient(135deg, #DC2626, #FF3D00)', color: '#fff', fontFamily: "'Cinzel', serif" }}>
-                              Enter the Arena ⚔️
-                            </button>
-                          ) : isUpcoming && isRegistered ? (
-                            <button onClick={() => setActiveLobbyBattleId(battle.id)} className="w-full py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all"
-                              style={{ background: 'rgba(20,12,12,0.8)', border: `1px solid ${C.borderHot}`, color: C.crimson, fontFamily: "'Cinzel', serif" }}>
-                              Enter War Tent
-                            </button>
-                          ) : isUpcoming && !isRegistered ? (
-                            <button onClick={() => handleRegisterBattle(battle.id)} disabled={!team || !isCaptain || isRegisteringBattle}
-                              className="w-full py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all disabled:opacity-40"
-                              style={{ background: C.crimsonDim, border: `1px solid ${C.borderHot}`, color: C.crimson, fontFamily: "'Cinzel', serif" }}>
-                              {isRegisteringBattle ? 'Scribing...' : !team ? 'Form a Clan First' : isCaptain ? 'Pledge Clan' : 'Warlord Only'}
-                            </button>
-                          ) : isLive && !isRegistered ? (
-                            <button disabled className="w-full py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase opacity-50 cursor-not-allowed"
-                              style={{ background: 'rgba(20,12,12,0.8)', border: `1px solid ${C.border}`, color: C.textMuted, fontFamily: "'Cinzel', serif" }}>
-                              Live • Registration Closed
-                            </button>
-                          ) : (
-                            <button onClick={() => handleViewResults(battle)} className="w-full py-2 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all flex items-center justify-center gap-1.5"
-                              style={{ background: 'rgba(20,12,12,0.8)', border: `1px solid ${C.borderGold}`, color: C.goldBright, fontFamily: "'Cinzel', serif" }}>
-                              <Trophy className="w-3 h-3" />
-                              <span>View Results</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
+                <div
+                  className={`rounded-2xl p-8 flex flex-col items-center text-center gap-5 border shadow-sm ${
+                    theme === 'classic'
+                      ? 'bg-slate-50 border-slate-200 text-slate-900'
+                      : 'border'
+                  }`}
+                  style={
+                    theme !== 'classic'
+                      ? {
+                          background: C.bgCard,
+                          borderColor: C.borderHot,
+                          boxShadow: '0 0 25px rgba(220,38,38,0.15)',
+                        }
+                      : undefined
+                  }
+                >
+                  <div
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner"
+                    style={{
+                      background: theme === 'classic' ? '#dcfce7' : 'linear-gradient(135deg, #7F1D1D, #DC2626)',
+                      color: theme === 'classic' ? '#15803d' : '#fff',
+                    }}
+                  >
+                    ⚔️
+                  </div>
+                  <div className="flex flex-col gap-2 max-w-lg">
+                    <h2
+                      className="text-xl md:text-2xl font-black text-white"
+                      style={theme !== 'classic' ? { fontFamily: "'Cinzel', serif" } : undefined}
+                    >
+                      Team-vs-Team Battle Arena
+                    </h2>
+                    <p className="text-xs md:text-sm text-slate-400 leading-relaxed">
+                      Forge or join a 4-player squad to challenge rival teams directly. Both squads duel independently on identical coding questions, earning match-local Combat Points. The squad with the higher average score claims victory and captures enemy turf!
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-xl text-xs font-mono pt-2">
+                    <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
+                      <span className="text-rose-400 font-bold">1. Challenge Squads</span>
+                      <span className="text-[10px] text-slate-400 text-center">Search & dispatch direct match duels</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
+                      <span className="text-amber-400 font-bold">2. Independent Solves</span>
+                      <span className="text-[10px] text-slate-400 text-center">Personal Monaco workspace, 100 CP per quest</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-black/40 border border-slate-800 flex flex-col items-center gap-1">
+                      <span className="text-emerald-400 font-bold">3. Turf Capture</span>
+                      <span className="text-[10px] text-slate-400 text-center">Higher team average captures enemy turf</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -763,9 +447,14 @@ export const TeamArcadePage: React.FC = () => {
                         <h3 className="font-extrabold text-base text-slate-900 truncate">
                           {team.name}
                         </h3>
-                        <span className="text-xs text-slate-500">
-                          {members.length} / 4 Members
-                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-slate-500">
+                            {members.length} / 4 Members
+                          </span>
+                          <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                            🏰 {team.turf_count ?? 1} Turf
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -1094,55 +783,16 @@ export const TeamArcadePage: React.FC = () => {
         </div>
       )}
 
-      {/* ── BATTLE RESULTS MODAL ── */}
-      {resultsBattle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
-          <div
-            className={`w-full max-w-4xl max-h-[90vh] flex flex-col rounded-3xl overflow-hidden shadow-2xl ${
-              theme === 'classic' ? 'bg-white border border-slate-200' : 'bg-stone-950 border border-amber-900/40 text-stone-100'
-            }`}
-          >
-            {/* Header */}
-            <div
-              className={`flex items-center justify-between p-6 border-b ${
-                theme === 'classic' ? 'border-slate-200 bg-slate-50/80' : 'border-stone-800 bg-black/50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
-                  <Trophy className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-lg tracking-tight">
-                    {resultsBattle.title} — Standings
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-stone-400">
-                    Concluded on {formatDateTime(resultsBattle.end_time)}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setResultsBattle(null)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-stone-200 hover:bg-slate-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
 
-            {/* Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-90px)]">
-              {isLoadingResults ? (
-                <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400">
-                  <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-                  <span className="text-xs font-mono">Fetching final scores...</span>
-                </div>
-              ) : (
-                <BattleLeaderboardTable entries={resultsData} myTeamId={team?.id} isEnded={true} />
-              )}
-            </div>
-          </div>
-        </div>
+
+      {/* ── TEAM MATCH LOBBY MODAL ── */}
+      {activeTeamMatch && (
+        <TeamMatchLobbyModal
+          match={activeTeamMatch}
+          currentTeamId={team?.id}
+          userId={user?.id}
+          onClose={() => setActiveTeamMatch(null)}
+        />
       )}
     </div>
   )

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from './supabase'
 import { executeCode } from './execution'
-import { fetchExerciseTestCases } from './submissions'
+import { fetchExerciseTestCases, evaluateChallengeTests, type TestCaseResult } from './submissions'
+import { type Challenge } from './challenges'
 
 export interface ArcadeTeam {
   id: string
@@ -9,6 +10,7 @@ export interface ArcadeTeam {
   code: string
   captain_id: string
   member_count: number
+  turf_count?: number
   status: 'active' | 'archived'
   created_at: string
   updated_at: string
@@ -2940,6 +2942,795 @@ export function useStudentBattleHistory(userId?: string) {
     refreshHistory: loadHistory,
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TEAM-VS-TEAM CHALLENGES & MATCH FOUNDATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ArcadeTeamChallenge {
+  id: string
+  challenger_team_id: string
+  challenged_team_id: string
+  status: 'pending' | 'accepted' | 'declined' | 'expired'
+  language: string
+  difficulty: string
+  question_count: number
+  created_at: string
+  updated_at: string
+  challenger_team?: {
+    id: string
+    name: string
+    code: string
+    captain_id: string
+  }
+  challenged_team?: {
+    id: string
+    name: string
+    code: string
+    captain_id: string
+  }
+}
+
+export interface ArcadeTeamMatch {
+  id: string
+  team_a_id: string
+  team_b_id: string
+  language: string
+  difficulty: string
+  question_count: number
+  selected_exercise_ids: string[]
+  status: 'lobby' | 'in_progress' | 'completed' | 'abandoned'
+  winner_team_id: string | null
+  result_type: string | null
+  team_a_score?: number
+  team_b_score?: number
+  turf_transferred?: boolean
+  started_at: string | null
+  ended_at: string | null
+  created_at: string
+  updated_at: string
+  team_a?: {
+    id: string
+    name: string
+    code: string
+    turf_count?: number
+  }
+  team_b?: {
+    id: string
+    name: string
+    code: string
+    turf_count?: number
+  }
+}
+
+export interface EligibleTeam {
+  id: string
+  name: string
+  code: string
+  member_count: number
+  captain_id: string
+  captain_name: string
+  created_at: string
+}
+
+export async function searchEligibleTeams(
+  userId: string,
+  query: string = ''
+): Promise<EligibleTeam[]> {
+  try {
+    const { data, error } = await supabase.rpc('search_eligible_arcade_teams', {
+      p_user_id: userId,
+      p_query: query,
+    })
+
+    if (error) {
+      console.error('Error searching eligible teams:', error)
+      return []
+    }
+
+    return (data || []) as EligibleTeam[]
+  } catch (err) {
+    console.error('searchEligibleTeams exception:', err)
+    return []
+  }
+}
+
+export async function sendTeamChallengeAction(params: {
+  challengerTeamId: string
+  challengedTeamId: string
+  language: string
+  difficulty: string
+  questionCount: number
+}): Promise<{
+  success: boolean
+  challenge?: ArcadeTeamChallenge
+  error?: string
+}> {
+  try {
+    const { data, error } = await supabase.rpc('send_team_challenge', {
+      p_challenger_team_id: params.challengerTeamId,
+      p_challenged_team_id: params.challengedTeamId,
+      p_language: params.language,
+      p_difficulty: params.difficulty,
+      p_question_count: params.questionCount,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Failed to send challenge.' }
+    }
+
+    return {
+      success: true,
+      challenge: data.challenge as ArcadeTeamChallenge,
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Unexpected error sending challenge.' }
+  }
+}
+
+export async function respondToTeamChallengeAction(
+  challengeId: string,
+  response: 'accepted' | 'declined'
+): Promise<{
+  success: boolean
+  status?: string
+  match_id?: string
+  match?: ArcadeTeamMatch
+  error?: string
+}> {
+  try {
+    const { data, error } = await supabase.rpc('respond_to_team_challenge', {
+      p_challenge_id: challengeId,
+      p_response: response,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Failed to respond to challenge.' }
+    }
+
+    return {
+      success: true,
+      status: data.status,
+      match_id: data.match_id,
+      match: data.match as ArcadeTeamMatch,
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Unexpected error responding to challenge.' }
+  }
+}
+
+export async function fetchTeamChallenges(teamId: string): Promise<{
+  incoming: ArcadeTeamChallenge[]
+  outgoing: ArcadeTeamChallenge[]
+}> {
+  try {
+    const { data, error } = await supabase
+      .from('arcade_team_challenges')
+      .select(`
+        *,
+        challenger_team:arcade_teams!arcade_team_challenges_challenger_team_id_fkey(id, name, code, captain_id),
+        challenged_team:arcade_teams!arcade_team_challenges_challenged_team_id_fkey(id, name, code, captain_id)
+      `)
+      .or(`challenger_team_id.eq.${teamId},challenged_team_id.eq.${teamId}`)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching team challenges:', error)
+      return { incoming: [], outgoing: [] }
+    }
+
+    const all = (data || []) as ArcadeTeamChallenge[]
+    const incoming = all.filter((c) => c.challenged_team_id === teamId)
+    const outgoing = all.filter((c) => c.challenger_team_id === teamId)
+
+    return { incoming, outgoing }
+  } catch (err) {
+    console.error('fetchTeamChallenges exception:', err)
+    return { incoming: [], outgoing: [] }
+  }
+}
+
+export async function fetchActiveTeamMatch(teamId: string): Promise<ArcadeTeamMatch | null> {
+  try {
+    const { data, error } = await supabase
+      .from('arcade_team_matches')
+      .select(`
+        *,
+        team_a:arcade_teams!arcade_team_matches_team_a_id_fkey(id, name, code, turf_count),
+        team_b:arcade_teams!arcade_team_matches_team_b_id_fkey(id, name, code, turf_count)
+      `)
+      .or(`team_a_id.eq.${teamId},team_b_id.eq.${teamId}`)
+      .in('status', ['lobby', 'in_progress'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error fetching active team match:', error)
+      return null
+    }
+
+    return (data as ArcadeTeamMatch) || null
+  } catch (err) {
+    console.error('fetchActiveTeamMatch exception:', err)
+    return null
+  }
+}
+
+export async function fetchRecentTeamMatches(teamId: string, limit = 5): Promise<ArcadeTeamMatch[]> {
+  try {
+    const { data, error } = await supabase
+      .from('arcade_team_matches')
+      .select(`
+        *,
+        team_a:arcade_teams!arcade_team_matches_team_a_id_fkey(id, name, code, turf_count),
+        team_b:arcade_teams!arcade_team_matches_team_b_id_fkey(id, name, code, turf_count)
+      `)
+      .or(`team_a_id.eq.${teamId},team_b_id.eq.${teamId}`)
+      .eq('status', 'completed')
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error || !data) {
+      return []
+    }
+
+    return data as ArcadeTeamMatch[]
+  } catch (err) {
+    console.error('fetchRecentTeamMatches exception:', err)
+    return []
+  }
+}
+
+export function useTeamChallenges(teamId?: string, userId?: string) {
+  const [incoming, setIncoming] = useState<ArcadeTeamChallenge[]>([])
+  const [outgoing, setOutgoing] = useState<ArcadeTeamChallenge[]>([])
+  const [activeMatch, setActiveMatch] = useState<ArcadeTeamMatch | null>(null)
+  const [recentMatches, setRecentMatches] = useState<ArcadeTeamMatch[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const loadData = useCallback(async () => {
+    if (!teamId) {
+      setIncoming([])
+      setOutgoing([])
+      setActiveMatch(null)
+      setRecentMatches([])
+      setLoading(false)
+      return
+    }
+
+    const [challengesResult, matchResult, recentResult] = await Promise.all([
+      fetchTeamChallenges(teamId),
+      fetchActiveTeamMatch(teamId),
+      fetchRecentTeamMatches(teamId),
+    ])
+
+    setIncoming(challengesResult.incoming)
+    setOutgoing(challengesResult.outgoing)
+    setActiveMatch(matchResult)
+    setRecentMatches(recentResult)
+    setLoading(false)
+  }, [teamId])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  // Realtime subscription for team challenges and matches
+  useEffect(() => {
+    if (!teamId) return
+
+    const challengesChannel = supabase
+      .channel(`team_challenges_sub_${teamId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'arcade_team_challenges' },
+        () => {
+          loadData()
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'arcade_team_matches' },
+        () => {
+          loadData()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(challengesChannel)
+    }
+  }, [teamId, loadData])
+
+  const sendChallenge = async (params: {
+    challengedTeamId: string
+    language: string
+    difficulty: string
+    questionCount: number
+  }) => {
+    if (!teamId) {
+      return { success: false, error: 'You are not in a team.' }
+    }
+    const result = await sendTeamChallengeAction({
+      challengerTeamId: teamId,
+      challengedTeamId: params.challengedTeamId,
+      language: params.language,
+      difficulty: params.difficulty,
+      questionCount: params.questionCount,
+    })
+    if (result.success) {
+      loadData()
+    }
+    return result
+  }
+
+  const respondChallenge = async (
+    challengeId: string,
+    action: 'accepted' | 'declined'
+  ) => {
+    const result = await respondToTeamChallengeAction(challengeId, action)
+    if (result.success) {
+      loadData()
+    }
+    return result
+  }
+
+  const searchTeams = useCallback(
+    async (query: string = '') => {
+      if (!userId) return []
+      return await searchEligibleTeams(userId, query)
+    },
+    [userId]
+  )
+
+  const checkPool = useCallback(
+    async (lang: string, diff: string) => {
+      return await checkArcadePoolAvailability(lang, diff)
+    },
+    []
+  )
+
+  return {
+    incoming,
+    outgoing,
+    pendingIncomingCount: incoming.filter((c) => c.status === 'pending').length,
+    activeMatch,
+    recentMatches,
+    loading,
+    refreshChallenges: loadData,
+    sendChallenge,
+    respondChallenge,
+    searchTeams,
+    checkPool,
+  }
+}
+
+export async function checkArcadePoolAvailability(
+  language: string,
+  difficulty: string
+): Promise<{ available_count: number; language: string; difficulty: string }> {
+  try {
+    const { data, error } = await supabase.rpc('check_arcade_pool_availability', {
+      p_language: language,
+      p_difficulty: difficulty,
+    })
+
+    if (error || !data) {
+      return { available_count: 0, language, difficulty }
+    }
+
+    return {
+      available_count: data.available_count ?? 0,
+      language: data.language || language,
+      difficulty: data.difficulty || difficulty,
+    }
+  } catch (err) {
+    console.error('Error checking arcade pool availability:', err)
+    return { available_count: 0, language, difficulty }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INDIVIDUAL BATTLE GAMEPLAY & MATCH SUBMISSIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ArcadeTeamMatchSubmission {
+  id: string
+  match_id: string
+  team_id: string
+  user_id: string
+  exercise_id: string
+  code: string
+  language: string
+  status: 'passed' | 'failed' | 'execution_error' | 'timeout'
+  result?: 'correct' | 'wrong'
+  passed_count: number
+  total_count: number
+  execution_time_ms: number
+  combat_points?: number
+  submitted_at?: string
+  created_at: string
+  updated_at: string
+  profile?: {
+    username?: string
+    full_name?: string
+    avatar_url?: string
+  }
+}
+
+export async function startTeamMatchAction(matchId: string): Promise<{
+  success: boolean
+  status?: string
+  match?: ArcadeTeamMatch
+  error?: string
+}> {
+  try {
+    const { data, error } = await supabase.rpc('start_team_match', {
+      p_match_id: matchId,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Failed to start match.' }
+    }
+
+    return {
+      success: true,
+      status: data.status,
+      match: data.match as ArcadeTeamMatch,
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Unexpected error starting match.' }
+  }
+}
+
+export async function concludeTeamMatchAction(matchId: string): Promise<{
+  success: boolean
+  status?: string
+  result_type?: string
+  winner_team_id?: string | null
+  team_a_score?: number
+  team_b_score?: number
+  turf_transferred?: boolean
+  match?: ArcadeTeamMatch
+  error?: string
+}> {
+  try {
+    const { data, error } = await supabase.rpc('conclude_team_match', {
+      p_match_id: matchId,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Failed to conclude match.' }
+    }
+
+    return {
+      success: true,
+      status: data.status,
+      result_type: data.result_type,
+      winner_team_id: data.winner_team_id,
+      team_a_score: data.team_a_score,
+      team_b_score: data.team_b_score,
+      turf_transferred: data.turf_transferred,
+      match: data.match as ArcadeTeamMatch,
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Unexpected error concluding match.' }
+  }
+}
+
+export async function fetchTeamMatchQuestions(exerciseIds: string[]): Promise<Challenge[]> {
+  if (!exerciseIds || exerciseIds.length === 0) return []
+  try {
+    const { data, error } = await supabase
+      .from('challenges')
+      .select('*')
+      .in('id', exerciseIds)
+
+    if (error || !data) {
+      console.error('Error fetching match questions:', error)
+      return []
+    }
+
+    const map = new Map((data as Challenge[]).map((c) => [c.id, c]))
+    // Return in the exact deterministic order stored on the match
+    return exerciseIds.map((id) => map.get(id)).filter(Boolean) as Challenge[]
+  } catch (err) {
+    console.error('fetchTeamMatchQuestions exception:', err)
+    return []
+  }
+}
+
+export async function fetchTeamMatchSubmissions(
+  matchId: string
+): Promise<ArcadeTeamMatchSubmission[]> {
+  try {
+    const { data, error } = await supabase
+      .from('arcade_team_match_submissions')
+      .select(`
+        *,
+        profile:profiles(username, full_name, avatar_url)
+      `)
+      .eq('match_id', matchId)
+      .order('created_at', { ascending: false })
+
+    if (!error && data) {
+      return data as ArcadeTeamMatchSubmission[]
+    }
+
+    // Fallback if join has any issue: select raw submissions then fetch profiles
+    const { data: rawData, error: rawError } = await supabase
+      .from('arcade_team_match_submissions')
+      .select('*')
+      .eq('match_id', matchId)
+      .order('created_at', { ascending: false })
+
+    if (rawError || !rawData) {
+      return []
+    }
+
+    const userIds = Array.from(new Set(rawData.map((s: any) => s.user_id).filter(Boolean)))
+    let profileMap = new Map<string, any>()
+    if (userIds.length > 0) {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url')
+        .in('id', userIds)
+      if (profs) {
+        profileMap = new Map(profs.map((p: any) => [p.id, p]))
+      }
+    }
+
+    return rawData.map((s: any) => ({
+      ...s,
+      profile: profileMap.get(s.user_id) || undefined,
+    })) as ArcadeTeamMatchSubmission[]
+  } catch (err) {
+    console.error('fetchTeamMatchSubmissions exception:', err)
+    return []
+  }
+}
+
+export async function recordTeamMatchSubmissionAction(params: {
+  matchId: string
+  exerciseId: string
+  code: string
+  language: string
+  status: string
+  passedCount: number
+  totalCount: number
+  executionTimeMs?: number
+}): Promise<{
+  success: boolean
+  submission?: ArcadeTeamMatchSubmission
+  result?: 'correct' | 'wrong'
+  combat_points?: number
+  team_a_score?: number
+  team_b_score?: number
+  player_completed?: boolean
+  match_completed?: boolean
+  error?: string
+}> {
+  try {
+    const { data, error } = await supabase.rpc('record_team_match_submission', {
+      p_match_id: params.matchId,
+      p_exercise_id: params.exerciseId,
+      p_code: params.code,
+      p_language: params.language,
+      p_status: params.status,
+      p_passed_count: params.passedCount,
+      p_total_count: params.totalCount,
+      p_execution_time_ms: params.executionTimeMs ?? 0,
+    })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    if (!data?.success) {
+      return { success: false, error: data?.error || 'Failed to record match submission.' }
+    }
+
+    return {
+      success: true,
+      submission: data.submission as ArcadeTeamMatchSubmission,
+      result: data.result,
+      combat_points: data.combat_points,
+      team_a_score: data.team_a_score,
+      team_b_score: data.team_b_score,
+      player_completed: data.player_completed,
+      match_completed: data.match_completed,
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Unexpected error recording submission.' }
+  }
+}
+
+export function useTeamMatchGameplay(
+  matchId: string,
+  initialMatch?: ArcadeTeamMatch,
+  userId?: string
+) {
+  const [match, setMatch] = useState<ArcadeTeamMatch | null>(initialMatch || null)
+  const [questions, setQuestions] = useState<Challenge[]>([])
+  const [submissions, setSubmissions] = useState<ArcadeTeamMatchSubmission[]>([])
+  const [loading, setLoading] = useState(true)
+  const [timeRemainingSeconds, setTimeRemainingSeconds] = useState<number | null>(null)
+
+  const loadData = useCallback(async () => {
+    try {
+      // 1. Fetch match record
+      const { data: matchData } = await supabase
+        .from('arcade_team_matches')
+        .select(`
+          *,
+          team_a:arcade_teams!arcade_team_matches_team_a_id_fkey(id, name, code, turf_count),
+          team_b:arcade_teams!arcade_team_matches_team_b_id_fkey(id, name, code, turf_count)
+        `)
+        .eq('id', matchId)
+        .single()
+
+      if (matchData) {
+        const currentMatch = matchData as ArcadeTeamMatch
+        setMatch(currentMatch)
+
+        // 2. Fetch questions from stored exercise IDs
+        if (currentMatch.selected_exercise_ids?.length > 0) {
+          const qs = await fetchTeamMatchQuestions(currentMatch.selected_exercise_ids)
+          setQuestions(qs)
+        }
+      }
+
+      // 3. Fetch all player submissions for this match
+      const subs = await fetchTeamMatchSubmissions(matchId)
+      setSubmissions((prev) => {
+        const incomingMap = new Map(subs.map((s) => [`${s.user_id}_${s.exercise_id}`, s]))
+        const merged = [...subs]
+        for (const p of prev) {
+          const key = `${p.user_id}_${p.exercise_id}`
+          if (!incomingMap.has(key)) {
+            merged.push(p)
+          }
+        }
+        return merged
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [matchId])
+
+  const addOrUpdateSubmission = useCallback((sub: ArcadeTeamMatchSubmission) => {
+    setSubmissions((prev) => {
+      const idx = prev.findIndex(
+        (s) => s.match_id === sub.match_id && s.user_id === sub.user_id && s.exercise_id === sub.exercise_id
+      )
+      if (idx !== -1) {
+        const copy = [...prev]
+        copy[idx] = { ...copy[idx], ...sub }
+        return copy
+      }
+      return [sub, ...prev]
+    })
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  // Realtime subscription ONLY for match state, timer, and per-player submission results
+  // (NO code synchronization / editor sync)
+  useEffect(() => {
+    const channel = supabase
+      .channel(`match_gameplay_${matchId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'arcade_team_matches',
+          filter: `id=eq.${matchId}`,
+        },
+        () => {
+          loadData()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'arcade_team_match_submissions',
+          filter: `match_id=eq.${matchId}`,
+        },
+        () => {
+          loadData()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [matchId, loadData])
+
+  // Live countdown timer based on match.ended_at
+  useEffect(() => {
+    if (!match?.ended_at || match.status !== 'in_progress') {
+      setTimeRemainingSeconds(null)
+      return
+    }
+
+    const updateTimer = () => {
+      const endMs = new Date(match.ended_at!).getTime()
+      const diff = Math.max(0, Math.floor((endMs - Date.now()) / 1000))
+      setTimeRemainingSeconds(diff)
+      if (diff === 0 && match.status === 'in_progress') {
+        concludeTeamMatchAction(matchId).then(() => loadData())
+      }
+    }
+
+    updateTimer()
+    const interval = setInterval(updateTimer, 1000)
+    return () => clearInterval(interval)
+  }, [match?.ended_at, match?.status, matchId, loadData])
+
+  const startMatch = async () => {
+    const res = await startTeamMatchAction(matchId)
+    if (res.success && res.match) {
+      setMatch(res.match)
+      loadData()
+    }
+    return res
+  }
+
+  const concludeMatch = async () => {
+    const res = await concludeTeamMatchAction(matchId)
+    if (res.success && res.match) {
+      setMatch(res.match)
+      loadData()
+    }
+    return res
+  }
+
+  const isExpired =
+    match?.status === 'completed' ||
+    match?.status === 'abandoned' ||
+    (match?.ended_at ? new Date(match.ended_at).getTime() <= Date.now() : false)
+
+  const mySubmissions = submissions.filter((s) => s.user_id === userId)
+
+  return {
+    match,
+    questions,
+    submissions,
+    mySubmissions,
+    loading,
+    isExpired,
+    timeRemainingSeconds,
+    startMatch,
+    concludeMatch,
+    reloadMatch: loadData,
+    addOrUpdateSubmission,
+  }
+}
+
+
 
 
 

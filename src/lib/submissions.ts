@@ -183,6 +183,101 @@ export async function fetchUserExerciseSubmissions(
   }
 }
 
+export async function evaluateChallengeTests(
+  exerciseId: string,
+  sourceCode: string,
+  language: string
+): Promise<{
+  status: 'passed' | 'failed' | 'execution_error' | 'timeout'
+  passedCount: number
+  totalCount: number
+  testResults: TestCaseResult[]
+  executionTimeMs: number
+}> {
+  const startTime = Date.now()
+  const testCases = await fetchExerciseTestCases(exerciseId)
+
+  const testResults: TestCaseResult[] = []
+  let overallStatus: 'passed' | 'failed' | 'execution_error' | 'timeout' = 'passed'
+
+  if (testCases.length === 0) {
+    const execRes = await executeCode(language, sourceCode, '', exerciseId)
+    const passed = execRes.status === 'success'
+
+    testResults.push({
+      testCaseId: 'default-1',
+      orderIndex: 1,
+      isHidden: false,
+      passed,
+      actualOutput: execRes.stdout,
+      error: execRes.stderr || undefined,
+    })
+
+    if (!passed) {
+      overallStatus = execRes.status === 'timeout' ? 'timeout' : 'execution_error'
+    }
+  } else {
+    for (const tc of testCases) {
+      const execRes = await executeCode(language, sourceCode, tc.input, exerciseId)
+
+      if (execRes.status === 'compile_error' || execRes.status === 'error') {
+        overallStatus = 'execution_error'
+        testResults.push({
+          testCaseId: tc.id,
+          orderIndex: tc.order_index,
+          isHidden: tc.is_hidden,
+          passed: false,
+          error: execRes.stderr || 'Compilation or execution failed.',
+        })
+        break
+      }
+
+      if (execRes.status === 'timeout') {
+        overallStatus = 'timeout'
+        testResults.push({
+          testCaseId: tc.id,
+          orderIndex: tc.order_index,
+          isHidden: tc.is_hidden,
+          passed: false,
+          error: 'Execution timed out (10s limit exceeded).',
+        })
+        break
+      }
+
+      const normActual = normalizeOutput(execRes.stdout || '')
+      const normExpected = normalizeOutput(tc.expected_output || '')
+      const passed = normActual === normExpected
+
+      if (!passed && overallStatus === 'passed') {
+        overallStatus = 'failed'
+      }
+
+      testResults.push({
+        testCaseId: tc.id,
+        orderIndex: tc.order_index,
+        isHidden: tc.is_hidden,
+        passed,
+        input: tc.is_hidden ? undefined : tc.input,
+        expectedOutput: tc.is_hidden ? undefined : tc.expected_output,
+        actualOutput: tc.is_hidden ? undefined : execRes.stdout,
+        error: execRes.stderr || undefined,
+      })
+    }
+  }
+
+  const passedCount = testResults.filter((t) => t.passed).length
+  const totalCount = testResults.length
+  const executionTimeMs = Date.now() - startTime
+
+  return {
+    status: overallStatus,
+    passedCount,
+    totalCount,
+    testResults,
+    executionTimeMs,
+  }
+}
+
 export async function submitExerciseSolution(
   userId: string,
   exerciseId: string,
