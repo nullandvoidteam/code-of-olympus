@@ -1290,17 +1290,6 @@ const MythicCourseDetailView: React.FC<CourseDetailViewProps> = ({
   )
 }
 
-export const CourseDetailView: React.FC<CourseDetailViewProps> = (props) => {
-  const { theme } = useTheme()
-
-  if (theme === 'gow') {
-    return <MythicCourseDetailView {...props} />
-  }
-
-  return <ClassicCourseDetailView {...props} />
-}
-
-
 /* ========================================================================= */
 /* SPIDER-MAN COURSE DETAIL VIEW                                             */
 /* ========================================================================= */
@@ -1572,5 +1561,5 @@ export const CourseDetailView: React.FC<CourseDetailViewProps> = (props) => {
   if (theme === 'spiderman') {
     return <SpiderManCourseDetailView {...props} />
   }
-  return <GodOfWarCourseDetailView {...props} />
+  return <MythicCourseDetailView {...props} />
 }
