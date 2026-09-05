@@ -1,0 +1,289 @@
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import type { User, Session, AuthError } from '@supabase/supabase-js'
+import { supabase, type UserRole, type UserProfile } from '../lib/supabase'
+
+interface SignUpParams {
+  email: string
+  password: string
+  role: UserRole
+  username: string
+  fullName?: string
+}
+
+interface UpdateProfileParams {
+  username?: string
+  full_name?: string
+  avatar_url?: string
+}
+
+interface AuthContextType {
+  user: User | null
+  session: Session | null
+  role: UserRole
+  isAdmin: boolean
+  profile: UserProfile | null
+  loading: boolean
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | Error | null }>
+  signUp: (params: SignUpParams) => Promise<{ error: AuthError | Error | null }>
+  signOut: () => Promise<{ error: AuthError | Error | null }>
+  resetPassword: (email: string) => Promise<{ error: AuthError | Error | null; message?: string }>
+  updateProfile: (params: UpdateProfileParams) => Promise<{ error: Error | null }>
+  refreshProfile: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [role, setRole] = useState<UserRole>('student')
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+
+  const fetchProfile = useCallback(async (currentUser: User | null): Promise<UserProfile | null> => {
+    if (!currentUser) return null
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUser.id)
+        .maybeSingle()
+
+      if (!error && data) {
+        const verifiedRole: UserRole = data.role === 'admin' ? 'admin' : 'student'
+        return {
+          id: data.id,
+          email: data.email || currentUser.email || '',
+          username: data.username || currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'Adventurer',
+          full_name: data.full_name || currentUser.user_metadata?.full_name || data.username || 'Adventurer',
+          avatar_url: data.avatar_url || currentUser.user_metadata?.avatar_url,
+          role: verifiedRole,
+          xp: data.xp ?? 0,
+          streak: data.streak ?? 0,
+          level: data.level ?? (verifiedRole === 'admin' ? 99 : 1),
+          daily_goal_xp: data.daily_goal_xp ?? 50,
+          daily_xp_earned: data.daily_xp_earned ?? 0,
+          created_at: data.created_at,
+        }
+      }
+    } catch {
+      // Fallback to validated auth user metadata if database table query fails
+    }
+
+    const meta = currentUser.user_metadata || {}
+    const fallbackRole: UserRole = meta.role === 'admin' ? 'admin' : 'student'
+    return {
+      id: currentUser.id,
+      email: currentUser.email || '',
+      username: meta.username || currentUser.email?.split('@')[0] || 'Adventurer',
+      full_name: meta.full_name || meta.username || 'Adventurer',
+      avatar_url: meta.avatar_url,
+      role: fallbackRole,
+      xp: typeof meta.xp === 'number' ? meta.xp : (fallbackRole === 'admin' ? 9999 : 0),
+      streak: typeof meta.streak === 'number' ? meta.streak : 0,
+      level: typeof meta.level === 'number' ? meta.level : (fallbackRole === 'admin' ? 99 : 1),
+      daily_goal_xp: typeof meta.daily_goal_xp === 'number' ? meta.daily_goal_xp : 50,
+      daily_xp_earned: typeof meta.daily_xp_earned === 'number' ? meta.daily_xp_earned : 0,
+      created_at: currentUser.created_at,
+    }
+  }, [])
+
+  const refreshProfile = useCallback(async () => {
+    if (user) {
+      const updated = await fetchProfile(user)
+      setProfile(updated)
+      setRole(updated?.role || 'student')
+    }
+  }, [user, fetchProfile])
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession()
+        if (error) throw error
+
+        setSession(initialSession)
+        const currentUser = initialSession?.user ?? null
+        setUser(currentUser)
+
+        if (currentUser) {
+          const userProfile = await fetchProfile(currentUser)
+          setProfile(userProfile)
+          setRole(userProfile?.role || 'student')
+        }
+      } catch (err) {
+        console.error('Error initializing auth session:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initializeAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      const currentUser = currentSession?.user ?? null
+      setSession(currentSession)
+
+      // Preserve user reference on background token refresh to prevent full app remounts
+      setUser((prevUser) => {
+        if (prevUser && currentUser && prevUser.id === currentUser.id && event === 'TOKEN_REFRESHED') {
+          return prevUser
+        }
+        return currentUser
+      })
+
+      if (currentUser) {
+        // Avoid redundant profile queries on tab focus / token refresh
+        if (event !== 'TOKEN_REFRESHED') {
+          const userProfile = await fetchProfile(currentUser)
+          setProfile(userProfile)
+          setRole(userProfile?.role || 'student')
+        }
+      } else {
+        setProfile(null)
+        setRole('student')
+      }
+      setLoading(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [fetchProfile])
+
+  const signIn = async (email: string, password: string) => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) return { error }
+
+      if (data.user) {
+        const userProfile = await fetchProfile(data.user)
+        setProfile(userProfile)
+        setRole(userProfile?.role || 'student')
+      }
+
+      return { error: null }
+    } catch (err) {
+      return { error: err as Error }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signUp = async ({ email, password, role: selectedRole, username, fullName }: SignUpParams) => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username: username.trim(),
+            full_name: fullName?.trim() || username.trim(),
+            role: selectedRole,
+            xp: selectedRole === 'admin' ? 9999 : 50,
+            level: selectedRole === 'admin' ? 99 : 1,
+            streak: 1,
+          },
+        },
+      })
+
+      if (error) return { error }
+
+      if (data.user) {
+        const userProfile = await fetchProfile(data.user)
+        setProfile(userProfile)
+        setRole(userProfile?.role || selectedRole)
+      }
+
+      return { error: null }
+    } catch (err) {
+      return { error: err as Error }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signOut = async () => {
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signOut()
+      setUser(null)
+      setSession(null)
+      setProfile(null)
+      setRole('student')
+      return { error }
+    } catch (err) {
+      return { error: err as Error }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      })
+      if (error) return { error }
+      return { error: null, message: 'Check your email for the password reset link!' }
+    } catch (err) {
+      return { error: err as Error }
+    }
+  }
+
+  const updateProfile = async (params: UpdateProfileParams) => {
+    if (!user) return { error: new Error('User not authenticated') }
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          ...params,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+
+      if (error) return { error }
+
+      await refreshProfile()
+      return { error: null }
+    } catch (err) {
+      return { error: err as Error }
+    }
+  }
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        role,
+        isAdmin: role === 'admin',
+        profile,
+        loading,
+        signIn,
+        signUp,
+        signOut,
+        resetPassword,
+        updateProfile,
+        refreshProfile,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}
