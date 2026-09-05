@@ -1,16 +1,19 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { useLearningProgress } from '../../lib/learning'
 import { useGamification } from '../../lib/gamification'
 import { useAchievementsAndNotifications } from '../../lib/achievements'
+import { fetchCommunityFeed, type CommunityPost } from '../../lib/community'
+import type { Challenge } from '../../lib/challenges'
+import { supabase } from '../../lib/supabase'
 import { LessonPage } from '../../pages/LessonPage'
 import { CrucibleDashboard } from './crucible/CrucibleDashboard'
 import { AppShellDashboardView } from './AppShellDashboardView'
 import { Loader2 } from 'lucide-react'
 
 interface LearnerDashboardProps {
-  onNavigateTab?: (tab: 'learn' | 'practice' | 'build' | 'community' | 'arcade' | 'dashboard') => void
+  onNavigateTab?: (tab: 'learn' | 'practice' | 'build' | 'community' | 'arcade' | 'dashboard' | 'profile' | 'quests' | 'achievements') => void
   onSelectCourse?: (courseId: string) => void
   onSelectLesson?: (lessonId: string) => void
 }
@@ -21,13 +24,43 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
   onSelectLesson,
 }) => {
   const { theme } = useTheme()
-  const { user, profile, refreshProfile, loading: authLoading, addXP, incrementStreak } = useAuth()
+  const { user, profile, refreshProfile, loading: authLoading } = useAuth()
   const { courses, learningPaths, resumePoint, overallProgress, refreshProgress, loading: learningLoading } = useLearningProgress(user?.id)
   const { stats, refreshGamification, loading: gamificationLoading } = useGamification(user?.id, profile?.xp, profile?.streak, profile?.level)
   const { badges, achievements, activities, refreshAll, loading: achievementsLoading } =
     useAchievementsAndNotifications(user?.id)
 
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null)
+  const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([])
+  const [dailyChallenge, setDailyChallenge] = useState<Challenge | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    async function fetchDashboardExtras() {
+      try {
+        const [feed, chalRes] = await Promise.all([
+          fetchCommunityFeed(user?.id),
+          supabase
+            .from('challenges')
+            .select('*')
+            .eq('is_published', true)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle(),
+        ])
+        if (isMounted) {
+          if (feed) setCommunityPosts(feed)
+          if (chalRes?.data) setDailyChallenge(chalRes.data as Challenge)
+        }
+      } catch (err) {
+        console.error('Error loading dashboard community / daily challenge:', err)
+      }
+    }
+    fetchDashboardExtras()
+    return () => {
+      isMounted = false
+    }
+  }, [user?.id])
 
   const isLoading = authLoading || (Boolean(user?.id) && (learningLoading || gamificationLoading || achievementsLoading))
   const username = profile?.full_name || profile?.username || user?.user_metadata?.full_name || user?.user_metadata?.username || user?.email?.split('@')[0] || 'Adventurer'
@@ -124,22 +157,6 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
 
   return (
     <div className="relative w-full">
-      {/* Developer Testing Controls */}
-      <div className="absolute -top-12 right-0 flex gap-2 z-50">
-        <button 
-          onClick={() => addXP(500)} 
-          className="text-xs font-bold uppercase tracking-wider bg-emerald-600/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg shadow-lg border border-emerald-500/50 transition-all cursor-pointer"
-        >
-          +500 XP
-        </button>
-        <button 
-          onClick={() => incrementStreak()} 
-          className="text-xs font-bold uppercase tracking-wider bg-orange-600/90 hover:bg-orange-500 text-white px-3 py-1.5 rounded-lg shadow-lg border border-orange-500/50 transition-all cursor-pointer"
-        >
-          +1 Streak
-        </button>
-      </div>
-
       {theme === 'classic' ? (
         <AppShellDashboardView
           username={username}
@@ -151,6 +168,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           badges={badges}
           achievements={achievements}
           activities={activities}
+          communityPosts={communityPosts}
+          dailyChallenge={dailyChallenge}
           onOpenLesson={handleOpenLesson}
           onNavigateTab={onNavigateTab}
           onSelectCourse={onSelectCourse}
@@ -166,6 +185,8 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           badges={badges}
           achievements={achievements}
           activities={activities}
+          communityPosts={communityPosts}
+          dailyChallenge={dailyChallenge}
           onOpenLesson={handleOpenLesson}
           onNavigateTab={onNavigateTab}
           onSelectCourse={onSelectCourse}

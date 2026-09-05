@@ -19,10 +19,7 @@ import { CommunityPage } from '../../pages/CommunityPage'
 import { TeamArcadePage } from '../../pages/TeamArcadePage'
 import { LearnerDashboard } from '../dashboard/LearnerDashboard'
 import { ThemeStudioView } from '../theme/ThemeStudioView'
-import { AchievementsView } from '../achievements/AchievementsView'
-import { ProfileView } from '../profile/ProfileView'
-import { QuestsView } from '../achievements/QuestsView'
-import { BadgesView } from '../achievements/BadgesView'
+import { ProfileView, type ProfileSubTab } from '../profile/ProfileView'
 import { SettingsView } from '../settings/SettingsView'
 import { LearningPathView } from '../learn/LearningPathView'
 import { GameToaster } from '../ui/GameToast'
@@ -42,6 +39,37 @@ export const AppShell: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const dashboardMode: DashboardMode = (profile?.xp ?? 0) > 50 ? 'headquarters' : 'first_time'
+  const [profileSubTab, setProfileSubTab] = useState<ProfileSubTab>('overview')
+
+  const handleSelectTab = (tab: NavItemKey | string) => {
+    if (tab === 'quests') {
+      setActiveTab('profile')
+      setProfileSubTab('quests')
+      return
+    }
+    if (tab === 'achievements') {
+      setActiveTab('profile')
+      setProfileSubTab('achievements')
+      return
+    }
+    if (tab === 'badges') {
+      setActiveTab('profile')
+      setProfileSubTab('badges')
+      return
+    }
+    setActiveTab(tab as NavItemKey)
+    if (tab !== 'learn') {
+      setSelectedCourseId(null)
+      setSelectedLessonId(null)
+      setSelectedChallengeId(null)
+      setSelectedQuestId(null)
+    } else {
+      setSelectedCourseId('python')
+      setSelectedLessonId(null)
+      setSelectedChallengeId(null)
+      setSelectedQuestId(null)
+    }
+  }
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>('python')
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>('ch4-lesson3')
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null)
@@ -157,21 +185,10 @@ export const AppShell: React.FC = () => {
           />
           <div className="relative w-64 max-w-[80vw] h-full shadow-2xl flex flex-col animate-in slide-in-from-left">
             <Sidebar
-              activeTab={activeTab}
+              activeTab={activeTab === 'quests' || activeTab === 'achievements' || activeTab === 'badges' ? 'profile' : activeTab}
               onSelectTab={(tab) => {
-                setActiveTab(tab)
+                handleSelectTab(tab)
                 setIsMobileMenuOpen(false)
-                if (tab !== 'learn') {
-                  setSelectedCourseId(null)
-                  setSelectedLessonId(null)
-                  setSelectedChallengeId(null)
-                  setSelectedQuestId(null)
-                } else {
-                  setSelectedCourseId('python')
-                  setSelectedLessonId(null)
-                  setSelectedChallengeId(null)
-                  setSelectedQuestId(null)
-                }
               }}
               isCollapsed={false}
               onContinueQuest={() => {
@@ -191,22 +208,9 @@ export const AppShell: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-8">
         {/* ── The Helm of War — Mythic Global Header ── */}
         <CrucibleHeader
-          activeTab={activeTab}
+          activeTab={activeTab === 'quests' || activeTab === 'achievements' || activeTab === 'badges' ? 'profile' : activeTab}
           onToggleMobileMenu={() => setIsMobileMenuOpen(true)}
-          onSelectTab={(tab) => {
-            setActiveTab(tab)
-            if (tab !== 'learn') {
-              setSelectedCourseId(null)
-              setSelectedLessonId(null)
-              setSelectedChallengeId(null)
-              setSelectedQuestId(null)
-            } else {
-              setSelectedCourseId('python')
-              setSelectedLessonId(null)
-              setSelectedChallengeId(null)
-              setSelectedQuestId(null)
-            }
-          }}
+          onSelectTab={(tab) => handleSelectTab(tab)}
           dashboardMode={dashboardMode}
           courseDetailTitle={
             activeTab === 'learn'
@@ -233,24 +237,23 @@ export const AppShell: React.FC = () => {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           {activeTab === 'dashboard' && (
             <LearnerDashboard
-              onNavigateTab={(tab) => {
-                setActiveTab(tab)
-                if (tab === 'learn') {
-                  setSelectedCourseId('python')
-                  setSelectedLessonId(null)
-                  setSelectedChallengeId(null)
-                  setSelectedQuestId(null)
-                }
-              }}
+              onNavigateTab={(tab) => handleSelectTab(tab)}
               onSelectCourse={(courseId) => {
-                setActiveTab('learn')
+                handleSelectTab('learn')
                 setSelectedCourseId(courseId)
                 setSelectedLessonId(null)
                 setSelectedChallengeId(null)
                 setSelectedQuestId(null)
               }}
               onSelectLesson={(lessonId) => {
-                setActiveTab('learn')
+                handleSelectTab('learn')
+                setSelectedCourseId('python')
+                setSelectedLessonId(lessonId)
+                setSelectedChallengeId(null)
+                setSelectedQuestId(null)
+              }}
+            />
+          )}
                 setSelectedCourseId('python')
                 setSelectedLessonId(lessonId)
                 setSelectedChallengeId(null)
@@ -363,13 +366,21 @@ export const AppShell: React.FC = () => {
 
           {activeTab === 'community' && <CommunityPage />}
 
-          {activeTab === 'profile' && <ProfileView />}
-
-          {activeTab === 'quests' && <QuestsView />}
-
-          {activeTab === 'badges' && <BadgesView />}
-
-          {activeTab === 'achievements' && <AchievementsView />}
+          {(activeTab === 'profile' || activeTab === 'quests' || activeTab === 'badges' || activeTab === 'achievements') && (
+            <ProfileView
+              initialSubTab={
+                activeTab === 'quests'
+                  ? 'quests'
+                  : activeTab === 'achievements'
+                  ? 'achievements'
+                  : activeTab === 'badges'
+                  ? 'badges'
+                  : profileSubTab
+              }
+              onSubTabChange={setProfileSubTab}
+              onNavigateTab={handleSelectTab}
+            />
+          )}
 
           {activeTab === 'theme' && <ThemeStudioView />}
 
