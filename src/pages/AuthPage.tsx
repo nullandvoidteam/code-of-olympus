@@ -5,7 +5,7 @@ import { CodeQuestForgotPasswordCard } from '../components/auth/CodeQuestForgotP
 import { CodeQuestRpgScene } from '../components/auth/CodeQuestRpgScene'
 import { CodeQuestTrailheadScene } from '../components/auth/CodeQuestTrailheadScene'
 import { CodeQuestLogo } from '../components/brand/CodeQuestLogo'
-import { Wand2 } from 'lucide-react'
+import { Wand2, Home } from 'lucide-react'
 
 export type AuthView = 'login' | 'register' | 'forgot-password'
 
@@ -46,8 +46,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
 
       {/* Top Header Branding & Auth Mode Controls */}
       <header className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 pt-6 flex items-center justify-between">
-        <div className="bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl shadow-sm inline-flex">
-          <CodeQuestLogo size="md" showTagline={false} />
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('navigate-landing'))}
+            className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-3 rounded-2xl shadow-sm hover:bg-white transition-colors cursor-pointer text-slate-700 font-bold text-sm border border-transparent hover:border-emerald-200"
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Home</span>
+          </button>
+          <div className="bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl shadow-sm inline-flex border border-slate-200/50">
+            <CodeQuestLogo size="md" showTagline={false} />
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

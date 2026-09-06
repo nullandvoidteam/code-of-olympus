@@ -8,15 +8,39 @@ import { AdminShell } from './components/layout/AdminShell'
 import { GameToaster } from './components/ui/GameToast'
 import { CodeQuestOnboardingFlow } from './components/onboarding/CodeQuestOnboardingFlow'
 import { ThemeCursor } from './components/ui/ThemeCursor'
+import { LandingPage } from './pages/LandingPage'
 
 const MainApp: React.FC = () => {
   const { user, loading, isAdmin } = useAuth()
   const { theme, bladeCursorActive } = useTheme()
   const [showPreviewOnboarding, setShowPreviewOnboarding] = useState<boolean>(false)
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(false)
+  const [showAuth, setShowAuth] = useState<boolean>(false)
+
+  React.useEffect(() => {
+    const handleAuthNav = () => setShowAuth(true)
+    const handleLandingNav = () => setShowAuth(false)
+    window.addEventListener('navigate-auth', handleAuthNav)
+    window.addEventListener('navigate-landing', handleLandingNav)
+    return () => {
+      window.removeEventListener('navigate-auth', handleAuthNav)
+      window.removeEventListener('navigate-landing', handleLandingNav)
+    }
+  }, [])
 
   // 1. Loading State
   if (loading) {
+    const hasSessionToken = Object.keys(localStorage).some(key => key.startsWith('sb-') && key.endsWith('-auth-token'))
+    if (!hasSessionToken && !showAuth) {
+      return (
+        <>
+          {bladeCursorActive && <ThemeCursor theme={theme} />}
+          <LandingPage />
+          <GameToaster />
+        </>
+      )
+    }
+
     if (theme === 'classic') {
       return (
         <div className="min-h-screen w-full flex flex-col items-center justify-center gap-5 bg-blue-600 font-mono text-white">
@@ -73,15 +97,25 @@ const MainApp: React.FC = () => {
 
   // 2. Unauthenticated -> Separate Auth Page
   if (!user) {
+    if (showAuth) {
+      return (
+        <>
+          {bladeCursorActive && <ThemeCursor theme={theme} />}
+          <AuthPage onOpenOnboarding={() => setShowPreviewOnboarding(true)} />
+          {showPreviewOnboarding && (
+            <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: 'var(--theme-bg-canvas, #070505)' }}>
+              <CodeQuestOnboardingFlow onComplete={() => setShowPreviewOnboarding(false)} />
+            </div>
+          )}
+          <GameToaster />
+        </>
+      )
+    }
+
     return (
       <>
         {bladeCursorActive && <ThemeCursor theme={theme} />}
-        <AuthPage onOpenOnboarding={() => setShowPreviewOnboarding(true)} />
-        {showPreviewOnboarding && (
-          <div className="fixed inset-0 z-50 overflow-y-auto" style={{ background: 'var(--theme-bg-canvas, #070505)' }}>
-            <CodeQuestOnboardingFlow onComplete={() => setShowPreviewOnboarding(false)} />
-          </div>
-        )}
+        <LandingPage />
         <GameToaster />
       </>
     )

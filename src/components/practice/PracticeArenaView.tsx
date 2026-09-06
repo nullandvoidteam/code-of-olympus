@@ -412,7 +412,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
 
           {/* Challenge Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {sortedCards.map((item) => (
+            {filtered.map((item) => (
               <div
                 key={item.id}
                 className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between gap-4 hover:border-emerald-500 hover:shadow-md transition-all group"
