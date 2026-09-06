@@ -84,7 +84,7 @@ export const StudentGuidedProjectsLibrary: React.FC<StudentGuidedProjectsLibrary
                 <span>MULTI-STAGE CODING JOURNEYS</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-wider text-white font-pixel">
+              <h1 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-wider text-white font-pixel gamified-shaky-title">
                 GUIDED PROJECTS
               </h1>
 
@@ -298,7 +298,7 @@ export const StudentGuidedProjectsLibrary: React.FC<StudentGuidedProjectsLibrary
                 <span>SPIDER-GADGET WORKSHOP • PARKER LABS</span>
               </div>
 
-              <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+              <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight text-white leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] gamified-shaky-title">
                 Spider-Tech Guided Blueprints
               </h1>
 
@@ -510,7 +510,7 @@ export const StudentGuidedProjectsLibrary: React.FC<StudentGuidedProjectsLibrary
 
             <h1
               style={{ fontFamily: "'Cinzel', serif" }}
-              className="text-2xl sm:text-4xl font-black uppercase tracking-wider text-[#F5E8E8] leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+              className="text-2xl sm:text-4xl font-black uppercase tracking-wider text-[#F5E8E8] leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] gamified-shaky-title"
             >
               Sacred Guided Blueprints
             </h1>

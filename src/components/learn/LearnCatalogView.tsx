@@ -89,7 +89,7 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
             <span>Coding Quests &amp; Courses</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight leading-tight gamified-shaky-title">
             Choose Your Coding Journey
           </h1>
 

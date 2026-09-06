@@ -15,10 +15,11 @@
      ==================================================================== */
   :root,
   [data-theme='gow'] {
-    --theme-font-display: 'Cinzel Decorative', serif;
+    --theme-font-display: 'Cinzel Decorative', 'Cinzel', serif;
     --theme-font-heading: 'Cinzel', serif;
-    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
     --theme-font-mono: 'JetBrains Mono', monospace;
+    --theme-font-hud: 'Outfit', 'Cinzel', sans-serif;
 
     --theme-bg-canvas: #070505;
     --theme-bg-page: #0E0A0A;
@@ -120,9 +121,10 @@
      ==================================================================== */
   [data-theme='classic'] {
     --theme-font-display: 'Press Start 2P', monospace, cursive;
-    --theme-font-heading: 'Mulish', system-ui, -apple-system, sans-serif;
-    --theme-font-body: 'Mulish', system-ui, -apple-system, sans-serif;
+    --theme-font-heading: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --theme-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     --theme-font-mono: 'JetBrains Mono', monospace;
+    --theme-font-hud: 'Outfit', 'Plus Jakarta Sans', sans-serif;
 
     --theme-bg-canvas: #FBF9F4;
     --theme-bg-page: #FAF8F4;
@@ -203,10 +205,11 @@
      Deep nebula void, indigo/purple/cyan accents & starlight glows
      ==================================================================== */
   [data-theme='space'] {
-    --theme-font-display: 'Inter', system-ui, -apple-system, sans-serif;
-    --theme-font-heading: 'Inter', system-ui, -apple-system, sans-serif;
-    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-display: 'Outfit', sans-serif;
+    --theme-font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    --theme-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     --theme-font-mono: 'JetBrains Mono', monospace;
+    --theme-font-hud: 'Outfit', sans-serif;
 
     --theme-bg-canvas: #060813;
     --theme-bg-page: #0B0E20;
@@ -286,10 +289,11 @@
      Bright white surfaces, high contrast slate text & refined blue accents
      ==================================================================== */
   [data-theme='light'] {
-    --theme-font-display: 'Inter', system-ui, -apple-system, sans-serif;
-    --theme-font-heading: 'Inter', system-ui, -apple-system, sans-serif;
-    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --theme-font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --theme-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     --theme-font-mono: 'JetBrains Mono', monospace;
+    --theme-font-hud: 'Outfit', sans-serif;
 
     --theme-bg-canvas: #F8FAFC;
     --theme-bg-page: #FFFFFF;
@@ -370,10 +374,11 @@
      radioactive spider-sense gold, and energetic cyber-suit midnight navy.
      ==================================================================== */
   [data-theme='spiderman'] {
-    --theme-font-display: 'Inter', system-ui, -apple-system, sans-serif;
-    --theme-font-heading: 'Inter', system-ui, -apple-system, sans-serif;
-    --theme-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --theme-font-display: 'Outfit', 'Inter', sans-serif;
+    --theme-font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    --theme-font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     --theme-font-mono: 'JetBrains Mono', monospace;
+    --theme-font-hud: 'Outfit', sans-serif;
 
     --theme-bg-canvas: #0B1021;
     --theme-bg-page: #101730;
@@ -481,28 +486,159 @@
   }
 }
 
-/* Typography Utilities */
+/* ======================================================================
+   PREMIUM GAMIFIED TYPOGRAPHY ENGINE & UI PSYCHOLOGY SCALING
+   - Optimal reading line-heights & tracking ratios
+   - Tabular figures for stats, XP, timers, and rankings
+   - Balanced visual hierarchy to maximize player focus
+   ====================================================================== */
+
 .font-display {
   font-family: var(--theme-font-display);
+  letter-spacing: -0.02em;
+}
+
+.font-heading {
+  font-family: var(--theme-font-heading);
+  letter-spacing: -0.015em;
 }
 
 .font-cinzel {
-  font-family: var(--theme-font-heading);
+  font-family: 'Cinzel', serif;
+  letter-spacing: 0.03em;
+}
+
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+.font-jakarta {
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .font-sans {
   font-family: var(--theme-font-body);
+  letter-spacing: -0.006em;
 }
 
 .font-mono {
   font-family: var(--theme-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+.font-hud {
+  font-family: var(--theme-font-hud, 'Outfit', sans-serif);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 
 .font-pixel {
-  font-family: var(--theme-font-heading);
-  letter-spacing: 0.05em;
+  font-family: var(--theme-font-display);
+  letter-spacing: 0.06em;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+/* Micro-badge & Label psychology */
+.tracking-hud {
+  letter-spacing: 0.08em;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Base Headings Hierarchy with Ergonomic Line Heights */
+h1, .h1 {
+  font-family: var(--theme-font-heading);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+}
+
+h2, .h2 {
+  font-family: var(--theme-font-heading);
+  font-weight: 750;
+  letter-spacing: -0.018em;
+  line-height: 1.24;
+}
+
+h3, .h3 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.32;
+}
+
+p {
+  line-height: 1.6;
+  letter-spacing: -0.006em;
+}
+
+/* ======================================================================
+   HARD GAMIFIED SHAKY TEXT & EPIC RUMBLE ENGINE
+   ====================================================================== */
+
+@keyframes gamified-hard-shake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-2px, -1.5px) rotate(-0.5deg); }
+  20% { transform: translate(2px, 1px) rotate(0.5deg); }
+  30% { transform: translate(-1.5px, 2px) rotate(-0.4deg); }
+  40% { transform: translate(2px, -1px) rotate(0.4deg); }
+  50% { transform: translate(-2px, 1.5px) rotate(-0.5deg); }
+  60% { transform: translate(1.5px, -2px) rotate(0.5deg); }
+  70% { transform: translate(-1.5px, -1px) rotate(-0.4deg); }
+  80% { transform: translate(2px, 1.5px) rotate(0.5deg); }
+  90% { transform: translate(-1.5px, 2px) rotate(-0.5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes gamified-intense-rumble {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  15% {
+    transform: translate3d(-1.5px, 1px, 0);
+  }
+  30% {
+    transform: translate3d(1.5px, -1px, 0);
+  }
+  45% {
+    transform: translate3d(-1px, -1.5px, 0);
+  }
+  60% {
+    transform: translate3d(1px, 1.5px, 0);
+  }
+  75% {
+    transform: translate3d(-1.5px, 0.5px, 0);
+  }
+  90% {
+    transform: translate3d(1px, -1px, 0);
+  }
+}
+
+.gamified-shaky-title,
+.font-shaky {
+  display: inline-block;
+  font-family: var(--theme-font-display, var(--theme-font-heading, 'Cinzel Decorative', 'Outfit', sans-serif));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  animation: gamified-intense-rumble 2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.gamified-shaky-title:hover,
+.font-shaky:hover {
+  animation: gamified-hard-shake 0.28s infinite linear !important;
+}
+
+.gamified-shaky-hard {
+  display: inline-block;
+  font-family: var(--theme-font-display, var(--theme-font-heading, 'Cinzel Decorative', 'Outfit', sans-serif));
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  animation: gamified-hard-shake 0.4s infinite linear;
+  will-change: transform;
 }
 
 /* Animations */

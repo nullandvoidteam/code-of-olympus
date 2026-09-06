@@ -217,7 +217,7 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
               <Hammer className="w-3.5 h-3.5 text-purple-500" />
               <span>PROJECT STUDIO • CODE WORKBENCH</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-stone-900 tracking-tight font-pixel">
+            <h1 className="text-3xl md:text-5xl font-black text-stone-900 tracking-tight font-pixel gamified-shaky-title">
               Project Studio
             </h1>
             <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-medium">
@@ -249,7 +249,7 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
               <FriendlyNeighborhoodBadge />
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight uppercase drop-shadow-md">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight uppercase drop-shadow-md gamified-shaky-title">
               Parker Labs & Workshop
             </h1>
             <p className="text-xs sm:text-sm leading-relaxed text-blue-100 font-medium">
@@ -311,7 +311,7 @@ export const ProjectsStudioView: React.FC<ProjectsStudioViewProps> = ({
               <span>DWARVEN FORGE • CODE ARTIFACTS</span>
             </div>
             <h1
-              className="text-3xl md:text-5xl font-black text-[#F5E8E8] tracking-wider uppercase"
+              className="text-3xl md:text-5xl font-black text-[#F5E8E8] tracking-wider uppercase gamified-shaky-title"
               style={{ fontFamily: "'Cinzel Decorative', serif", textShadow: '0 2px 20px rgba(255,61,0,0.45)' }}
             >
               The Dwarven Forge

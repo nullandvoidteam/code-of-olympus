@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  CheckCircle2,
   Clock,
   BarChart2,
   Star,
@@ -16,7 +17,9 @@ import {
 } from 'lucide-react'
 import { LumiPixelBot, PixelPythonIcon } from '../brand/PixelArtAvatars'
 import { useAuth } from '../../context/AuthContext'
-import { checkIsChallengeSaved, saveChallenge, unsaveChallenge } from '../../lib/challenges'
+import { checkIsChallengeSaved, saveChallenge, unsaveChallenge, fetchChallengeById, type Challenge } from '../../lib/challenges'
+import { supabase } from '../../lib/supabase'
+import { getCrucibleChallenge } from '../crucible/challengeData'
 
 interface ChallengeBriefingViewProps {
   challengeId?: string
@@ -32,17 +35,72 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
   onPreviousChallenge,
 }) => {
   const { user } = useAuth()
+  const [challenge, setChallenge] = useState<Challenge | null>(
+    challengeId ? getCrucibleChallenge(challengeId) : null
+  )
+  const [loading, setLoading] = useState<boolean>(!challenge && !!challengeId)
   const [saved, setSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [hintRevealed, setHintRevealed] = useState(false)
   const [lumiOpen, setLumiOpen] = useState(false)
   const [activeLumiBtn, setActiveLumiBtn] = useState<'hint' | 'explain' | 'debug' | null>(null)
+  const [isCompleted, setIsCompleted] = useState(false)
 
   useEffect(() => {
-    if (user && challengeId) {
-      checkIsChallengeSaved(user.id, challengeId).then(setSaved)
+    let isMounted = true
+    if (challengeId) {
+      // 1. Check saved status
+      checkIsChallengeSaved(user?.id || '', challengeId).then((res) => {
+        if (isMounted) setSaved(res)
+      })
+
+      // 2. Check completed status from local storage
+      try {
+        const raw = localStorage.getItem('olympus_completed_challenges') || '[]'
+        const localList: string[] = JSON.parse(raw)
+        if (localList.includes(challengeId)) {
+          if (isMounted) setIsCompleted(true)
+        }
+      } catch {}
+
+      // 3. Check completed status from Supabase
+      if (user?.id) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(challengeId)
+        const checkSupabase = async () => {
+          let targetUuid = challengeId
+          if (!isUuid) {
+            const ch = await fetchChallengeById(challengeId)
+            if (ch?.id) targetUuid = ch.id
+          }
+          const { data } = await supabase
+            .from('challenge_progress')
+            .select('is_completed')
+            .eq('user_id', user.id)
+            .eq('challenge_id', targetUuid)
+            .maybeSingle()
+          if (data?.is_completed && isMounted) {
+            setIsCompleted(true)
+          }
+        }
+        checkSupabase()
+      }
+
+      // 4. Fetch challenge details
+      fetchChallengeById(challengeId).then((data) => {
+        if (isMounted) {
+          if (data) {
+            setChallenge(data)
+          } else {
+            setChallenge(getCrucibleChallenge(challengeId) || getCrucibleChallenge('reverse-string'))
+          }
+          setLoading(false)
+        }
+      })
     }
-  }, [user, challengeId])
+    return () => {
+      isMounted = false
+    }
+  }, [user?.id, challengeId])
 
   const handleToggleSave = async () => {
     if (!user || !challengeId || isSaving) return
@@ -90,36 +148,36 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
               {/* Badges */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-pixel text-[10px] font-bold uppercase tracking-wider">
-                  🌿 BEGINNER
+                  🌿 {challenge?.difficulty || 'BEGINNER'}
                 </span>
                 <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-700 border border-sky-200 font-pixel text-[10px] font-bold uppercase tracking-wider">
-                  <PixelPythonIcon size={12} /> PYTHON
+                  <PixelPythonIcon size={12} /> {(challenge?.language || 'PYTHON').toUpperCase()}
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-                Reverse the String
+              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight gamified-shaky-title">
+                {challenge?.title || 'Reverse the String'}
               </h1>
               <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
-                Write a function that reverses a string without using Python's built-in reverse methods.
+                {challenge?.description || 'Write a function that solves this coding challenge.'}
               </p>
 
               {/* Meta pill strip */}
               <div className="flex items-center gap-3 flex-wrap text-xs font-semibold mt-1">
                 <span className="flex items-center gap-1.5 text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
                   <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  ~5 min
+                  ~{challenge?.difficulty?.toLowerCase() === 'hard' ? '25' : challenge?.difficulty?.toLowerCase() === 'medium' ? '15' : '5'} min
                 </span>
                 <span className="flex items-center gap-1.5 text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
                   <BarChart2 className="w-3.5 h-3.5 text-slate-400" />
-                  Strings
+                  {challenge?.category || challenge?.language || 'Algorithms'}
                 </span>
                 <span className="flex items-center gap-1.5 text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full font-bold">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  +75 XP
+                  +{challenge?.xp_reward ?? 75} XP
                 </span>
                 <span className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full font-bold">
-                  Difficulty: Easy
+                  Difficulty: {challenge?.difficulty || 'Easy'}
                 </span>
               </div>
             </div>
@@ -157,21 +215,32 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
                 <Shield className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="font-bold text-sm text-slate-900">Ready to take on the challenge?</span>
+                <span className="font-bold text-sm text-slate-900">
+                  {isCompleted ? 'Trial already conquered!' : 'Ready to take on the challenge?'}
+                </span>
                 <span className="text-xs text-slate-500 leading-snug">
-                  Read the requirements below, then enter the coding workspace and put your skills to work. You can leave and return anytime. Your progress will be saved.
+                  {isCompleted
+                    ? 'You have already solved this challenge and earned its rewards. This trial is closed to prevent duplicate completions.'
+                    : 'Read the requirements below, then enter the coding workspace and put your skills to work. You can leave and return anytime. Your progress will be saved.'}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={onStartChallenge}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md cursor-pointer transition-all active:scale-95"
-              >
-                Start Challenge
-                <Sparkles className="w-4 h-4" />
-              </button>
+              {isCompleted ? (
+                <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm cursor-not-allowed select-none shadow-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Solved (Closed)</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onStartChallenge}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md cursor-pointer transition-all active:scale-95"
+                >
+                  Start Challenge
+                  <Sparkles className="w-4 h-4" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleToggleSave}
@@ -191,47 +260,36 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
               <div className="flex items-center gap-2 font-bold text-slate-900 text-base border-b border-slate-100 pb-3">
                 <span>🎯</span> Your Mission
               </div>
-              <p className="text-xs text-slate-700 leading-relaxed">
-                Write a function called <code className="px-1.5 py-0.5 bg-slate-100 rounded font-mono text-emerald-700 font-bold text-[11px]">reverse_string</code> that takes a string and returns the characters in reverse order.
+              <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+                {challenge?.instructions || challenge?.description || 'Implement the solution according to the technical requirements and tests.'}
               </p>
 
-              {/* Example boxes */}
-              <div className="flex flex-col gap-3">
-                {[
-                  { label: 'Example 1', input: '"hello"', output: '"olleh"' },
-                  { label: 'Another Example', input: '"Coding Conflicts"', output: '"stcilfnoC gnidoC"' },
-                ].map(ex => (
-                  <div key={ex.label} className="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-2">
-                    <div className="text-[10px] font-pixel font-bold text-slate-500 uppercase tracking-wider">{ex.label}</div>
-                    <div className="flex items-center gap-2 flex-wrap text-xs font-mono font-bold">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] text-slate-400 font-sans">Input</span>
-                        <span className="px-2 py-1 rounded-lg bg-rose-100 text-rose-700 border border-rose-200">{ex.input}</span>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-3" />
-                      <div className="flex flex-col gap-1">
-                        <span className="text-[10px] text-slate-400 font-sans">Output</span>
-                        <span className="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200">{ex.output}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {/* Starter Code Preview */}
+              {challenge?.starter_code && (
+                <div className="bg-slate-900 rounded-xl p-3 border border-slate-800 space-y-1 overflow-x-auto">
+                  <div className="text-[10px] font-pixel font-bold text-slate-400 uppercase tracking-wider">Starter Template</div>
+                  <pre className="text-xs font-mono text-emerald-400 leading-tight">
+                    {challenge.starter_code.slice(0, 200)}
+                  </pre>
+                </div>
+              )}
             </div>
 
             {/* Requirements */}
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm space-y-3">
               <div className="font-bold text-slate-900 text-base border-b border-slate-100 pb-3">
-                Requirements
+                Requirements & Constraints
               </div>
               <div className="flex flex-col gap-2.5">
-                {[
-                  'Create a function named reverse_string',
-                  'Accept one string as input',
-                  'Return the reversed string',
-                  'Do not use .reverse()',
-                  'Return an empty string when the input is empty',
-                ].map(r => (
+                {(challenge?.instructions
+                  ? challenge.instructions.split('\n').map((s) => s.replace(/^[-*•]\s*/, '').trim()).filter((s) => s.length > 5 && !s.startsWith('#')).slice(0, 4)
+                  : [
+                      `Language target: ${(challenge?.language || 'python').toUpperCase()}`,
+                      `Execution must pass sample inputs and outputs`,
+                      `Earn ${challenge?.xp_reward ?? 75} XP upon successful validation`,
+                      `Clean syntax without runtime exceptions`,
+                    ]
+                ).map((r) => (
                   <div key={r} className="flex items-start gap-2.5 text-xs text-slate-700">
                     <div className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
                       <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
@@ -250,11 +308,11 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
               <div className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2.5">Constraints</div>
               <div className="flex flex-col gap-2 text-xs">
                 {[
-                  ['Input', 'Letters, spaces, punctuation'],
-                  ['Length', '0 – 1,000 characters'],
-                  ['Language', 'Python 3'],
-                  ['Time limit', '1 second'],
-                  ['Memory', '64 MB'],
+                  ['Language', (challenge?.language || 'python').toUpperCase()],
+                  ['Category', challenge?.category || 'Algorithms'],
+                  ['XP Reward', `+${challenge?.xp_reward ?? 75} XP`],
+                  ['Difficulty', challenge?.difficulty || 'Easy'],
+                  ['Status', challenge?.is_published ? 'Verified' : 'Draft'],
                 ].map(([k, v]) => (
                   <div key={k} className="flex items-start justify-between gap-2">
                     <span className="text-slate-500 shrink-0">{k}</span>
@@ -268,7 +326,7 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-3">
               <div className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-2.5">Concepts You'll Practice</div>
               <div className="flex flex-wrap gap-2">
-                {['Strings', 'Functions', 'Indexing', 'Loops', 'Problem Solving'].map(tag => (
+                {[challenge?.language || 'Python', challenge?.category || 'Algorithms', 'Logic', 'Problem Solving', 'Data Structures'].map((tag) => (
                   <span key={tag} className="px-2.5 py-1 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 text-[11px] font-bold">
                     {tag}
                   </span>
@@ -283,7 +341,9 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
                 Need a Hint?
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Think about how you could build the reversed string one character at a time.
+                {hintRevealed && challenge?.hints && challenge.hints.length > 0
+                  ? challenge.hints.join(' • ')
+                  : 'Think through algorithmic edge cases, inputs, and structure.'}
               </p>
 
               {/* Hint reveal */}
@@ -520,14 +580,21 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onStartChallenge}
-              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
-            >
-              Start Challenge
-              <Sparkles className="w-4 h-4" />
-            </button>
+            {isCompleted ? (
+              <div className="w-full py-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm cursor-not-allowed select-none shadow-sm flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Solved (Closed)</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onStartChallenge}
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+              >
+                Start Challenge
+                <Sparkles className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -547,14 +614,21 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
 
         <span className="text-xs text-slate-400 font-medium">Challenge 1 of 12</span>
 
-        <button
-          type="button"
-          onClick={onStartChallenge}
-          className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95"
-        >
-          Start Challenge
-          <Sparkles className="w-4 h-4" />
-        </button>
+        {isCompleted ? (
+          <div className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm cursor-not-allowed select-none shadow-sm">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Solved (Closed)</span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onStartChallenge}
+            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95"
+          >
+            Start Challenge
+            <Sparkles className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Lumi modal (when opened via Ask Lumi button) */}

@@ -157,7 +157,7 @@ export const ThemeStudioView: React.FC = () => {
 
           <h1
             style={{ fontFamily: 'var(--theme-font-heading)', color: 'var(--theme-text-primary)' }}
-            className="text-2xl sm:text-4xl font-black tracking-wider uppercase"
+            className="text-2xl sm:text-4xl font-black tracking-wider uppercase gamified-shaky-title"
           >
             Visual Themes & Real-time FX
           </h1>

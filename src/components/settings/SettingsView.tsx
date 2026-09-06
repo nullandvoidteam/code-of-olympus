@@ -73,7 +73,7 @@ export const SettingsView: React.FC = () => {
               <Settings className="w-8 h-8 transition-colors duration-300" style={{ color: 'var(--theme-accent-secondary)' }} />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-3xl font-extrabold tracking-widest uppercase drop-shadow-md transition-colors duration-300"
+              <h1 className="text-3xl font-extrabold tracking-widest uppercase drop-shadow-md transition-colors duration-300 gamified-shaky-title"
                   style={{ fontFamily: 'var(--theme-font-heading, "Cinzel", serif)', color: 'var(--theme-text-primary, #F5E8E8)' }}>
                 System Settings
               </h1>

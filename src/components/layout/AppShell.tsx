@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Sidebar, type NavItemKey } from './Sidebar'
 import { CrucibleHeader } from './CrucibleHeader'
 import { LumiAIFloatingButton } from './LumiAIFloatingButton'
@@ -21,6 +22,7 @@ import { LearnerDashboard } from '../dashboard/LearnerDashboard'
 import { ThemeStudioView } from '../theme/ThemeStudioView'
 import { ProfileView, type ProfileSubTab } from '../profile/ProfileView'
 import { SettingsView } from '../settings/SettingsView'
+import { GlobalRankingView } from '../ranking/GlobalRankingView'
 import { LearningPathView } from '../learn/LearningPathView'
 import { LevelProgressionView } from '../levels/LevelProgressionView'
 import { GameToaster } from '../ui/GameToast'
@@ -39,7 +41,7 @@ import { COURSE_CATALOG } from '../../lib/courseData'
 import type { DashboardMode } from './CrucibleHeader'
 
 export const AppShell: React.FC = () => {
-  const { user, profile, isAdmin } = useAuth()
+  const { user, profile, isAdmin, refreshProfile } = useAuth()
   const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState<NavItemKey>(isAdmin ? 'admin' : 'dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -244,9 +246,15 @@ export const AppShell: React.FC = () => {
                     : selectedCourseId
                       ? `Course / ${COURSE_CATALOG.find((c) => c.id === selectedCourseId)?.title || 'Course Details'}`
                       : null
-              : activeTab === 'practice' && practiceBriefingId
-                ? 'Practice / Challenge Arena / Reverse the String'
-                : null
+              : activeTab === 'practice'
+                ? crucibleChallengeId
+                  ? 'Practice / Challenge Arena / Coding Workspace'
+                  : practiceBriefingId
+                    ? 'Practice / Challenge Arena / Challenge Briefing'
+                    : null
+                : activeTab === 'ranking'
+                  ? 'Global Ranking / Hall of Immortals'
+                  : null
           }
           onOpenLumi={() => {
             const btn = document.querySelector('button[title="Ask Lumi AI Mentor"]') as HTMLButtonElement | null
@@ -338,18 +346,37 @@ export const AppShell: React.FC = () => {
           {activeTab === 'practice' && (
             crucibleChallengeId ? (
               <CrucibleWorkspace
-                challenge={getCrucibleChallenge(crucibleChallengeId) ?? getCrucibleChallenge('reverse-string')!}
+                challengeId={crucibleChallengeId}
                 userId={user?.id}
-                onBack={() => setCrucibleChallengeId(null)}
-                onNextChallenge={() => setCrucibleChallengeId(null)}
+                onBack={() => {
+                  setCrucibleChallengeId(null)
+                  refreshProfile()
+                }}
+                onNextChallenge={() => {
+                  setCrucibleChallengeId(null)
+                  refreshProfile()
+                }}
+                onCompleted={() => {
+                  refreshProfile()
+                }}
               />
             ) : practiceBriefingId ? (
               <ChallengeBriefingView
                 challengeId={practiceBriefingId}
                 onBack={() => setPracticeBriefingId(null)}
                 onStartChallenge={() => {
-                  setCrucibleChallengeId(practiceBriefingId)
-                  setPracticeBriefingId(null)
+                  if (practiceBriefingId) {
+                    try {
+                      const raw = localStorage.getItem('olympus_completed_challenges') || '[]'
+                      const list: string[] = JSON.parse(raw)
+                      if (list.includes(practiceBriefingId)) {
+                        toast('This challenge is already solved and closed!', { icon: '✅' })
+                        return
+                      }
+                    } catch {}
+                    setCrucibleChallengeId(practiceBriefingId)
+                    setPracticeBriefingId(null)
+                  }
                 }}
                 onPreviousChallenge={() => setPracticeBriefingId(null)}
               />
@@ -357,10 +384,19 @@ export const AppShell: React.FC = () => {
               <PracticeArenaView
                 onStartChallenge={(id?: string) => {
                   if (id) {
+                    try {
+                      const raw = localStorage.getItem('olympus_completed_challenges') || '[]'
+                      const list: string[] = JSON.parse(raw)
+                      if (list.includes(id)) {
+                        toast('This challenge is already solved and closed!', { icon: '✅' })
+                        return
+                      }
+                    } catch {}
                     setCrucibleChallengeId(id)
-                  } else {
-                    setPracticeBriefingId('reverse-string')
                   }
+                }}
+                onViewBriefing={(id: string) => {
+                  setPracticeBriefingId(id)
                 }}
               />
             )
@@ -394,6 +430,8 @@ export const AppShell: React.FC = () => {
 
           {activeTab === 'arcade' && <TeamArcadePage />}
 
+          {activeTab === 'ranking' && <GlobalRankingView />}
+
           {activeTab === 'community' && <CommunityPage />}
 
           {(activeTab === 'profile' || activeTab === 'quests' || activeTab === 'badges' || activeTab === 'achievements') && (
@@ -426,7 +464,7 @@ export const AppShell: React.FC = () => {
                     <HelpCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-stone-900">Help & Support Realm</h2>
+                    <h2 className="text-xl font-black text-stone-900 gamified-shaky-title">Help & Support Realm</h2>
                     <p className="text-xs text-stone-500 font-medium">Guides, documentation, and mentorship assistance</p>
                   </div>
                 </div>
