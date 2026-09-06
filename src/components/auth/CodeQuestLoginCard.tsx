@@ -37,42 +37,42 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
   }
 
   return (
-    <div className="w-full max-w-[480px] bg-white rounded-3xl p-8 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.06)] flex flex-col transition-all">
+    <div className="w-full max-w-[450px] bg-white rounded-3xl p-6 sm:p-7 lg:p-8 border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.07)] flex flex-col transition-all text-left">
       {/* Small emerald header tag */}
-      <div className="flex items-center gap-1.5 text-emerald-600 font-extrabold text-[10.5px] uppercase tracking-[0.18em] mb-2">
+      <div className="flex items-center gap-1.5 text-emerald-600 font-extrabold text-[10px] uppercase tracking-[0.18em] mb-1.5">
         <span>✦</span>
         <span>WELCOME BACK, ADVENTURER</span>
         <span>✦</span>
       </div>
 
       {/* Main Heading */}
-      <h1 className="text-3xl sm:text-[34px] font-extrabold text-slate-900 leading-[1.18] tracking-tight mb-2">
+      <h1 className="text-2xl sm:text-[28px] font-extrabold text-slate-900 leading-[1.16] tracking-tight mb-1.5">
         Continue Your <br />
         Coding{' '}
         <span className="text-emerald-500 relative inline-block">
           Adventure
           {/* Sparkle icons */}
-          <span className="absolute -top-3 -right-6 text-amber-400 text-sm animate-pulse select-none">
+          <span className="absolute -top-2.5 -right-5 text-amber-400 text-xs animate-pulse select-none">
             ✦
           </span>
-          <span className="absolute -bottom-1 -right-3 text-emerald-400 text-xs animate-twinkle select-none">
+          <span className="absolute -bottom-0.5 -right-3 text-emerald-400 text-[10px] animate-twinkle select-none">
             ✨
           </span>
         </span>
       </h1>
 
       {/* Subtitle */}
-      <p className="text-slate-500 text-sm font-medium mb-5">
+      <p className="text-slate-500 text-xs sm:text-[13px] font-medium mb-4">
         Pick up where you left off and keep leveling up your skills.
       </p>
 
       {/* Auth Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         {/* Email Input */}
-        <div className="flex flex-col gap-1.5 text-left">
+        <div className="flex flex-col gap-1 text-left">
           <label
             htmlFor="login-email"
-            className="text-[11px] font-bold uppercase tracking-wider text-slate-700"
+            className="text-[10.5px] font-bold uppercase tracking-wider text-slate-700"
           >
             EMAIL
           </label>
@@ -85,20 +85,27 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full h-12 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 hover:border-slate-300"
+              className="w-full h-11 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 hover:border-slate-300"
             />
           </div>
         </div>
 
         {/* Password Input */}
-        <div className="flex flex-col gap-1.5 text-left">
+        <div className="flex flex-col gap-1 text-left">
           <div className="flex items-center justify-between">
             <label
               htmlFor="login-password"
-              className="text-[11px] font-bold uppercase tracking-wider text-slate-700"
+              className="text-[10.5px] font-bold uppercase tracking-wider text-slate-700"
             >
               PASSWORD
             </label>
+            <button
+              type="button"
+              onClick={onForgotPassword}
+              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
+            >
+              Forgot?
+            </button>
           </div>
           <div className="relative flex items-center">
             <Lock className="absolute left-3.5 h-4 w-4 text-slate-400 pointer-events-none" />
@@ -109,12 +116,12 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
-              className="w-full h-12 pl-10 pr-11 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 hover:border-slate-300"
+              className="w-full h-11 pl-10 pr-10 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 font-medium transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 hover:border-slate-300"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
+              className="absolute right-3 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -124,20 +131,11 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
               )}
             </button>
           </div>
-          <div className="flex justify-end mt-1">
-            <button
-              type="button"
-              onClick={onForgotPassword}
-              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors cursor-pointer"
-            >
-              Forgot password?
-            </button>
-          </div>
         </div>
 
         {/* Error Notification */}
         {errorMessage && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold text-center animate-shake">
+          <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-bold text-center animate-shake">
             {errorMessage}
           </div>
         )}
@@ -146,7 +144,7 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
         <button
           type="submit"
           disabled={isLoading}
-          className="mt-2 w-full h-12 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm tracking-wide rounded-xl shadow-[0_6px_20px_rgba(5,150,105,0.3)] hover:shadow-[0_8px_25px_rgba(5,150,105,0.4)] active:translate-y-0.5 active:shadow-md transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          className="mt-1 w-full h-11 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-sm tracking-wide rounded-xl shadow-[0_6px_20px_rgba(5,150,105,0.28)] hover:shadow-[0_8px_25px_rgba(5,150,105,0.38)] active:translate-y-0.5 active:shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>
@@ -163,11 +161,11 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
       </form>
 
       {/* Divider */}
-      <div className="relative flex items-center justify-center my-6">
+      <div className="relative flex items-center justify-center my-3.5">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-slate-200/80" />
         </div>
-        <span className="relative bg-white px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+        <span className="relative bg-white px-3 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
           OR
         </span>
       </div>
@@ -178,7 +176,7 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
         onClick={() => {
           setErrorMessage('Google OAuth is configured via Supabase provider settings.')
         }}
-        className="w-full h-12 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm flex items-center justify-center gap-3 transition-all duration-200 hover:border-slate-300 shadow-sm active:scale-[0.99] cursor-pointer"
+        className="w-full h-11 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm flex items-center justify-center gap-3 transition-all duration-200 hover:border-slate-300 shadow-xs active:scale-[0.99] cursor-pointer"
       >
         <svg
           viewBox="0 0 24 24"
@@ -206,7 +204,7 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
       </button>
 
       {/* Footer link to Register */}
-      <div className="mt-7 text-center text-xs text-slate-600">
+      <div className="mt-3.5 text-center text-xs text-slate-600">
         <span>New to CodeQuest? </span>
         <button
           type="button"
@@ -218,10 +216,10 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
       </div>
 
       {/* Terms footnote */}
-      <div className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11px] text-slate-400">
+      <div className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-[10.5px] text-slate-400">
         <ShieldCheck className="h-3.5 w-3.5 text-slate-400 shrink-0" />
         <span>
-          By continuing, you agree to our Terms and Privacy Policy.
+          By continuing, you agree to our Terms & Privacy Policy.
         </span>
       </div>
     </div>

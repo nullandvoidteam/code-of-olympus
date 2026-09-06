@@ -24,7 +24,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
       : '/codequest_onboarding_bg.jpg'
 
   return (
-    <div className="relative min-h-screen w-full bg-[#f4f8f0] text-slate-900 flex flex-col justify-between overflow-x-hidden font-sans selection:bg-emerald-500 selection:text-white">
+    <div className="relative h-screen w-full bg-[#f4f8f0] text-slate-900 flex flex-col justify-between overflow-y-auto lg:overflow-hidden font-sans selection:bg-emerald-500 selection:text-white">
       {/* ===== RPG Island Background Scenery ===== */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <img
@@ -32,43 +32,43 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
           alt=""
           className="w-full h-full object-cover object-center pixelated transition-all duration-700 opacity-30"
         />
-        {/* Very light center vignette — keeps the pixel island scenery visible at edges */}
+        {/* Very light center vignette */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_65%_at_center,_rgba(244,248,240,0.82)_0%,_rgba(244,248,240,0.5)_55%,_rgba(244,248,240,0)_100%)] pointer-events-none" />
       </div>
 
       {/* Floating Floating Code Runes & Ambient Accents */}
-      <div className="hidden lg:flex absolute top-36 right-20 z-10 bg-[#1e293b]/90 border-2 border-sky-400 px-2.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(56,189,248,0.6)] font-mono font-bold text-xs text-sky-200 items-center justify-center animate-float-delayed pointer-events-none">
+      <div className="hidden lg:flex absolute top-24 right-16 z-10 bg-[#1e293b]/90 border-2 border-sky-400 px-2.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(56,189,248,0.6)] font-mono font-bold text-xs text-sky-200 items-center justify-center animate-float-delayed pointer-events-none">
         &#123; &#125;
       </div>
-      <div className="hidden lg:flex absolute bottom-44 left-16 z-10 bg-[#1e293b]/90 border-2 border-sky-400 px-2.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(56,189,248,0.6)] font-mono font-bold text-xs text-sky-200 items-center justify-center animate-float-slow pointer-events-none">
+      <div className="hidden lg:flex absolute bottom-28 left-12 z-10 bg-[#1e293b]/90 border-2 border-sky-400 px-2.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(56,189,248,0.6)] font-mono font-bold text-xs text-sky-200 items-center justify-center animate-float-slow pointer-events-none">
         &lt;/&gt;
       </div>
 
       {/* Top Header Branding & Auth Mode Controls */}
-      <header className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 pt-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <header className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event('navigate-landing'))}
-            className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-3 rounded-2xl shadow-sm hover:bg-white transition-colors cursor-pointer text-slate-700 font-bold text-sm border border-transparent hover:border-emerald-200"
+            className="flex items-center gap-1.5 bg-white/85 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-xs hover:bg-white transition-colors cursor-pointer text-slate-700 font-bold text-xs border border-slate-200/60 hover:border-emerald-300"
           >
-            <Home className="w-4 h-4" />
-            <span className="hidden sm:inline">Home</span>
+            <Home className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Home</span>
           </button>
-          <div className="bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-2xl shadow-sm inline-flex border border-slate-200/50">
-            <CodeQuestLogo size="md" showTagline={false} />
+          <div className="bg-white/85 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-xs inline-flex border border-slate-200/50">
+            <CodeQuestLogo size="sm" showTagline={false} />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           {/* Auth Mode Toggle Pill */}
-          <div className="flex items-center bg-white/90 backdrop-blur-md border border-slate-200/90 p-1 rounded-2xl shadow-xs">
+          <div className="flex items-center bg-white/90 backdrop-blur-md border border-slate-200/90 p-0.5 rounded-xl shadow-xs">
             <button
               type="button"
               onClick={() => setAuthView('login')}
-              className={`px-4 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                 authView === 'login'
-                  ? 'bg-emerald-600 text-white shadow-sm'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -77,9 +77,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
             <button
               type="button"
               onClick={() => setAuthView('register')}
-              className={`px-4 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                 authView === 'register'
-                  ? 'bg-emerald-600 text-white shadow-sm'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -90,11 +90,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
       </header>
 
       {/* Main Split-Screen Canvas Layout */}
-      <main className="relative z-10 w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center px-6 sm:px-10 py-8">
+      <main className="relative z-10 w-full max-w-7xl mx-auto flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center px-4 sm:px-8 py-1 sm:py-2">
         {authView === 'register' ? (
           <>
             {/* Left Column on Register: RPG Trailhead Scene */}
-            <div className="lg:col-span-7 hidden lg:flex items-center justify-center order-2 lg:order-1">
+            <div className="lg:col-span-7 hidden lg:flex items-center justify-center order-2 lg:order-1 h-full min-h-0">
               <CodeQuestTrailheadScene />
             </div>
 
@@ -122,7 +122,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
             </div>
 
             {/* Right Column on Login: 16-Bit Retro RPG Coding Scene with Gamification HUD */}
-            <div className="lg:col-span-7 hidden lg:flex items-center justify-center">
+            <div className="lg:col-span-7 hidden lg:flex items-center justify-center h-full min-h-0">
               <CodeQuestRpgScene />
             </div>
           </>
@@ -130,8 +130,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
       </main>
 
       {/* Bottom Spacer for padding balance */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto py-4 px-6 text-center">
-        <span className="text-xs font-bold text-slate-800 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full inline-block shadow-sm">
+      <footer className="relative z-10 w-full max-w-7xl mx-auto py-2 px-4 text-center shrink-0">
+        <span className="text-[10.5px] sm:text-[11px] font-semibold text-slate-600 bg-white/80 backdrop-blur-sm px-3.5 py-1 rounded-full inline-block shadow-xs">
           &copy; {new Date().getFullYear()} CodeQuest. All rights reserved. Level up your coding skills.
         </span>
       </footer>
