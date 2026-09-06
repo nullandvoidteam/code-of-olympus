@@ -196,10 +196,10 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
             }}
           >
             <span className="text-base leading-none">🔥</span>
-            <span className="text-[11px] font-extrabold leading-none">
+            <span className="text-xs font-black leading-none font-hud tabular-nums tracking-tight">
               {streak}
             </span>
-            <span className="text-[9px] leading-none hidden xl:inline opacity-80">Streak</span>
+            <span className="text-[9px] font-bold leading-none hidden xl:inline opacity-80 uppercase tracking-widest">Streak</span>
           </div>
         )}
 
@@ -213,8 +213,8 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
             color: 'var(--theme-hud-xp-text, #F5C842)',
           }}
         >
-          <span className="text-[11px] font-bold leading-none">⭐</span>
-          <span className="text-[11px] font-extrabold leading-none">
+          <span className="text-xs leading-none">⭐</span>
+          <span className="text-xs font-black leading-none font-hud tabular-nums tracking-tight">
             {formatXP(xp)} XP
           </span>
         </div>
@@ -229,8 +229,8 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
             color: 'var(--theme-hud-lvl-text, #F5E8E8)',
           }}
         >
-          <span className="text-[9px] font-bold leading-none opacity-80 uppercase tracking-wider">LVL</span>
-          <span className="text-[12px] font-extrabold leading-none">{level}</span>
+          <span className="text-[9px] font-black leading-none opacity-80 uppercase tracking-widest font-hud">LVL</span>
+          <span className="text-xs font-black leading-none font-hud tabular-nums">{level}</span>
         </div>
 
         {/* Notifications Bell */}

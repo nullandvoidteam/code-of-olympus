@@ -314,7 +314,7 @@ export const GlobalRankingView: React.FC = () => {
               </div>
 
               <h1
-                className="text-2xl sm:text-3xl lg:text-4xl font-black mt-1.5 tracking-tight text-white flex items-center gap-3"
+                className="text-2xl sm:text-3xl lg:text-4xl font-black mt-1.5 tracking-tight text-white flex items-center gap-3 gamified-shaky-title"
                 style={{
                   fontFamily: isGow
                     ? "'Cinzel', serif"

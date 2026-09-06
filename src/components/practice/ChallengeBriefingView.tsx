@@ -155,7 +155,7 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight gamified-shaky-title">
                 {challenge?.title || 'Reverse the String'}
               </h1>
               <p className="text-sm text-slate-600 leading-relaxed max-w-lg">

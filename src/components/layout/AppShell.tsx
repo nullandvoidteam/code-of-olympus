@@ -464,7 +464,7 @@ export const AppShell: React.FC = () => {
                     <HelpCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-stone-900">Help & Support Realm</h2>
+                    <h2 className="text-xl font-black text-stone-900 gamified-shaky-title">Help & Support Realm</h2>
                     <p className="text-xs text-stone-500 font-medium">Guides, documentation, and mentorship assistance</p>
                   </div>
                 </div>

@@ -145,7 +145,7 @@ export const DwarvenForgeWorkbench: React.FC<DwarvenForgeWorkbenchProps> = ({ pr
             <div className="flex-1 min-w-0">
               {/* Title + difficulty */}
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h1 className="text-xl font-bold" style={{ fontFamily: "'Cinzel', serif", color: C.textPrimary }}>
+                <h1 className="text-xl sm:text-2xl font-black gamified-shaky-title" style={{ fontFamily: "'Cinzel', serif", color: C.textPrimary }}>
                   {project.title}
                 </h1>
                 <span className="px-2 py-0.5 rounded text-[9px] font-bold"

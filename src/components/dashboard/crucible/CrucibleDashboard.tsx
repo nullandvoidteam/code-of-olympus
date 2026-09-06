@@ -205,7 +205,7 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
             </div>
 
             <h1
-              className="font-bold uppercase tracking-wide leading-tight text-3xl sm:text-4xl text-transparent bg-clip-text"
+              className="font-bold uppercase tracking-wide leading-tight text-3xl sm:text-4xl text-transparent bg-clip-text gamified-shaky-title"
               style={{
                 backgroundImage: theme === 'spiderman'
                   ? 'linear-gradient(135deg, #FFFFFF 0%, #E0F2FE 50%, #93C5FD 100%)'

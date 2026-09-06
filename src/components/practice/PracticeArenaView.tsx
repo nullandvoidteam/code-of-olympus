@@ -331,7 +331,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
               <span className="text-[11px] font-extrabold text-emerald-600 uppercase tracking-wider font-mono">
                 DAILY CODING ADVENTURE
               </span>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight tracking-tight gamified-shaky-title">
                 Sharpen Your<br />Coding Skills.
               </h1>
               <p className="text-sm text-slate-600 leading-relaxed max-w-md">
@@ -733,7 +733,7 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
               </div>
               <h1
                 style={{ fontFamily: "'Cinzel', serif" }}
-                className="text-2xl md:text-4xl font-black text-[#F5E8E8] leading-tight tracking-wider uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+                className="text-2xl md:text-4xl font-black text-[#F5E8E8] leading-tight tracking-wider uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] gamified-shaky-title"
               >
                 Hone Your Blades<br />In Battle.
               </h1>
@@ -1264,7 +1264,7 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                   SPIDER-VERSE SIMULATOR • DAILY PATROL
                 </span>
               </div>
-              <h1 className="text-2xl md:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+              <h1 className="text-2xl md:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] gamified-shaky-title">
                 Calibrate Web-Shooters<br />& Algorithms.
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">

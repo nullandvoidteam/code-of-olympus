@@ -31,7 +31,7 @@ export const CommunityPage: React.FC = () => {
               <FriendlyNeighborhoodBadge />
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight uppercase drop-shadow-md">
+            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight uppercase drop-shadow-md gamified-shaky-title">
               The Web Alliance
             </h1>
 
@@ -99,7 +99,7 @@ export const CommunityPage: React.FC = () => {
 
           <h1
             style={{ fontFamily: "'Cinzel Decorative', serif", textShadow: '0 2px 20px rgba(220,38,38,0.5)' }}
-            className="text-3xl md:text-5xl font-black text-[#F5E8E8] tracking-wider uppercase"
+            className="text-3xl md:text-5xl font-black text-[#F5E8E8] tracking-wider uppercase gamified-shaky-title"
           >
             The Shield Wall
           </h1>
