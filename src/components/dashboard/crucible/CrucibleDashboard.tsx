@@ -128,7 +128,7 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
     >
       {/* ── HERO BANNER ─────────────────────────────────────────── */}
       <div
-        className={`relative overflow-hidden rounded-3xl p-6 sm:p-7 shadow-2xl ${
+        className={`relative overflow-hidden rounded-3xl p-6 sm:p-7 shadow-2xl group ${
           theme === 'spiderman' ? 'animate-spider-banner border-2 border-red-500/40' : ''
         }`}
         style={{
@@ -139,6 +139,27 @@ export const CrucibleDashboard: React.FC<CrucibleDashboardProps> = (props) => {
           boxShadow: 'var(--theme-shadow-card, 0 8px 36px rgba(7,5,5,0.9))',
         }}
       >
+        {/* Full Banner Canvas Image Background */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+          <img
+            src={
+              theme === 'spiderman'
+                ? 'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1600&q=80'
+                : '/extracted/practice_arena_art.jpg'
+            }
+            alt="Hero Banner Canvas"
+            className="w-full h-full object-cover object-center opacity-25 mix-blend-luminosity select-none transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: theme === 'spiderman'
+                ? 'linear-gradient(90deg, rgba(12, 18, 42, 0.96) 0%, rgba(18, 26, 60, 0.85) 50%, rgba(8, 12, 30, 0.6) 100%)'
+                : 'linear-gradient(90deg, var(--theme-surface-card-alt, #110808) 0%, rgba(26,10,10,0.85) 50%, rgba(12,5,5,0.65) 100%)',
+            }}
+          />
+        </div>
+
         {/* Corner Spider Web Nets for Spiderman */}
         {theme === 'spiderman' && (
           <>
