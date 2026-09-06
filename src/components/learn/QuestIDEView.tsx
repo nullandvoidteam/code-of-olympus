@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { LumiPixelBot, PixelPythonIcon } from '../brand/PixelArtAvatars'
 import confetti from 'canvas-confetti'
+import { useAuth } from '../../context/AuthContext'
 
 type RunStatus = 'idle' | 'running' | 'success' | 'error'
 type ConsoleTab = 'output' | 'testResults' | 'console'
@@ -43,6 +44,16 @@ export const QuestIDEView: React.FC<QuestIDEViewProps> = ({
   onBackToLesson,
   onNextLesson,
 }) => {
+  const { profile } = useAuth()
+  
+  const level = profile?.level || 1
+  const xp = profile?.xp || 0
+  const nextLevelXP = level * 1000
+  const currentLevelBaseXP = (level - 1) * 1000
+  const xpIntoCurrentLevel = Math.max(0, xp - currentLevelBaseXP)
+  const xpNeeded = Math.max(1, nextLevelXP - currentLevelBaseXP)
+  const progressPercent = Math.min(100, Math.max(0, Math.round((xpIntoCurrentLevel / xpNeeded) * 100)))
+
   const [code, setCode] = useState(STARTER_CODE)
   const [runStatus, setRunStatus] = useState<RunStatus>('success')
   const [activeTab, setActiveTab] = useState<ConsoleTab>('output')
@@ -587,11 +598,11 @@ export const QuestIDEView: React.FC<QuestIDEViewProps> = ({
               {/* Level / XP progress */}
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between text-[10px] font-pixel text-slate-500 uppercase tracking-wider">
-                  <span>Your XP: <span className="text-emerald-600 font-bold">4,970 XP</span></span>
-                  <span className="text-slate-700 font-bold">LVL 12</span>
+                  <span>Your XP: <span className="text-emerald-600 font-bold">{xp.toLocaleString()} XP</span></span>
+                  <span className="text-slate-700 font-bold">LVL {level}</span>
                 </div>
                 <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-700" style={{ width: '82%' }} />
+                  <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-700" style={{ width: `${progressPercent}%` }} />
                 </div>
               </div>
 

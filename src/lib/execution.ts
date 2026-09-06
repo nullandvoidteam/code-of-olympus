@@ -66,6 +66,61 @@ function runJavaScriptInSandbox(sourceCode: string): ExecutionResult {
   }
 }
 
+let pyodidePromise: Promise<any> | null = null;
+async function getPyodide() {
+  if (!(window as any).loadPyodide) {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+    document.head.appendChild(script);
+    await new Promise((resolve, reject) => {
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('Failed to load Pyodide script.'));
+    });
+  }
+  if (!pyodidePromise) {
+    pyodidePromise = (window as any).loadPyodide();
+  }
+  return await pyodidePromise;
+}
+
+async function runPythonInSandbox(sourceCode: string): Promise<ExecutionResult> {
+  const startTime = Date.now();
+  try {
+    const pyodide = await getPyodide();
+
+    // Redirect stdout and stderr
+    await pyodide.runPythonAsync(`
+import sys
+import io
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+    `);
+
+    // Run user code
+    await pyodide.runPythonAsync(sourceCode);
+
+    // Fetch output
+    const stdout = await pyodide.runPythonAsync('sys.stdout.getvalue()');
+    const stderr = await pyodide.runPythonAsync('sys.stderr.getvalue()');
+
+    return {
+      status: stderr ? 'runtime_error' : 'success',
+      stdout: stdout || '',
+      stderr: stderr || '',
+      exit_code: stderr ? 1 : 0,
+      execution_time: Date.now() - startTime,
+    };
+  } catch (err: any) {
+    return {
+      status: 'runtime_error',
+      stdout: '',
+      stderr: err.message || String(err),
+      exit_code: 1,
+      execution_time: Date.now() - startTime,
+    };
+  }
+}
+
 export async function executeCode(
   language: string,
   sourceCode: string,
@@ -95,6 +150,11 @@ export async function executeCode(
   // JavaScript native browser sandboxed execution (0ms network latency, 100% reliable)
   if (cleanLang === 'javascript' || cleanLang === 'js') {
     return runJavaScriptInSandbox(sourceCode)
+  }
+
+  // Python native browser sandboxed execution via Pyodide
+  if (cleanLang === 'python' || cleanLang === 'py') {
+    return await runPythonInSandbox(sourceCode)
   }
 
   const langConfig = SUPPORTED_LANGUAGES[cleanLang]
@@ -183,9 +243,9 @@ export async function executeCode(
     // Provider error
   }
 
-    return {
-      status: 'error',
-      stdout: '',
-      stderr: 'Code execution is temporarily unavailable. Please try again.',
-    }
+  return {
+    status: 'error',
+    stdout: '',
+    stderr: 'Code execution is temporarily unavailable. Please try again.',
   }
+}

@@ -132,7 +132,7 @@ export const CrucibleWorkspace: React.FC<CrucibleWorkspaceProps> = ({
   }, [])
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col"
+    <div className="fixed inset-0 z-[60] flex flex-col"
       style={{ background: '#060404', fontFamily: '"JetBrains Mono", monospace' }}
     >
       {/* ── Top Workspace Bar ──────────────────────────────────── */}
