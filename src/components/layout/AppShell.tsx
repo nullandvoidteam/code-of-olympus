@@ -32,6 +32,9 @@ import {
   Camera,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
+import { SpiderNetDecal, SpiderEmblemIcon } from '../ui/SpiderNetDecal'
+import { saveCourseProgress } from '../../lib/courseProgress'
 import type { DashboardMode } from './CrucibleHeader'
 
 export const AppShell: React.FC = () => {

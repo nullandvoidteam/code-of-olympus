@@ -17,6 +17,7 @@ import {
   Gamepad2,
   ShieldCheck,
   Palette,
+  Trophy,
 } from 'lucide-react'
 import { AlexPixelAvatar, LumiPixelBot } from '../brand/PixelArtAvatars'
 import { useAuth } from '../../context/AuthContext'
@@ -54,6 +55,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     practice: { title: 'Practice', icon: <Code2 className="w-4 h-4 text-purple-600" /> },
     build: { title: 'Build', icon: <Layers className="w-4 h-4 text-amber-600" /> },
     arcade: { title: 'Team Arcade', icon: <Gamepad2 className="w-4 h-4 text-emerald-600" /> },
+    ranking: { title: 'Leaderboards', icon: <Trophy className="w-4 h-4 text-amber-500" /> },
     community: { title: 'Community', icon: <Users className="w-4 h-4 text-purple-600" /> },
     profile: { title: 'Profile', icon: <User className="w-4 h-4 text-emerald-600" /> },
     quests: { title: 'Quests', icon: <BookOpen className="w-4 h-4 text-blue-600" /> },
