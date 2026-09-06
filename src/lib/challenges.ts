@@ -87,13 +87,21 @@ export async function fetchChallengesWithProgress(
       }
     }
 
+    let localCompletedList: string[] = []
+    try {
+      const raw = localStorage.getItem('olympus_completed_challenges')
+      if (raw) localCompletedList = JSON.parse(raw)
+    } catch {}
+
     return baseList.map((ch) => {
       const prog = progressMap.get(ch.id)
+      const isLocallyCompleted = localCompletedList.includes(ch.id) || localCompletedList.includes(ch.slug)
+      const isCompleted = (prog?.is_completed ?? false) || isLocallyCompleted
       return {
         challenge: ch,
         progress: prog,
-        isCompleted: prog?.is_completed ?? false,
-        attemptsCount: prog?.attempts_count ?? 0,
+        isCompleted,
+        attemptsCount: prog?.attempts_count ?? (isLocallyCompleted ? 1 : 0),
       }
     })
   } catch (err) {
@@ -237,63 +245,188 @@ export async function reorderChallenges(items: { id: string; order_index: number
   }
 }
 
+import { awardXp, updateStreakAndDailyActivity } from './gamification'
+
+export interface RecordSubmissionResult {
+  success: boolean
+  isCompleted: boolean
+  isFirstCompletion: boolean
+  attemptsCount: number
+  bestScore: number
+  xpEarned: number
+  error?: string
+}
+
 export async function recordChallengeSubmission(
   userId: string,
   challengeId: string,
   passed: boolean,
-  score: number = 100
-): Promise<void> {
+  score: number = 100,
+  submittedCode?: string,
+  xpRewardOverride?: number
+): Promise<RecordSubmissionResult> {
   try {
     const now = new Date().toISOString()
 
-    const { data: existingProgress } = await supabase
-      .from('challenge_progress')
-      .select('attempts_count, best_score, is_completed')
-      .eq('user_id', userId)
-      .eq('challenge_id', challengeId)
-      .maybeSingle()
+    // Resolve UUID if challengeId is a slug or mock id
+    let actualUuid = challengeId
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(challengeId)
+    let challengeData: Challenge | null = null
 
+    if (!isUuid) {
+      challengeData = await fetchChallengeById(challengeId)
+      if (challengeData?.id) {
+        actualUuid = challengeData.id
+      }
+    } else {
+      challengeData = await fetchChallengeById(challengeId)
+    }
+
+    const xpAmount = xpRewardOverride ?? challengeData?.xp_reward ?? 75
+
+    // Check existing progress in challenge_progress
+    let existingProgress: any = null
+    try {
+      const { data } = await supabase
+        .from('challenge_progress')
+        .select('attempts_count, best_score, is_completed, completed_at')
+        .eq('user_id', userId)
+        .eq('challenge_id', actualUuid)
+        .maybeSingle()
+      existingProgress = data
+    } catch (e) {
+      console.warn('Could not fetch existing challenge progress:', e)
+    }
+
+    const wasAlreadyCompleted = existingProgress?.is_completed ?? false
+    const isFirstCompletion = passed && !wasAlreadyCompleted
     const newAttemptsCount = (existingProgress?.attempts_count ?? 0) + 1
     const newBestScore = Math.max(existingProgress?.best_score ?? 0, passed ? score : 0)
-    const isCompleted = (existingProgress?.is_completed ?? false) || passed
+    const isCompleted = wasAlreadyCompleted || passed
 
-    await supabase.from('challenge_attempts').insert({
-      user_id: userId,
-      challenge_id: challengeId,
-      attempt_number: newAttemptsCount,
-      status: passed ? 'passed' : 'failed',
-      score: passed ? score : 0,
-      passed,
-      completed_at: now,
-    })
-
-    if (existingProgress) {
-      await supabase
-        .from('challenge_progress')
-        .update({
-          is_completed: isCompleted,
-          best_score: newBestScore,
-          attempts_count: newAttemptsCount,
-          last_attempt_at: now,
-          completed_at: isCompleted ? now : null,
-        })
-        .eq('user_id', userId)
-        .eq('challenge_id', challengeId)
-    } else {
-      await supabase
-        .from('challenge_progress')
-        .insert({
-          user_id: userId,
-          challenge_id: challengeId,
-          is_completed: isCompleted,
-          best_score: newBestScore,
-          attempts_count: newAttemptsCount,
-          last_attempt_at: now,
-          completed_at: isCompleted ? now : null,
-        })
+    // 1. Insert into challenge_attempts
+    try {
+      await supabase.from('challenge_attempts').insert({
+        user_id: userId,
+        challenge_id: actualUuid,
+        attempt_number: newAttemptsCount,
+        status: passed ? 'passed' : 'failed',
+        score: passed ? score : 0,
+        passed,
+        submitted_data: submittedCode ? { code: submittedCode } : null,
+        completed_at: passed ? now : null,
+      })
+    } catch (err) {
+      console.warn('Could not insert challenge attempt:', err)
     }
-  } catch (err) {
+
+    // 2. Upsert into challenge_progress
+    try {
+      if (existingProgress) {
+        await supabase
+          .from('challenge_progress')
+          .update({
+            is_completed: isCompleted,
+            best_score: newBestScore,
+            attempts_count: newAttemptsCount,
+            last_attempt_at: now,
+            completed_at: isCompleted ? (existingProgress.completed_at || now) : null,
+          })
+          .eq('user_id', userId)
+          .eq('challenge_id', actualUuid)
+      } else {
+        await supabase
+          .from('challenge_progress')
+          .insert({
+            user_id: userId,
+            challenge_id: actualUuid,
+            is_completed: isCompleted,
+            best_score: newBestScore,
+            attempts_count: newAttemptsCount,
+            last_attempt_at: now,
+            completed_at: isCompleted ? now : null,
+          })
+      }
+    } catch (err) {
+      console.warn('Could not update challenge progress in Supabase:', err)
+    }
+
+    // 3. Award XP & update streak
+    const xpAwarded = passed ? (isFirstCompletion ? xpAmount : 15) : 0
+    if (passed) {
+      try {
+        await awardXp(userId, xpAwarded, 'challenge', actualUuid)
+      } catch (err) {
+        console.warn('awardXp error:', err)
+      }
+
+      try {
+        await updateStreakAndDailyActivity(userId)
+      } catch (err) {
+        console.warn('streak update error:', err)
+      }
+
+      // Directly increment profiles.xp to guarantee immediate sync
+      try {
+        const { data: prof } = await supabase.from('profiles').select('xp, streak').eq('id', userId).maybeSingle()
+        if (prof) {
+          await supabase.from('profiles').update({
+            xp: (prof.xp || 0) + xpAwarded,
+            last_active_date: now,
+            updated_at: now,
+          }).eq('id', userId)
+        }
+      } catch (err) {
+        console.warn('Direct profile XP update error:', err)
+      }
+    }
+
+    // 4. Save to local storage for instant sync across views
+    try {
+      const raw = localStorage.getItem('olympus_completed_challenges') || '[]'
+      const list: string[] = JSON.parse(raw)
+      if (passed) {
+        if (!list.includes(actualUuid)) list.push(actualUuid)
+        if (!list.includes(challengeId)) list.push(challengeId)
+        localStorage.setItem('olympus_completed_challenges', JSON.stringify(list))
+      }
+    } catch {}
+
+    // 5. Dispatch custom event for real-time app notifications
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('olympus_challenge_submission', {
+          detail: {
+            challengeId: actualUuid,
+            passed,
+            isCompleted,
+            isFirstCompletion,
+            score,
+            xpEarned: xpAwarded,
+          },
+        })
+      )
+    }
+
+    return {
+      success: true,
+      isCompleted,
+      isFirstCompletion,
+      attemptsCount: newAttemptsCount,
+      bestScore: newBestScore,
+      xpEarned: xpAwarded,
+    }
+  } catch (err: any) {
     console.error('Error recording challenge submission:', err)
+    return {
+      success: false,
+      isCompleted: passed,
+      isFirstCompletion: false,
+      attemptsCount: 1,
+      bestScore: passed ? score : 0,
+      xpEarned: 0,
+      error: err?.message || 'Submission error',
+    }
   }
 }
 
