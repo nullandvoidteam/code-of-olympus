@@ -22,7 +22,12 @@ import { useTheme } from '../../context/ThemeContext'
 import { SpiderNetDecal } from '../ui/SpiderNetDecal'
 import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
+import { COURSE_CHAPTERS } from '../../lib/courseData/chapters'
+import { getLessonContent } from '../../lib/courseData/lessonContent'
+
 interface InteractiveLessonViewProps {
+  lessonId?: string
+  courseId?: string
   onBackToCourse?: () => void
   onPreviousLesson?: () => void
   onNextLesson?: () => void
@@ -32,17 +37,23 @@ interface InteractiveLessonViewProps {
 /* CLASSIC GAMIFIED INTERACTIVE LESSON VIEW                                  */
 /* ========================================================================= */
 const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
+  lessonId,
+  courseId,
   onBackToCourse,
   onPreviousLesson,
   onNextLesson,
 }) => {
+  const chapters = COURSE_CHAPTERS[courseId || 'python'] || COURSE_CHAPTERS['python']
+  const chapter = chapters.find(c => c.lessonId === lessonId) || chapters[0]
+  const lessonData = getLessonContent(lessonId || 'python-ch1-lesson1')
+  
   const [selectedOption, setSelectedOption] = useState<'A' | 'B' | 'C' | 'D'>('A')
   const [quizSubmitted, setQuizSubmitted] = useState<boolean>(false)
   const [quizResult, setQuizResult] = useState<'correct' | 'incorrect' | null>(null)
   const [copiedCode, setCopiedCode] = useState<boolean>(false)
 
   const handleCopyCode = () => {
-    const code = `count = 3\n\nwhile count > 0:\n    print("Countdown:", count)\n    count -= 1\n\nprint("Blast off! 🚀")`
+    const code = lessonData.snippet
     navigator.clipboard.writeText(code)
     setCopiedCode(true)
     setTimeout(() => setCopiedCode(false), 2000)
@@ -50,18 +61,14 @@ const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
 
   const handleCheckQuiz = () => {
     setQuizSubmitted(true)
-    if (selectedOption === 'A') {
+    if (selectedOption === lessonData.answerId) {
       setQuizResult('correct')
-      try {
-        confetti({
-          particleCount: 100,
-          spread: 75,
-          origin: { y: 0.6 },
-          colors: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'],
-        })
-      } catch {
-        /* ignore */
-      }
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#10b981', '#34d399', '#f59e0b', '#fde047'],
+      })
     } else {
       setQuizResult('incorrect')
     }
@@ -109,11 +116,12 @@ const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
             </div>
 
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">
-                The While Loop: Repeating with Purpose
+              <span className="font-pixel text-[10px] text-indigo-400 uppercase tracking-widest font-bold mb-1 block">Chapter {chapter.num}</span>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 leading-tight">
+                {lessonData.title}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed max-w-2xl">
-                A while loop repeats a block of code as long as a specified test condition evaluates to True. When the condition evaluates to False, the loop stops immediately and program flow resumes.
+              <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed max-w-2xl whitespace-pre-line">
+                {lessonData.conceptText}
               </p>
             </div>
 
@@ -166,15 +174,7 @@ const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
 
             {/* Code Body */}
             <div className="p-6 bg-slate-900 text-slate-100 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto">
-              <div><span className="text-slate-500"># 1. Initialize counter</span></div>
-              <div><span className="text-purple-400">count</span> = <span className="text-amber-400">3</span></div>
-              <br />
-              <div><span className="text-slate-500"># 2. Run as long as count is greater than 0</span></div>
-              <div><span className="text-rose-400 font-bold">while</span> <span className="text-purple-400">count</span> &gt; <span className="text-amber-400">0</span>:</div>
-              <div className="pl-6"><span className="text-blue-400">print</span>(<span className="text-emerald-300">&quot;Countdown:&quot;</span>, <span className="text-purple-400">count</span>)</div>
-              <div className="pl-6"><span className="text-purple-400">count</span> -= <span className="text-amber-400">1</span>  <span className="text-slate-500"># Decrement counter</span></div>
-              <br />
-              <div><span className="text-blue-400">print</span>(<span className="text-emerald-300">&quot;Blast off! 🚀&quot;</span>)</div>
+              <pre className="whitespace-pre"><code>{lessonData.snippet}</code></pre>
             </div>
 
             {/* Terminal Output */}
@@ -207,24 +207,19 @@ const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
             </div>
 
             <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
-              What will be the final value stored in variable <code className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-purple-700 text-xs">count</code> when this loop completely finishes executing?
+              {lessonData.question}
             </p>
 
             {/* Options */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { key: 'A' as const, text: '0 (The condition 0 > 0 terminates)' },
-                { key: 'B' as const, text: '1 (The last printed number)' },
-                { key: 'C' as const, text: '3 (The starting number)' },
-                { key: 'D' as const, text: '-1 (It overshoots zero)' },
-              ].map((opt) => {
-                const isSelected = selectedOption === opt.key
+              {lessonData.options.map((opt) => {
+                const isSelected = selectedOption === opt.id
                 return (
                   <button
-                    key={opt.key}
+                    key={opt.id}
                     type="button"
                     onClick={() => {
-                      setSelectedOption(opt.key)
+                      setSelectedOption(opt.id)
                       setQuizSubmitted(false)
                       setQuizResult(null)
                     }}
@@ -241,7 +236,7 @@ const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
                           : 'border-slate-300 bg-white text-slate-600'
                       }`}
                     >
-                      {opt.key}
+                      {opt.id}
                     </div>
                     <span className="text-xs font-bold text-slate-800 leading-snug">
                       {opt.text}
@@ -266,7 +261,7 @@ const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
                 <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-start gap-2.5 animate-in fade-in duration-200">
                   <span className="text-base shrink-0">🎉</span>
                   <div>
-                    <span className="font-bold">Outstanding!</span> In the last iteration, count is 1. It prints 1, then <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded">count -= 1</code> drops it to 0. When the condition <code className="font-mono bg-emerald-100 px-1 py-0.5 rounded">0 &gt; 0</code> is checked, it evaluates to False and the loop cleanly terminates!
+                    <span className="font-bold">Outstanding!</span> {lessonData.explanation}
                   </div>
                 </div>
               )}
@@ -275,7 +270,7 @@ const ClassicInteractiveLessonView: React.FC<InteractiveLessonViewProps> = ({
                 <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-start gap-2.5 animate-in fade-in duration-200">
                   <span className="text-base shrink-0">💡</span>
                   <div>
-                    <span className="font-bold">Not quite.</span> Look closely at the decrement step <code className="font-mono bg-rose-100 px-1 py-0.5 rounded">count -= 1</code>. When count is 1, subtracting 1 gives 0. Since <code className="font-mono bg-rose-100 px-1 py-0.5 rounded">0 &gt; 0</code> is false, the loop stops with count set to 0.
+                    <span className="font-bold">Not quite.</span> Remember: {lessonData.explanation}
                   </div>
                 </div>
               )}
