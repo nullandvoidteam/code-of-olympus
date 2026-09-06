@@ -221,9 +221,13 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
           if (showNotification) {
             toast.success('Draft saved successfully!')
           }
+        } else {
+          console.error('Error saving draft:', res.error)
+          toast.error(`Failed to save draft: ${res.error}`)
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to persist stage code to cloud:', err)
+        toast.error(`Error: ${err?.message || 'Failed to persist code.'}`)
       } finally {
         setIsSaving(false)
       }
