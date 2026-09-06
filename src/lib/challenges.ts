@@ -446,3 +446,19 @@ export async function fetchSavedChallenges(userId: string): Promise<string[]> {
   }
 }
 
+export async function fetchChallengeById(idOrSlug: string): Promise<Challenge | null> {
+  try {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug)
+    const { data, error } = isUuid
+      ? await supabase.from('challenges').select('*').eq('id', idOrSlug).maybeSingle()
+      : await supabase.from('challenges').select('*').eq('slug', idOrSlug).maybeSingle()
+    if (!error && data) {
+      return data as Challenge
+    }
+    return null
+  } catch (err) {
+    console.error('Error fetching challenge by id/slug:', err)
+    return null
+  }
+}
+
