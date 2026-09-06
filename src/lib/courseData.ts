@@ -11,6 +11,8 @@ export interface CourseCatalogItem {
   students: string
   description: string
   rewardTitle: string
+  whatYouWillLearn?: string[]
+  skillsUnlocked?: { name: string; colorClass: string }[]
 }
 
 export const COURSE_CATALOG: CourseCatalogItem[] = [
@@ -27,6 +29,20 @@ export const COURSE_CATALOG: CourseCatalogItem[] = [
     students: '12,400+',
     description: 'Master programming fundamentals by completing quests, solving challenges, and building real projects.',
     rewardTitle: 'Python Explorer',
+    whatYouWillLearn: [
+      'Variables & Data Types',
+      'Functions & Loops',
+      'Lists & Dictionaries',
+      'Conditional Logic',
+      'Error Handling',
+      'Building Real Projects'
+    ],
+    skillsUnlocked: [
+      { name: 'Python', colorClass: 'bg-sky-50 border-sky-200 text-sky-700' },
+      { name: 'Logic', colorClass: 'bg-purple-50 border-purple-200 text-purple-700' },
+      { name: 'Problem Solving', colorClass: 'bg-amber-50 border-amber-200 text-amber-700' },
+      { name: 'Debugging', colorClass: 'bg-rose-50 border-rose-200 text-rose-700' }
+    ]
   },
   {
     id: 'html-css',
@@ -41,6 +57,20 @@ export const COURSE_CATALOG: CourseCatalogItem[] = [
     students: '18,200+',
     description: 'Build modern responsive web pages from scratch with semantic HTML5 and modern CSS techniques.',
     rewardTitle: 'Web Weaver',
+    whatYouWillLearn: [
+      'Semantic HTML5',
+      'CSS Layouts (Flex & Grid)',
+      'Responsive Design',
+      'Accessibility Best Practices',
+      'Styling Elements',
+      'Building Web Pages'
+    ],
+    skillsUnlocked: [
+      { name: 'HTML5', colorClass: 'bg-orange-50 border-orange-200 text-orange-700' },
+      { name: 'CSS3', colorClass: 'bg-blue-50 border-blue-200 text-blue-700' },
+      { name: 'UI Design', colorClass: 'bg-pink-50 border-pink-200 text-pink-700' },
+      { name: 'Layouts', colorClass: 'bg-emerald-50 border-emerald-200 text-emerald-700' }
+    ]
   },
   {
     id: 'javascript',
@@ -53,8 +83,21 @@ export const COURSE_CATALOG: CourseCatalogItem[] = [
     icon: '⚡',
     rating: '4.8',
     students: '9,500+',
-    description: 'Unlock interactive programming, DOM manipulation, asynchronous fetching, and modern ES6+ magic.',
+    description: 'Learn the language of the web, build interactive UI components, and connect to real-world APIs.',
     rewardTitle: 'JS Sorcerer',
+    whatYouWillLearn: [
+      'ES6+ Syntax',
+      'DOM Manipulation',
+      'Async/Await & Promises',
+      'Event Handling',
+      'Arrays & Objects',
+      'API Fetching'
+    ],
+    skillsUnlocked: [
+      { name: 'JavaScript', colorClass: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+      { name: 'DOM', colorClass: 'bg-indigo-50 border-indigo-200 text-indigo-700' },
+      { name: 'Async Logic', colorClass: 'bg-slate-50 border-slate-200 text-slate-700' }
+    ]
   },
   {
     id: 'react',
@@ -67,8 +110,21 @@ export const COURSE_CATALOG: CourseCatalogItem[] = [
     icon: '⚛️',
     rating: '4.9',
     students: '7,100+',
-    description: 'Component architecture, state management, hooks, and scalable frontend single page apps.',
+    description: 'Master modern frontend development using React, hooks, state management, and component architecture.',
     rewardTitle: 'React Architect',
+    whatYouWillLearn: [
+      'React Components',
+      'JSX Syntax',
+      'Hooks (useState, useEffect)',
+      'Props & State',
+      'Component Lifecycle',
+      'React Router'
+    ],
+    skillsUnlocked: [
+      { name: 'React', colorClass: 'bg-cyan-50 border-cyan-200 text-cyan-700' },
+      { name: 'Frontend', colorClass: 'bg-fuchsia-50 border-fuchsia-200 text-fuchsia-700' },
+      { name: 'Components', colorClass: 'bg-lime-50 border-lime-200 text-lime-700' }
+    ]
   },
   {
     id: 'sql',

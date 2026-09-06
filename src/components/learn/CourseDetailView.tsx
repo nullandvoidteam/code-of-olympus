@@ -237,77 +237,48 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
       </div>
 
       {/* 3. ROW 2: WHAT YOU'LL LEARN & SKILLS YOU'LL UNLOCK */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-emerald-600" />
-            <h2 className="font-extrabold text-base text-slate-900 tracking-tight">
-              What You&apos;ll Learn
-            </h2>
-          </div>
+      {(course.whatYouWillLearn || course.skillsUnlocked) && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+          {course.whatYouWillLearn && (
+            <div className="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-emerald-600" />
+                <h2 className="font-extrabold text-base text-slate-900 tracking-tight">
+                  What You&apos;ll Learn
+                </h2>
+              </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-4 text-xs font-medium text-slate-700">
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
-              <span>Variables & Data Types</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-3 gap-x-4 text-xs font-medium text-slate-700">
+                {course.whatYouWillLearn.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
-              <span>Functions</span>
+          )}
+
+          {course.skillsUnlocked && (
+            <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                <h2 className="font-extrabold text-base text-slate-900 tracking-tight">
+                  Skills You&apos;ll Unlock
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap">
+                {course.skillsUnlocked.map((skill, idx) => (
+                  <span key={idx} className={`px-3 py-1.5 rounded-lg border text-xs font-bold ${skill.colorClass}`}>
+                    {skill.name}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
-              <span>Lists & Dictionaries</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
-              <span>Conditions</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
-              <span>Error Handling</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
-              <span>Building Real Projects</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 stroke-[3]" />
-              <span>Loops</span>
-            </div>
-          </div>
+          )}
         </div>
-
-        <div className="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-purple-600" />
-            <h2 className="font-extrabold text-base text-slate-900 tracking-tight">
-              Skills You&apos;ll Unlock
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1.5 rounded-lg bg-sky-50 border border-sky-200 text-sky-700 text-xs font-bold">
-              Python
-            </span>
-            <span className="px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-purple-700 text-xs font-bold">
-              Logic
-            </span>
-            <span className="px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold">
-              Problem Solving
-            </span>
-            <span className="px-3 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
-              Debugging
-            </span>
-            <span className="px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold">
-              Functions
-            </span>
-            <span className="px-3 py-1.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold">
-              Data Structures
-            </span>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* 4. MAIN 3-COLUMN SECTION */}
       <div id="curriculum-section" className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">

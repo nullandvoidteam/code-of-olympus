@@ -302,11 +302,13 @@ export const AppShell: React.FC = () => {
                     if (user?.id && selectedCourseId && selectedChallengeId) {
                       recordLessonCompletion(user.id, selectedCourseId, selectedChallengeId, true)
                     }
-                    setSelectedQuestId('ch4-quest03')
+                    setSelectedQuestId(selectedChallengeId ? selectedChallengeId.replace('ex01', 'quest01').replace('ex03', 'quest03') : 'ch1-quest01')
                   }}
                 />
               ) : selectedLessonId ? (
                 <InteractiveLessonView
+                  lessonId={selectedLessonId}
+                  courseId={selectedCourseId || 'python'}
                   onBackToCourse={() => setSelectedLessonId(null)}
                   onPreviousLesson={() => setSelectedLessonId(null)}
                   onNextLesson={() => {
@@ -314,7 +316,7 @@ export const AppShell: React.FC = () => {
                     if (user?.id && selectedCourseId && selectedLessonId) {
                       recordLessonCompletion(user.id, selectedCourseId, selectedLessonId, true)
                     }
-                    setSelectedChallengeId('ch4-ex03')
+                    setSelectedChallengeId(selectedLessonId ? selectedLessonId.replace('lesson1', 'ex01').replace('lesson3', 'ex03') : 'ch1-ex01')
                   }}
                 />
               ) : selectedCourseId ? (
