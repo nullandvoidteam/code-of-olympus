@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Users, Hammer, MonitorSmartphone } from "lucide-react";
+import { Users, Hammer, MonitorSmartphone, Trophy, Code2, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 const usps = [
@@ -25,6 +25,27 @@ const usps = [
     desc: "Choose your world (Spartan, Space, Cyberpunk) and re-skin your entire workspace. Aesthetics matter when you're grinding.",
     color: "text-accent",
     bgColor: "bg-accent/10",
+  },
+  {
+    icon: Trophy,
+    title: "Global Rankings & Sorting",
+    desc: "Climb the Global Leaderboards and dynamically sort your Practice Arena challenges to always find the perfect match for your skill level.",
+    color: "text-amber-500",
+    bgColor: "bg-amber-500/10",
+  },
+  {
+    icon: Code2,
+    title: "Dynamic Language Scaffolding",
+    desc: "Venture beyond JS and Python. Our platform dynamically supports obscure language paths to keep your skills sharp.",
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500/10",
+  },
+  {
+    icon: Zap,
+    title: "Dynamic Rules Engine",
+    desc: "A fully configurable backend rules engine evaluates your actions, levels, and XP in real-time to instantly award custom achievements.",
+    color: "text-indigo-500",
+    bgColor: "bg-indigo-500/10",
   },
 ];
 

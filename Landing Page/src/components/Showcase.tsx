@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, Swords, FolderGit2 } from "lucide-react";
+import { Terminal, Swords, FolderGit2, Trophy, Settings } from "lucide-react";
 
 const tabs = [
   {
@@ -22,6 +22,18 @@ const tabs = [
     icon: FolderGit2,
     title: "Forge Workspace",
     desc: "A multi-file project builder. Once a blueprint is forged, push it to GitHub with a single click.",
+  },
+  {
+    id: "ranking",
+    icon: Trophy,
+    title: "Global Ranking Arena",
+    desc: "Dynamically sort, filter, and challenge top players across the platform's global leaderboards.",
+  },
+  {
+    id: "rules",
+    icon: Settings,
+    title: "Admin Rules Engine",
+    desc: "Configure achievement triggers on the fly. Evaluate actions in real-time without modifying any source code.",
   },
 ];
 
@@ -139,6 +151,39 @@ export default function Showcase() {
                            <div className="h-12 bg-primary/20 pixel-border border-primary flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-colors">
                              <span className="font-retro text-xs text-primary flex items-center gap-2"><FolderGit2 className="w-4 h-4"/> PUSH TO GITHUB</span>
                            </div>
+                        </div>
+                      </div>
+                    )}
+                    {activeTab === "ranking" && (
+                      <div className="flex flex-col h-full gap-4">
+                        <div className="flex justify-between items-center bg-card p-2 pixel-border border-amber-500/50">
+                          <span className="font-retro text-xs text-amber-500">GLOBAL LEADERBOARD</span>
+                          <span className="font-retro text-xs text-muted">SORT: ELO RATING</span>
+                        </div>
+                        <div className="flex-grow bg-card/50 pixel-border p-4 flex flex-col gap-2 font-mono text-xs text-amber-400">
+                          <div className="flex justify-between border-b border-amber-500/30 pb-1">
+                            <span>1. AL3X_M</span> <span>4850 XP</span>
+                          </div>
+                          <div className="flex justify-between border-b border-amber-500/30 pb-1 text-muted">
+                            <span>2. LUNA_99</span> <span>4720 XP</span>
+                          </div>
+                          <div className="flex justify-between border-b border-amber-500/30 pb-1 text-muted">
+                            <span>3. NEO_DEV</span> <span>4500 XP</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {activeTab === "rules" && (
+                      <div className="flex flex-col h-full gap-4">
+                        <div className="flex justify-between items-center bg-card p-2 pixel-border border-indigo-500/50">
+                          <span className="font-retro text-xs text-indigo-500">ACHIEVEMENT TRIGGER CONFIG</span>
+                        </div>
+                        <div className="flex-grow bg-black pixel-border p-4 font-mono text-xs text-indigo-300">
+                          // Rules Engine Evaluation<br/><br/>
+                          <span className="text-muted">IF</span> EVENT_TYPE === 'LEVEL_UP'<br/>
+                          <span className="text-muted">AND</span> NEW_LEVEL &gt;= 5<br/>
+                          <span className="text-indigo-500">THEN</span> UNLOCK_ACHIEVEMENT('Veteran Coder')<br/><br/>
+                          <span className="text-green-500">&gt; Trigger successfully registered.</span>
                         </div>
                       </div>
                     )}
