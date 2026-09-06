@@ -169,7 +169,7 @@ export const TeamArcadePage: React.FC = () => {
             <img
               src="/extracted/team_arcade_art.jpg"
               alt="Team Arcade Art"
-              className="w-full h-full object-cover mix-blend-multiply"
+              className="w-full h-full object-contain mix-blend-multiply"
             />
           </div>
 

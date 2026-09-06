@@ -264,10 +264,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   return (
     <div
-      className="flex-1 w-full p-3 sm:p-6 lg:p-8 transition-colors duration-300 select-none pb-24"
+      className={cn(
+        "flex-1 w-full p-3 sm:p-6 lg:p-8 transition-colors duration-300 select-none pb-24",
+        isClassic ? "text-stone-900" : ""
+      )}
       style={{
         background: 'transparent',
-        color: 'var(--theme-text-primary, #E8D5D5)',
+        color: isClassic ? undefined : 'var(--theme-text-primary, #E8D5D5)',
         fontFamily: 'var(--theme-font-body, "Inter", sans-serif)',
       }}
     >

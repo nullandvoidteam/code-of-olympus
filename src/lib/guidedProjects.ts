@@ -1410,7 +1410,9 @@ export async function submitAndValidateStage({
 
     // 4. Retrieve configured test cases (handles both 'tests' and 'test_cases')
     const testCases: IOTestCase[] = getStageTestCases(stage.validation_config)
-    if (testCases.length === 0) {
+    const isBehavioralProject = projectId === 'cdd3a825-80fe-4cf1-a3a3-349871d15598'
+    
+    if (testCases.length === 0 && !isBehavioralProject) {
       return {
         passed: false,
         executionStatus: 'execution_error',
