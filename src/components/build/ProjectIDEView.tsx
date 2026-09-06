@@ -193,6 +193,7 @@ const PREVIEW_HTML = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8"/>
+<script>window.print = function() { console.log('Print dialog intercepted.'); };</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui,sans-serif}
 body{background:#f8fafc;color:#334155}

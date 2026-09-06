@@ -421,7 +421,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                 </button>
               </div>
               <span className="text-[11px] text-slate-500 flex items-center gap-1">
-                🛡️ Complete today&apos;s challenge to protect your 7-day streak.
+                🛡️ Complete today&apos;s challenge to protect your {userProfile?.streak ?? 0}-day streak.
               </span>
             </div>
           </div>
@@ -841,7 +841,7 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                   </button>
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1C0A0A] border border-[#8C2828] text-[11px] text-[#FF8A80] font-medium">
                     <Flame className="w-3.5 h-3.5 text-[#FF3D00] animate-pulse" />
-                    Slay today&apos;s trial to sustain your 7-day war streak.
+                    Slay today&apos;s trial to sustain your {userProfile?.streak ?? 0}-day war streak.
                   </div>
                 </div>
               </div>
@@ -1341,7 +1341,7 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                   </button>
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#101730] border border-[#2A3A65] text-[11px] text-slate-300 font-medium">
                     <Flame className="w-3.5 h-3.5 text-[#FF2A34] animate-pulse" />
-                    Solve today to sustain your 7-day Spider web streak.
+                    Solve today to sustain your {userProfile?.streak ?? 0}-day Spider web streak.
                   </div>
                 </div>
               </div>
@@ -1664,3 +1664,4 @@ export const PracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
   }
   return <GodOfWarPracticeArenaView {...sharedProps} />
 }
+

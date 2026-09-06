@@ -77,9 +77,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { theme } = useTheme()
 
   const displayName = profile?.full_name || profile?.username || user?.email?.split('@')[0] || (theme === 'spiderman' ? 'Peter Parker' : theme === 'classic' ? 'Alex Morgan' : 'Spartan Warrior')
-  const level = profile?.level ?? 12
-  const xp = profile?.xp ?? 4850
-  const streak = profile?.streak ?? 7
+  const level = profile?.level ?? 1
+  const xp = profile?.xp ?? 0
+  const streak = profile?.streak ?? 0
 
   const navItems = [
     { key: 'dashboard' as NavItemKey, label: 'Dashboard', icon: Shield },

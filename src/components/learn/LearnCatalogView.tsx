@@ -72,7 +72,7 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-7 text-left pb-20 select-none animate-in fade-in duration-300 font-sans">
       {/* 1. HERO BANNER */}
       <div className="bg-[#faf7f2] rounded-3xl p-6 sm:p-8 border border-[#ece7df] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden min-h-[150px]">
-        
+
         {/* Background Image (Dashboard style) */}
         <div className="absolute right-0 top-0 bottom-0 w-2/3 hidden md:flex items-center justify-end overflow-hidden pointer-events-none opacity-80">
           <img
@@ -96,19 +96,6 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
           <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed">
             Master programming from the ground up with structured adventure paths, interactive editor challenges, and verified project certificates.
           </p>
-        </div>
-
-        {/* Quick Stats Banner */}
-        <div className="flex items-center gap-3 shrink-0 z-10">
-          <div className="bg-white/80 backdrop-blur border border-emerald-200/50 rounded-2xl p-4 flex items-center gap-3 shadow-sm">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-xl">
-              🏆
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-emerald-800">Level 12</span>
-              <span className="text-[10px] text-emerald-600 font-bold uppercase">4,850 XP Earned</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -164,8 +151,8 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
               type="button"
               onClick={() => setActiveCategory(cat.key)}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeCategory === cat.key
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
             >
               {cat.label}
@@ -246,8 +233,8 @@ const ClassicLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                 type="button"
                 onClick={() => onSelectCourse?.(c.id)}
                 className={`w-full py-2 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-all ${c.status === 'completed'
-                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                    : 'btn-gamified-3d btn-gamified-3d-primary text-white'
+                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  : 'btn-gamified-3d btn-gamified-3d-primary text-white'
                   }`}
               >
                 <span>
@@ -515,8 +502,8 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                   type="button"
                   onClick={() => setActiveCategory(cat.key)}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${isActive
-                      ? 'bg-gradient-to-r from-[#8B0000] to-[#550A0A] text-[#FFE4E4] border border-[#FF3D00] shadow-[0_0_15px_rgba(255,61,0,0.4)]'
-                      : 'bg-[#120A0A] text-[#9E8B8B] hover:text-[#F5E8E8] border border-[#2D1515] hover:border-[#522020]'
+                    ? 'bg-gradient-to-r from-[#8B0000] to-[#550A0A] text-[#FFE4E4] border border-[#FF3D00] shadow-[0_0_15px_rgba(255,61,0,0.4)]'
+                    : 'bg-[#120A0A] text-[#9E8B8B] hover:text-[#F5E8E8] border border-[#2D1515] hover:border-[#522020]'
                     }`}
                 >
                   <span className="text-[#FF5722] text-[11px]">{cat.rune}</span>
@@ -1039,10 +1026,10 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                 {/* Node rune tablet */}
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xs shadow-lg transition-all ${isCompleted
-                      ? 'bg-[#102A1C] text-[#00E5FF] border border-[#00E5FF]/60 shadow-[0_0_12px_rgba(0,229,255,0.4)]'
-                      : isCurrent
-                        ? 'bg-[#2A0E0E] text-[#FF5722] border-2 border-[#FF3D00] shadow-[0_0_16px_rgba(255,61,0,0.6)] animate-pulse'
-                        : 'bg-[#140808] text-[#554040] border border-[#2D1414]'
+                    ? 'bg-[#102A1C] text-[#00E5FF] border border-[#00E5FF]/60 shadow-[0_0_12px_rgba(0,229,255,0.4)]'
+                    : isCurrent
+                      ? 'bg-[#2A0E0E] text-[#FF5722] border-2 border-[#FF3D00] shadow-[0_0_16px_rgba(255,61,0,0.6)] animate-pulse'
+                      : 'bg-[#140808] text-[#554040] border border-[#2D1414]'
                     }`}
                 >
                   {isCompleted ? (
@@ -1064,10 +1051,10 @@ const GodOfWarLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                   <span
                     style={{ fontFamily: "'Cinzel', serif" }}
                     className={`text-[11px] font-bold mt-0.5 ${isCurrent
-                        ? 'text-[#FF5722]'
-                        : isCompleted
-                          ? 'text-[#00E5FF]'
-                          : 'text-[#554040]'
+                      ? 'text-[#FF5722]'
+                      : isCompleted
+                        ? 'text-[#00E5FF]'
+                        : 'text-[#554040]'
                       }`}
                   >
                     {node.sub}
@@ -1411,10 +1398,10 @@ const SpiderManLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                 if (node.status !== 'locked') onSelectCourse?.('python')
               }}
               className={`p-3.5 rounded-xl border flex flex-col justify-between gap-2 transition-all ${node.status === 'completed'
-                  ? 'bg-[#101730] border-emerald-500/40 hover:border-emerald-400 cursor-pointer'
-                  : node.status === 'current'
-                    ? 'bg-gradient-to-b from-[#182346] to-[#101730] border-[#00F0FF] shadow-[0_0_16px_rgba(0,240,255,0.3)] cursor-pointer'
-                    : 'bg-[#0B1021]/60 border-[#2A3A65]/60 opacity-60'
+                ? 'bg-[#101730] border-emerald-500/40 hover:border-emerald-400 cursor-pointer'
+                : node.status === 'current'
+                  ? 'bg-gradient-to-b from-[#182346] to-[#101730] border-[#00F0FF] shadow-[0_0_16px_rgba(0,240,255,0.3)] cursor-pointer'
+                  : 'bg-[#0B1021]/60 border-[#2A3A65]/60 opacity-60'
                 }`}
             >
               <div className="flex items-center justify-between text-[10px] font-bold">
@@ -1460,8 +1447,8 @@ const SpiderManLearnCatalogView: React.FC<LearnCatalogViewProps> = ({
                 type="button"
                 onClick={() => setActiveCategory(cat.key)}
                 className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 border ${activeCategory === cat.key
-                    ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
-                    : 'bg-[#151E3A] text-slate-400 border-[#2A3A65] hover:text-white'
+                  ? 'bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] text-white border-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                  : 'bg-[#151E3A] text-slate-400 border-[#2A3A65] hover:text-white'
                   }`}
               >
                 <span>{cat.rune}</span>

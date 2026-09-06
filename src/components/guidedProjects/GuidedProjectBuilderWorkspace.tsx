@@ -129,23 +129,13 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
           setProjectCompleted(true)
         }
 
-        // Set initial active stage only if not already actively working on a stage
+        // Initially show Roadmap only (no active stage)
         setActiveStage((prevActive) => {
-          if (prevActive && res.stages.some((s) => s.id === prevActive.id)) {
-            const updated = res.stages.find((s) => s.id === prevActive.id)
+          if (prevActive && res.stages.some((s: any) => s.id === prevActive.id)) {
+            const updated = res.stages.find((s: any) => s.id === prevActive.id)
             return updated || prevActive
           }
-          const current = res.currentStage || res.stages.find((s) => s.is_current) || res.stages[0]
-          const guide = getStageGuide(projectId, current.stage_order, current.title, current.instructions)
-          const savedDraft = localStorage.getItem(`draft_${userId}_${projectId}_${current.id}`)
-          const initialCode =
-            savedDraft ||
-            current.student_code ||
-            guide.suggestedStarterCode ||
-            current.starter_code ||
-            ''
-          setCode(initialCode)
-          return current
+          return null
         })
       } catch (err: any) {
         console.error('Failed to load project workspace:', err)
@@ -584,11 +574,12 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
       </div>
 
       {/* ============================================================ */}
-      {/* 2. MAIN 2-COLUMN WORKSPACE: ROADMAP (LEFT) | CODING (RIGHT)   */}
+      {/* 2. MAIN WORKSPACE: ROADMAP OR CODING WORKSPACE                */}
       {/* ============================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start w-full min-w-0">
-        {/* ── LEFT COLUMN: STAGE NAVIGATION / ROADMAP (3-4 Cols) ──── */}
-        <div className="lg:col-span-4 xl:col-span-3 min-w-0 flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-5 items-start w-full min-w-0">
+        {/* ── STAGE NAVIGATION / ROADMAP ──── */}
+        {!activeStage && (
+        <div className="col-span-1 flex flex-col gap-4 max-w-3xl mx-auto w-full">
           <div className="bg-white rounded-2xl p-4 border border-stone-200 shadow-xs flex flex-col gap-3">
             <div className="flex items-center justify-between pb-2 border-b border-stone-100">
               <span className="text-xs font-pixel uppercase font-bold text-stone-700 tracking-wider flex items-center gap-1.5">
@@ -666,9 +657,24 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
             </div>
           </div>
         </div>
+        )}
 
-        {/* ── RIGHT COLUMN: LEARNING WORKSPACE (8-9 Cols) ────────── */}
-        <div className="lg:col-span-8 xl:col-span-9 min-w-0 flex flex-col gap-4">
+        {/* ── LEARNING WORKSPACE ────────── */}
+        {activeStage && (
+        <div className="col-span-1 flex flex-col gap-4 w-full">
+          <div className="flex items-center gap-2 mb-2">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveStage(null)
+                setSubmissionResult(null)
+                setTerminalOutput(null)
+              }}
+              className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 border border-stone-200 text-stone-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Stages
+            </button>
+          </div>
           {/* A. STAGE BRIEFING & INSTRUCTIONS CARD */}
           <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-xs flex flex-col gap-4">
             <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -1116,6 +1122,7 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
             </div>
           </div>
         </div>
+        )}
       </div>
 
       {/* ============================================================ */}

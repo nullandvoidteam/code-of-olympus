@@ -44,8 +44,9 @@ function runJavaScriptInSandbox(sourceCode: string): ExecutionResult {
       },
     }
 
-    const runner = new Function('console', `"use strict";\n${sourceCode}`)
-    runner(customConsole)
+    // Pass customConsole as both console and print to intercept accidental print() calls in JS
+    const runner = new Function('console', 'print', `"use strict";\n${sourceCode}`)
+    runner(customConsole, customConsole.log)
 
     const isRuntimeErr = errs.length > 0 && logs.length === 0
     return {

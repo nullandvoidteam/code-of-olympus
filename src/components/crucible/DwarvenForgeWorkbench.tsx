@@ -53,18 +53,18 @@ export const StageAnvilTrack: React.FC<StageAnvilTrackProps> = ({ stages, active
                 background: isDone
                   ? 'linear-gradient(135deg, rgba(197,155,39,0.35), rgba(120,78,16,0.25))'
                   : isInProgress
-                  ? C.crimsonDim
-                  : 'rgba(20,12,12,0.7)',
+                    ? C.crimsonDim
+                    : 'rgba(20,12,12,0.7)',
                 border: isDone
                   ? `1.5px solid ${C.gold}`
                   : isInProgress
-                  ? `1.5px solid ${C.crimson}`
-                  : `1px solid ${C.border}`,
+                    ? `1.5px solid ${C.crimson}`
+                    : `1px solid ${C.border}`,
                 boxShadow: isDone
                   ? `0 0 12px rgba(197,155,39,0.3)`
                   : isInProgress
-                  ? `0 0 14px rgba(220,38,38,0.35), 0 0 0 3px ${isActive ? 'rgba(220,38,38,0.15)' : 'transparent'}`
-                  : 'none',
+                    ? `0 0 14px rgba(220,38,38,0.35), 0 0 0 3px ${isActive ? 'rgba(220,38,38,0.15)' : 'transparent'}`
+                    : 'none',
                 cursor: isLocked ? 'not-allowed' : 'pointer',
               }}
             >
@@ -115,24 +115,6 @@ export const DwarvenForgeWorkbench: React.FC<DwarvenForgeWorkbenchProps> = ({ pr
         className="px-6 py-4 flex flex-col gap-3"
         style={{ background: '#0B0808', borderBottom: `1px solid ${C.border}`, boxShadow: `0 2px 20px rgba(0,0,0,0.6)` }}
       >
-        {/* Back + Breadcrumb */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-xs transition-colors"
-            style={{ color: C.textSecondary, fontFamily: "'Cinzel', serif" }}
-            onMouseEnter={e => (e.currentTarget.style.color = C.gold)}
-            onMouseLeave={e => (e.currentTarget.style.color = C.textSecondary)}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            The Dwarven Forge
-          </button>
-          <span style={{ color: C.textMuted }}>›</span>
-          <span className="text-xs font-bold" style={{ color: C.textPrimary, fontFamily: "'Cinzel', serif" }}>
-            {project?.title ?? 'Loading Blueprint…'}
-          </span>
-        </div>
 
         {project && (
           <div className="flex items-start gap-4 flex-wrap">
