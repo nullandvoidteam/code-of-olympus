@@ -244,8 +244,12 @@ export const AppShell: React.FC = () => {
                     : selectedCourseId
                       ? `Course / ${COURSE_CATALOG.find((c) => c.id === selectedCourseId)?.title || 'Course Details'}`
                       : null
-              : activeTab === 'practice' && practiceBriefingId
-                ? 'Practice / Challenge Arena / Reverse the String'
+              : activeTab === 'practice'
+                ? crucibleChallengeId
+                  ? 'Practice / Challenge Arena / Coding Workspace'
+                  : practiceBriefingId
+                    ? 'Practice / Challenge Arena / Challenge Briefing'
+                    : null
                 : null
           }
           onOpenLumi={() => {
@@ -338,7 +342,7 @@ export const AppShell: React.FC = () => {
           {activeTab === 'practice' && (
             crucibleChallengeId ? (
               <CrucibleWorkspace
-                challenge={getCrucibleChallenge(crucibleChallengeId) ?? getCrucibleChallenge('reverse-string')!}
+                challengeId={crucibleChallengeId}
                 userId={user?.id}
                 onBack={() => setCrucibleChallengeId(null)}
                 onNextChallenge={() => setCrucibleChallengeId(null)}
@@ -358,9 +362,10 @@ export const AppShell: React.FC = () => {
                 onStartChallenge={(id?: string) => {
                   if (id) {
                     setCrucibleChallengeId(id)
-                  } else {
-                    setPracticeBriefingId('reverse-string')
                   }
+                }}
+                onViewBriefing={(id: string) => {
+                  setPracticeBriefingId(id)
                 }}
               />
             )

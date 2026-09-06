@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
-import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react'
+import { ArrowLeft, Maximize2, Minimize2, Loader2 } from 'lucide-react'
 import type { Challenge, ChallengeProgress } from '../../lib/challenges'
-import { recordChallengeSubmission } from '../../lib/challenges'
+import { recordChallengeSubmission, fetchChallengeById } from '../../lib/challenges'
 import { executeCode, type ExecutionResult } from '../../lib/execution'
 import { awardXp } from '../../lib/gamification'
+import { getCrucibleChallenge } from './challengeData'
 import { ChallengeBriefing } from './ChallengeBriefing'
 import { CodeEditorPane } from './CodeEditorPane'
 import { ExecutionConsole } from './ExecutionConsole'
@@ -43,7 +44,8 @@ function deriveTestCases(
 }
 
 interface CrucibleWorkspaceProps {
-  challenge: Challenge
+  challenge?: Challenge
+  challengeId?: string
   progress?: ChallengeProgress
   userId?: string
   onBack: () => void
@@ -51,8 +53,43 @@ interface CrucibleWorkspaceProps {
 }
 
 export const CrucibleWorkspace: React.FC<CrucibleWorkspaceProps> = ({
-  challenge, progress, userId, onBack, onNextChallenge,
+  challenge: propChallenge,
+  challengeId,
+  progress,
+  userId,
+  onBack,
+  onNextChallenge,
 }) => {
+  const [challenge, setChallenge] = useState<Challenge>(
+    propChallenge || (challengeId ? getCrucibleChallenge(challengeId) : null) || getCrucibleChallenge('reverse-string')!
+  )
+  const [loadingChallenge, setLoadingChallenge] = useState<boolean>(!propChallenge && !!challengeId)
+
+  useEffect(() => {
+    let isMounted = true
+    if (propChallenge) {
+      setChallenge(propChallenge)
+      setLoadingChallenge(false)
+      return
+    }
+    if (challengeId) {
+      setLoadingChallenge(true)
+      fetchChallengeById(challengeId).then((data) => {
+        if (isMounted) {
+          if (data) {
+            setChallenge(data)
+          } else {
+            const fallback = getCrucibleChallenge(challengeId) || getCrucibleChallenge('reverse-string')!
+            setChallenge(fallback)
+          }
+          setLoadingChallenge(false)
+        }
+      })
+    }
+    return () => {
+      isMounted = false
+    }
+  }, [propChallenge, challengeId])
   const [code, setCode] = useState(challenge.starter_code ?? `# Write your solution here\n`)
   const [isRunning, setIsRunning] = useState(false)
   const [result, setResult] = useState<ExecutionResult | null>(null)
@@ -130,6 +167,20 @@ export const CrucibleWorkspace: React.FC<CrucibleWorkspaceProps> = ({
     setShowVictory(false)
     // Solution is revealed in ChallengeBriefing when isCompleted = true
   }, [])
+
+  if (loadingChallenge) {
+    return (
+      <div
+        className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-3"
+        style={{ background: '#060404', fontFamily: '"JetBrains Mono", monospace' }}
+      >
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+        <span className="text-sm font-semibold tracking-wide text-[#E8D5D5]">
+          Loading Trial from Supabase...
+        </span>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col"

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   Search,
   ChevronRight,
@@ -18,11 +18,34 @@ import {
   Trophy,
 } from 'lucide-react'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
+import { useChallenges, type ChallengeWithProgress } from '../../lib/challenges'
+import { supabase } from '../../lib/supabase'
 import { SpiderNetDecal } from '../ui/SpiderNetDecal'
 import { SpiderMaskSticker, ThwipSticker, SpiderSenseSticker } from '../ui/SpiderStickers'
 
-interface PracticeArenaViewProps {
+export interface PracticeArenaViewProps {
   onStartChallenge?: (id?: string) => void
+  onViewBriefing?: (id: string) => void
+}
+
+export interface PracticeArenaSharedProps extends PracticeArenaViewProps {
+  challenges?: ChallengeWithProgress[]
+  loading?: boolean
+  userProfile?: any
+  leaderboardUsers?: any[]
+}
+
+function getChallengeEmoji(lang?: string, category?: string): string {
+  const l = (lang || category || '').toLowerCase()
+  if (l.includes('python') || l.includes('py')) return '🐍'
+  if (l.includes('javascript') || l.includes('js')) return '⚡'
+  if (l.includes('html') || l.includes('web')) return '🌐'
+  if (l.includes('css')) return '🎨'
+  if (l.includes('react')) return '⚛️'
+  if (l.includes('sql') || l.includes('data')) return '🗄️'
+  if (l.includes('algo')) return '🧠'
+  return '⚔️'
 }
 
 /* ─── Data ──────────────────────────────────────────────────────────────────── */
@@ -47,6 +70,7 @@ interface ChallengeCard {
   isDaily?: boolean
   emoji: string
   tierName: string
+  isCompleted?: boolean
 }
 
 const CHALLENGES: ChallengeCard[] = [
@@ -204,7 +228,13 @@ const SPIDERMAN_LEADERBOARD = [
 /* ========================================================================= */
 /* CLASSIC PRACTICE ARENA (Matches Screenshot 3 Exactly)                     */
 /* ========================================================================= */
-const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartChallenge }) => {
+const ClassicPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
+  onStartChallenge,
+  onViewBriefing,
+  challenges: propChallenges,
+  userProfile,
+  leaderboardUsers,
+}) => {
   const [techFilter, setTechFilter] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('Default')
@@ -219,6 +249,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
       xp: 75,
       time: '5 min',
       emoji: '🐍',
+      isCompleted: false,
     },
     {
       id: 'fizzbuzz',
@@ -229,6 +260,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
       xp: 80,
       time: '5 min',
       emoji: '⚡',
+      isCompleted: false,
     },
     {
       id: 'palindrome',
@@ -239,6 +271,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
       xp: 75,
       time: '10 min',
       emoji: '🔁',
+      isCompleted: false,
     },
     {
       id: 'two-sum',
@@ -249,18 +282,36 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
       xp: 125,
       time: '15 min',
       emoji: '🎯',
+      isCompleted: false,
     },
   ]
 
-  const filtered = classicChallenges.filter(c => {
+  const challengeList = (propChallenges && propChallenges.length > 0)
+    ? propChallenges.map(({ challenge, isCompleted }) => ({
+        id: challenge.id,
+        title: challenge.title,
+        description: challenge.description || challenge.instructions || '',
+        difficulty: challenge.difficulty || 'Easy',
+        lang: (challenge.language || challenge.category || 'Python').charAt(0).toUpperCase() + (challenge.language || challenge.category || 'Python').slice(1),
+        xp: challenge.xp_reward ?? 75,
+        time: challenge.difficulty?.toLowerCase() === 'hard' ? '25 min' : challenge.difficulty?.toLowerCase() === 'medium' ? '15 min' : '5 min',
+        emoji: getChallengeEmoji(challenge.language, challenge.category),
+        isCompleted,
+      }))
+    : classicChallenges
+
+  const dailyChallenge = challengeList.find((c) => !c.isCompleted) || challengeList[0]
+
+  const filtered = challengeList.filter(c => {
     const matchSearch = searchQuery === '' || c.title.toLowerCase().includes(searchQuery.toLowerCase()) || c.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchTech = techFilter === 'All' || c.lang === techFilter
+    const norm = techFilter.toLowerCase().replace('/css', '').replace('all', '').trim()
+    const matchTech = techFilter === 'All' || c.lang.toLowerCase().includes(norm)
     return matchSearch && matchTech
   })
 
   const sortedCards = [...filtered].sort((a, b) => {
     if (sortBy === 'Difficulty') {
-      const diffOrder: Record<string, number> = { Easy: 1, Medium: 2, Hard: 3 }
+      const diffOrder: Record<string, number> = { Easy: 1, Beginner: 1, Medium: 2, Intermediate: 2, Hard: 3, Advanced: 3 }
       return (diffOrder[a.difficulty] ?? 1) - (diffOrder[b.difficulty] ?? 1)
     }
     if (sortBy === 'XP Reward (High to Low)') {
@@ -289,7 +340,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
               <div className="flex items-center gap-3 pt-2 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => onStartChallenge?.('reverse-string')}
+                  onClick={() => onStartChallenge?.(dailyChallenge?.id)}
                   className="btn-gamified-3d btn-gamified-3d-primary px-6 py-3 rounded-xl text-sm font-extrabold text-white flex items-center gap-2 cursor-pointer"
                 >
                   <span>Start Daily Challenge</span>
@@ -330,23 +381,23 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
                 </span>
               </div>
               <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                Reverse the String
+                {dailyChallenge?.title || 'Reverse the String'}
               </h2>
               <p className="text-xs text-slate-600 leading-relaxed max-w-md">
-                Write a function that reverses a string without using Python&apos;s built-in reverse method.
+                {dailyChallenge?.description || 'Solve today\'s featured coding challenge and sharpen your skills.'}
               </p>
               <div className="flex items-center gap-3 flex-wrap text-xs font-medium mt-1">
                 <span className="text-sky-700 font-bold flex items-center gap-1">
-                  🐍 Python
+                  {dailyChallenge?.emoji} {dailyChallenge?.lang}
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-[11px]">
-                  Easy
+                  {dailyChallenge?.difficulty}
                 </span>
                 <span className="text-slate-500 flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" /> 5 min
+                  <Clock className="w-3.5 h-3.5" /> {dailyChallenge?.time}
                 </span>
                 <span className="text-amber-600 font-bold flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5" /> +75 XP
+                  <Sparkles className="w-3.5 h-3.5" /> +{dailyChallenge?.xp} XP
                 </span>
               </div>
             </div>
@@ -356,13 +407,13 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
               <div className="flex items-center gap-4">
                 <div className="text-center">
                   <div className="w-14 h-14 rounded-full border-2 border-slate-200 flex items-center justify-center text-xs font-bold text-slate-700">
-                    0%
+                    {dailyChallenge?.isCompleted ? '100%' : '0%'}
                   </div>
-                  <span className="text-[10px] text-slate-400 font-medium">0 / 1</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{dailyChallenge?.isCompleted ? '1 / 1' : '0 / 1'}</span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => onStartChallenge?.('reverse-string')}
+                  onClick={() => onStartChallenge?.(dailyChallenge?.id)}
                   className="btn-gamified-3d btn-gamified-3d-primary px-6 py-3 rounded-xl text-sm font-extrabold text-white flex items-center gap-2 cursor-pointer"
                 >
                   <span>Start Challenge</span>
@@ -477,19 +528,19 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm">
                   🎯
                 </div>
-                <span className="font-semibold text-slate-700">36 Challenges Solved</span>
+                <span className="font-semibold text-slate-700">{propChallenges ? propChallenges.filter(c => c.isCompleted).length : 0} Challenges Solved</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center text-sm">
                   ⚡
                 </div>
-                <span className="font-semibold text-slate-700">4 Day Streak</span>
+                <span className="font-semibold text-slate-700">{userProfile?.streak ?? 0} Day Streak</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
                   🏆
                 </div>
-                <span className="font-semibold text-slate-700">1,280 XP Earned</span>
+                <span className="font-semibold text-slate-700">{(userProfile?.xp ?? 0).toLocaleString()} XP Earned</span>
               </div>
             </div>
           </div>
@@ -503,7 +554,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
               🛡️
             </div>
             <div>
-              <div className="font-extrabold text-sm text-slate-900">7 Day Streak</div>
+              <div className="font-extrabold text-sm text-slate-900">{userProfile?.streak ?? 0} Day Streak</div>
               <span className="text-xs text-orange-600 font-semibold">Keep it up! 🔥</span>
             </div>
             <div className="flex items-center justify-center gap-2 pt-1">
@@ -513,7 +564,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
                 </div>
               ))}
               <div className="w-6 h-6 rounded-full border-2 border-emerald-500 flex items-center justify-center text-[10px] font-bold text-emerald-600">
-                5
+                {(userProfile?.streak ?? 0) + 1}
               </div>
             </div>
             <span className="text-[11px] text-slate-400 block pt-1">
@@ -527,7 +578,15 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
               TOP PRACTICERS
             </div>
             <div className="space-y-2">
-              {LEADERBOARD_CLASSIC.map((user) => (
+              {(leaderboardUsers && leaderboardUsers.length > 0
+                ? leaderboardUsers.map((u, i) => ({
+                    rank: i + 1,
+                    emoji: i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⚡',
+                    name: u.username || u.full_name || `Learner #${u.id.slice(0, 4)}`,
+                    xp: `${(u.xp || 0).toLocaleString()} XP`,
+                  }))
+                : LEADERBOARD_CLASSIC
+              ).map((user) => (
                 <div key={user.rank} className="flex items-center justify-between text-xs py-1 border-b border-slate-50 last:border-0">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-slate-400 w-4">{user.rank}</span>
@@ -545,8 +604,13 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
   )
 }
 
-const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
-  const { onStartChallenge } = props
+const GodOfWarPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
+  onStartChallenge,
+  onViewBriefing,
+  challenges: propChallenges,
+  userProfile,
+  leaderboardUsers,
+}) => {
   const [techFilter, setTechFilter] = useState('All Realms')
   const [levelFilter, setLevelFilter] = useState('All Tiers')
   const [sortBy, setSortBy] = useState('Spartan Favor')
@@ -554,12 +618,38 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
   const [showSortDropdown, setShowSortDropdown] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
 
-  const filteredCards = CHALLENGES.filter(c => {
+  const challengesList = (propChallenges && propChallenges.length > 0)
+    ? propChallenges.map(({ challenge, isCompleted }) => {
+        const diffUpper = (challenge.difficulty || 'Easy').toUpperCase()
+        const diff: 'EASY' | 'MEDIUM' | 'HARD' =
+          diffUpper.includes('HARD') || diffUpper.includes('ADVANCED') ? 'HARD' :
+          diffUpper.includes('MED') || diffUpper.includes('INTERMEDIATE') ? 'MEDIUM' : 'EASY'
+        return {
+          id: challenge.id,
+          title: challenge.title,
+          description: challenge.description || challenge.instructions || '',
+          difficulty: diff,
+          tag: diff === 'HARD' ? 'GOD OF WAR' : diff === 'MEDIUM' ? 'HERO' : 'MORTAL',
+          xp: challenge.xp_reward ?? (diff === 'HARD' ? 150 : diff === 'MEDIUM' ? 100 : 75),
+          lang: (challenge.language || challenge.category || 'Python').charAt(0).toUpperCase() + (challenge.language || challenge.category || 'Python').slice(1),
+          locked: false,
+          isDaily: false,
+          emoji: getChallengeEmoji(challenge.language, challenge.category),
+          tierName: diff === 'HARD' ? 'God of War' : diff === 'MEDIUM' ? 'Hero Tier' : 'Mortal Initiate',
+          isCompleted,
+        }
+      })
+    : CHALLENGES
+
+  const dailyChallenge = challengesList.find((c) => !c.isCompleted) || challengesList[0]
+
+  const filteredCards = challengesList.filter(c => {
     const matchSearch =
       searchQuery === '' ||
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchTech = techFilter === 'All Realms' || c.lang === techFilter
+    const norm = techFilter.toLowerCase().replace('all realms', '').replace('/css', '').replace('all', '').trim()
+    const matchTech = techFilter === 'All Realms' || norm === '' || c.lang.toLowerCase().includes(norm)
     const matchLevel =
       levelFilter === 'All Tiers' ||
       (levelFilter === 'Mortal' && c.difficulty === 'EASY') ||
@@ -627,7 +717,7 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
               <div className="flex items-center gap-3 pt-1 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => onStartChallenge?.('reverse-string')}
+                  onClick={() => onStartChallenge?.(dailyChallenge?.id)}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#8B0000] via-[#B91C1C] to-[#EF4444] hover:from-[#991B1B] hover:to-[#FF3D00] text-white font-bold text-xs sm:text-sm shadow-[0_0_18px_rgba(220,38,38,0.7)] cursor-pointer transition-all active:scale-95 border border-[#FF5722]/60"
                 >
                   <span style={{ fontFamily: "'Cinzel', serif" }}>ENTER DAILY BLOOD TRIAL</span>
@@ -685,21 +775,21 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
                 style={{ fontFamily: "'Cinzel', serif" }}
                 className="text-2xl font-black text-[#F5E8E8] tracking-wider uppercase"
               >
-                Invert the Runic Inscription
+                {dailyChallenge?.title || 'Invert the Runic Inscription'}
               </h2>
               <p className="text-xs text-[#A89898] leading-relaxed max-w-md">
-                Inscribe a battle function that reverses a sacred character string without using Python&apos;s standard reverse spells.
+                {dailyChallenge?.description || 'Inscribe a battle function that reverses a sacred character string without using high-level standard runes.'}
               </p>
               <div className="flex items-center gap-3 flex-wrap text-xs font-medium mt-1">
                 <span className="flex items-center gap-1 text-[#00E5FF]">
-                  🐍 Python 3.12
+                  {dailyChallenge?.emoji} {dailyChallenge?.lang}
                 </span>
                 <span className="px-2 py-0.5 rounded bg-[#102418] border border-[#00E5FF]/40 text-[#00E5FF] font-bold text-[11px]">
-                  Mortal Initiate
+                  {dailyChallenge?.tierName}
                 </span>
-                <span className="text-[#8C7A7A]">⏱ 5 min Trial</span>
+                <span className="text-[#8C7A7A]">⏱ Trial of Honor</span>
                 <span className="flex items-center gap-1 font-bold text-[#F5D060]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#F5D060]" /> +75 Hacksilver XP
+                  <Sparkles className="w-3.5 h-3.5 text-[#F5D060]" /> +{dailyChallenge?.xp} Hacksilver XP
                 </span>
               </div>
             </div>
@@ -733,17 +823,17 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
                         style={{ fontFamily: "'Cinzel', serif" }}
                         className="font-bold text-xs text-[#FF5722]"
                       >
-                        0%
+                        {dailyChallenge?.isCompleted ? '100%' : '0%'}
                       </span>
                     </div>
                   </div>
-                  <span className="font-mono text-[10px] text-[#6E5A5A] font-bold">0 / 1</span>
+                  <span className="font-mono text-[10px] text-[#6E5A5A] font-bold">{dailyChallenge?.isCompleted ? '1 / 1' : '0 / 1'}</span>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <button
                     type="button"
-                    onClick={() => onStartChallenge?.('reverse-string')}
+                    onClick={() => onStartChallenge?.(dailyChallenge?.id)}
                     className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#8B0000] to-[#550A0A] hover:from-[#A81010] hover:to-[#730E0E] text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all active:scale-95 border border-[#8C2828]"
                   >
                     <span style={{ fontFamily: "'Cinzel', serif" }}>ENTER ARENA</span>
@@ -952,9 +1042,9 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
             </div>
             <div className="flex flex-col gap-3">
               {[
-                { icon: '🎯', label: '36 Trials Slayed' },
-                { icon: '⚡', label: '4 Day War Streak' },
-                { icon: '🏆', label: '1,280 XP Hacksilver' },
+                { icon: '🎯', label: `${propChallenges ? propChallenges.filter(c => c.isCompleted).length : 0} Trials Slayed` },
+                { icon: '⚡', label: `${userProfile?.streak ?? 0} Day War Streak` },
+                { icon: '🏆', label: `${(userProfile?.xp ?? 0).toLocaleString()} XP Hacksilver` },
               ].map(stat => (
                 <div key={stat.label} className="flex items-center gap-3 text-sm">
                   <span className="text-xl w-8 shrink-0 text-center">{stat.icon}</span>
@@ -981,7 +1071,7 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
                     style={{ fontFamily: "'Cinzel', serif" }}
                     className="font-black text-xl text-[#F5D060] mt-1"
                   >
-                    7
+                    {userProfile?.streak ?? 0}
                   </span>
                 </div>
               </div>
@@ -992,7 +1082,7 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
                 style={{ fontFamily: "'Cinzel', serif" }}
                 className="font-black text-sm text-[#F5E8E8] uppercase tracking-wider"
               >
-                7 Day War Streak
+                {userProfile?.streak ?? 0} Day War Streak
               </p>
               <p className="text-xs text-[#FF5722] mt-0.5">Blades of Chaos Blazing 🔥</p>
             </div>
@@ -1008,7 +1098,15 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
             </div>
 
             <div className="flex flex-col gap-2">
-              {LEADERBOARD.map(entry => (
+              {(leaderboardUsers && leaderboardUsers.length > 0
+                ? leaderboardUsers.map((u, i) => ({
+                    rank: i + 1,
+                    emoji: i === 0 ? '⚡' : i === 1 ? '🪓' : i === 2 ? '🏹' : '🛡️',
+                    name: u.username || u.full_name || `Spartan #${u.id.slice(0, 4)}`,
+                    xp: `${(u.xp || 0).toLocaleString()} XP`,
+                  }))
+                : LEADERBOARD
+              ).map(entry => (
                 <div key={entry.rank} className="flex items-center gap-3">
                   <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-extrabold shrink-0 ${
                     entry.rank === 1 ? 'bg-[#C59B27] text-black font-black' :
@@ -1033,7 +1131,13 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
 /* ========================================================================= */
 /* SPIDER-MAN PRACTICE ARENA VIEW                                            */
 /* ========================================================================= */
-const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartChallenge }) => {
+const SpiderManPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
+  onStartChallenge,
+  onViewBriefing,
+  challenges: propChallenges,
+  userProfile,
+  leaderboardUsers,
+}) => {
   const [techFilter, setTechFilter] = useState('All Districts')
   const [levelFilter, setLevelFilter] = useState('All Tiers')
   const [sortBy, setSortBy] = useState('Spider Accuracy')
@@ -1041,12 +1145,38 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
   const [showSortDropdown, setShowSortDropdown] = useState(false)
   const carouselRef = useRef<HTMLDivElement>(null)
 
-  const filteredCards = SPIDERMAN_CHALLENGES.filter(c => {
+  const challengesList = (propChallenges && propChallenges.length > 0)
+    ? propChallenges.map(({ challenge, isCompleted }) => {
+        const diffUpper = (challenge.difficulty || 'Easy').toUpperCase()
+        const diff: 'EASY' | 'MEDIUM' | 'HARD' =
+          diffUpper.includes('HARD') || diffUpper.includes('ADVANCED') ? 'HARD' :
+          diffUpper.includes('MED') || diffUpper.includes('INTERMEDIATE') ? 'MEDIUM' : 'EASY'
+        return {
+          id: challenge.id,
+          title: challenge.title,
+          description: challenge.description || challenge.instructions || '',
+          difficulty: diff,
+          tag: diff === 'HARD' ? 'SPIDER-VERSE HERO' : diff === 'MEDIUM' ? 'QUEENS VIGILANTE' : 'NOVICE',
+          xp: challenge.xp_reward ?? (diff === 'HARD' ? 150 : diff === 'MEDIUM' ? 100 : 75),
+          lang: (challenge.language || challenge.category || 'Python').charAt(0).toUpperCase() + (challenge.language || challenge.category || 'Python').slice(1),
+          locked: false,
+          isDaily: false,
+          emoji: getChallengeEmoji(challenge.language, challenge.category),
+          tierName: diff === 'HARD' ? 'Spider-Verse Hero' : diff === 'MEDIUM' ? 'Queens Vigilante' : 'Friendly Neighborhood',
+          isCompleted,
+        }
+      })
+    : SPIDERMAN_CHALLENGES
+
+  const dailyChallenge = challengesList.find((c) => !c.isCompleted) || challengesList[0]
+
+  const filteredCards = challengesList.filter(c => {
     const matchSearch =
       searchQuery === '' ||
       c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchTech = techFilter === 'All Districts' || c.lang === techFilter
+    const norm = techFilter.toLowerCase().replace('all districts', '').replace('/css', '').replace('all', '').trim()
+    const matchTech = techFilter === 'All Districts' || norm === '' || c.lang.toLowerCase().includes(norm)
     const matchLevel =
       levelFilter === 'All Tiers' ||
       (levelFilter === 'Friendly Neighborhood' && c.difficulty === 'EASY') ||
@@ -1105,7 +1235,7 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
               <div className="flex items-center gap-3 pt-1 flex-wrap">
                 <button
                   type="button"
-                  onClick={() => onStartChallenge?.('reverse-string')}
+                  onClick={() => onStartChallenge?.(dailyChallenge?.id)}
                   className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] via-[#E21B24] to-[#1E3A8A] hover:brightness-110 text-white font-black text-xs sm:text-sm shadow-[0_0_20px_rgba(255,42,52,0.6)] cursor-pointer transition-all active:scale-95 border border-[#00F0FF]/50"
                 >
                   <span>ENTER DAILY WEB PATROL</span>
@@ -1151,21 +1281,21 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
                 </span>
               </div>
               <h2 className="text-2xl font-black text-white tracking-wide">
-                Web-Shooter Trajectory Invert
+                {dailyChallenge?.title || 'Web-Shooter Trajectory Invert'}
               </h2>
               <p className="text-xs text-slate-300 leading-relaxed max-w-md">
-                Invert a telemetry string to calibrate web recoil without using Python&apos;s standard reverse functions.
+                {dailyChallenge?.description || 'Invert a telemetry string to calibrate web recoil without using reverse functions.'}
               </p>
               <div className="flex items-center gap-3 flex-wrap text-xs font-medium mt-1">
                 <span className="flex items-center gap-1 text-[#00F0FF] font-bold">
-                  🐍 Python 3.12
+                  {dailyChallenge?.emoji} {dailyChallenge?.lang}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-cyan-950/60 border border-[#00F0FF]/40 text-[#00F0FF] font-bold text-[11px]">
-                  Friendly Neighborhood
+                  {dailyChallenge?.tierName}
                 </span>
-                <span className="text-slate-400">⏱ 5 min Trial</span>
+                <span className="text-slate-400">⏱ Mission Active</span>
                 <span className="flex items-center gap-1 font-bold text-[#FFD700]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#FFD700]" /> +75 Spider XP
+                  <Sparkles className="w-3.5 h-3.5 text-[#FFD700]" /> +{dailyChallenge?.xp} Spider XP
                 </span>
               </div>
             </div>
@@ -1193,17 +1323,17 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="font-bold text-xs text-[#00F0FF]">
-                        0%
+                        {dailyChallenge?.isCompleted ? '100%' : '0%'}
                       </span>
                     </div>
                   </div>
-                  <span className="font-mono text-[10px] text-slate-400 font-bold">0 / 1</span>
+                  <span className="font-mono text-[10px] text-slate-400 font-bold">{dailyChallenge?.isCompleted ? '1 / 1' : '0 / 1'}</span>
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <button
                     type="button"
-                    onClick={() => onStartChallenge?.('reverse-string')}
+                    onClick={() => onStartChallenge?.(dailyChallenge?.id)}
                     className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all active:scale-95 border border-[#FF2A34]"
                   >
                     <span>ENGAGE PATROL</span>
@@ -1412,7 +1542,7 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
               <span className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Flame className="w-4 h-4 text-[#FF2A34] animate-pulse" /> SPIDER WEB STREAK
               </span>
-              <span className="text-xs font-mono font-bold text-[#00F0FF]">7 DAYS</span>
+              <span className="text-xs font-mono font-bold text-[#00F0FF]">{userProfile?.streak ?? 0} DAYS</span>
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
               Complete at least 1 web mission daily to keep your streak alive and earn Web-Shooter XP multipliers.
@@ -1444,7 +1574,15 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
             </div>
 
             <div className="flex flex-col gap-2">
-              {SPIDERMAN_LEADERBOARD.map(entry => (
+              {(leaderboardUsers && leaderboardUsers.length > 0
+                ? leaderboardUsers.map((u, i) => ({
+                    rank: i + 1,
+                    emoji: i === 0 ? '🕸️' : i === 1 ? '⚡' : i === 2 ? '🕷️' : '🎸',
+                    name: u.username || u.full_name || `Spidey #${u.id.slice(0, 4)}`,
+                    xp: `${(u.xp || 0).toLocaleString()} XP`,
+                  }))
+                : SPIDERMAN_LEADERBOARD
+              ).map(entry => (
                 <div
                   key={entry.name}
                   className="flex items-center gap-2.5 p-2 rounded-xl bg-[#101730] border border-[#2A3A65] text-xs"
@@ -1493,11 +1631,36 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartC
 /* ========================================================================= */
 export const PracticeArenaView: React.FC<PracticeArenaViewProps> = (props) => {
   const { theme } = useTheme()
+  const { user, profile } = useAuth()
+  const { challenges, loading } = useChallenges(user?.id)
+  const [leaderboardUsers, setLeaderboardUsers] = useState<any[]>([])
+
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('id, username, full_name, xp')
+      .order('xp', { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setLeaderboardUsers(data)
+        }
+      })
+  }, [])
+
+  const sharedProps: PracticeArenaSharedProps = {
+    ...props,
+    challenges,
+    loading,
+    userProfile: profile,
+    leaderboardUsers,
+  }
+
   if (theme === 'classic') {
-    return <ClassicPracticeArenaView {...props} />
+    return <ClassicPracticeArenaView {...sharedProps} />
   }
   if (theme === 'spiderman') {
-    return <SpiderManPracticeArenaView {...props} />
+    return <SpiderManPracticeArenaView {...sharedProps} />
   }
-  return <GodOfWarPracticeArenaView {...props} />
+  return <GodOfWarPracticeArenaView {...sharedProps} />
 }
