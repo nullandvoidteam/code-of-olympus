@@ -48,8 +48,19 @@ export const FirstTimeDashboardView: React.FC<FirstTimeDashboardViewProps> = ({
       {/* ========================================================================= */}
       <div
         onClick={handleStartQuest}
-        className="w-full rounded-3xl overflow-hidden border border-[#ece7df] shadow-xs cursor-pointer hover:shadow-md transition-all relative min-h-[175px] bg-[#fbf9f4] flex items-center justify-between p-6 sm:p-8"
+        className="w-full rounded-3xl overflow-hidden border border-[#ece7df] shadow-xs cursor-pointer hover:shadow-md transition-all relative min-h-[175px] bg-[#fbf9f4] flex items-center justify-between p-6 sm:p-8 group"
       >
+        {/* Full Banner Canvas Image Background */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+          <img
+            src="/extracted/hero3_art_clean.png"
+            alt="Welcome Banner Canvas"
+            className="w-full h-full object-cover object-right sm:object-[85%_center] select-none transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#fbf9f4] via-[#fbf9f4]/85 to-transparent sm:via-[#fbf9f4]/65" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#fbf9f4]/30 via-transparent to-transparent" />
+        </div>
+
         <div className="flex flex-col gap-2 z-10 max-w-md sm:max-w-lg">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight leading-tight">
             Welcome to your coding adventure, {userName}.
@@ -58,15 +69,6 @@ export const FirstTimeDashboardView: React.FC<FirstTimeDashboardViewProps> = ({
           <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed">
             You&apos;ve created your character. Now it&apos;s time to write your first line of code.
           </p>
-        </div>
-
-        {/* Right illustration */}
-        <div className="absolute right-0 top-0 bottom-0 w-3/5 hidden md:flex items-center justify-end overflow-hidden pointer-events-none">
-          <img
-            src="/extracted/hero3_art_clean.png"
-            alt=""
-            className="h-full w-auto object-contain object-right"
-          />
         </div>
       </div>
 

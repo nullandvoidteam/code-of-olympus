@@ -36,6 +36,7 @@ import {
 } from '../../lib/arcade'
 import { fetchAdminChallenges, type Challenge } from '../../lib/challenges'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
 import { toast } from 'react-hot-toast'
 import { showQuestToast } from '../ui/GameToast'
 
@@ -63,6 +64,9 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
   battleToEdit,
 }) => {
   const { user } = useAuth()
+  const { theme } = useTheme()
+  const isGow = theme === 'gow'
+  const isSpiderman = theme === 'spiderman'
   const [activeTab, setActiveTab] = useState<'config' | 'questions'>('config')
 
   // Form Fields
@@ -367,19 +371,37 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl w-full max-w-4xl my-6 overflow-hidden flex flex-col max-h-[92vh]"
+          className={`rounded-3xl border-2 shadow-2xl w-full max-w-4xl my-6 overflow-hidden flex flex-col max-h-[92vh] ${
+            isGow
+              ? 'bg-gradient-to-b from-[#180A0A] to-[#0E0505] border-red-700/80 text-rose-100 shadow-[0_0_50px_rgba(220,38,38,0.4)]'
+              : isSpiderman
+              ? 'bg-gradient-to-b from-[#0E1632] to-[#080E24] border-cyan-400/70 text-white shadow-[0_0_40px_rgba(0,240,255,0.25)]'
+              : 'bg-white border-slate-200 text-slate-900'
+          }`}
         >
           {/* Modal Header */}
-          <div className="px-6 py-4 bg-gradient-to-r from-purple-50 via-slate-50 to-white border-b border-slate-200 flex items-center justify-between shrink-0">
+          <div className={`px-6 py-4 border-b flex items-center justify-between shrink-0 ${
+              isGow
+                ? 'bg-gradient-to-r from-[#200A0A] via-[#1A0808] to-[#120505] border-red-900/60'
+                : isSpiderman
+                ? 'bg-gradient-to-r from-[#0E1632] to-[#0A1026] border-cyan-900/60'
+                : 'bg-gradient-to-r from-purple-50 via-slate-50 to-white border-slate-200'
+            }`}>
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-2xl bg-purple-100 text-purple-700 border border-purple-200">
+              <div className={`p-2 rounded-2xl border ${
+                  isGow
+                    ? 'bg-[#250E0E] text-amber-400 border-red-800 shadow-[0_0_12px_rgba(220,38,38,0.4)]'
+                    : isSpiderman
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
+                    : 'bg-purple-100 text-purple-700 border-purple-200'
+                }`}>
                 <Swords className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-pixel text-base font-bold text-slate-900 uppercase tracking-wide">
-                  {isEditing ? 'Edit Arcade Battle' : 'Create Team Arcade Battle'}
+                <h3 className={`font-bold uppercase tracking-wide text-base ${isGow ? 'font-cinzel text-[#F5E8E8]' : 'font-pixel text-slate-900'}`}>
+                  {isEditing ? (isGow ? 'Edit Crucible War Trial' : 'Edit Arcade Battle') : (isGow ? 'Create Crucible War Trial' : 'Create Team Arcade Battle')}
                 </h3>
-                <p className="text-[11px] text-slate-500 font-medium">
+                <p className={`text-[11px] font-medium ${isGow ? 'text-stone-400' : 'text-slate-500'}`}>
                   {isEditing
                     ? `Updating parameters for Battle #${battleToEdit.id.slice(0, 8)}`
                     : 'Configure schedule, scoring rules, and select coding challenges.'}
@@ -389,21 +411,27 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200/70 transition-colors cursor-pointer"
+              className={`p-1.5 rounded-xl transition-colors cursor-pointer ${
+                isGow ? 'text-stone-400 hover:text-rose-200 hover:bg-[#250E0E]' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-200/70'
+              }`}
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Sub-Header Navigation Tabs: Config vs Questions */}
-          <div className="px-6 pt-3 bg-slate-50/70 border-b border-slate-200 flex items-center gap-2">
+          <div className={`px-6 pt-3 border-b flex items-center gap-2 ${isGow ? 'bg-[#140606] border-red-900/60' : 'bg-slate-50/70 border-slate-200'}`}>
             <button
               type="button"
               onClick={() => setActiveTab('config')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-pixel uppercase text-[11px] font-bold border-b-2 transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl uppercase text-[11px] font-bold border-b-2 transition-all cursor-pointer ${
                 activeTab === 'config'
-                  ? 'border-purple-600 text-purple-900 bg-white shadow-xs'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? isGow
+                    ? 'border-amber-400 text-amber-300 bg-[#1C0A0A] font-cinzel shadow-xs'
+                    : 'border-purple-600 text-purple-900 bg-white font-pixel shadow-xs'
+                  : isGow
+                  ? 'border-transparent text-stone-400 hover:text-rose-200 font-cinzel'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 font-pixel'
               }`}
             >
               <FileText className="w-4 h-4 text-purple-600" />
@@ -413,10 +441,14 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('questions')}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl font-pixel uppercase text-[11px] font-bold border-b-2 transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-t-xl uppercase text-[11px] font-bold border-b-2 transition-all cursor-pointer ${
                 activeTab === 'questions'
-                  ? 'border-purple-600 text-purple-900 bg-white shadow-xs'
-                  : 'border-transparent text-slate-500 hover:text-slate-800'
+                  ? isGow
+                    ? 'border-amber-400 text-amber-300 bg-[#1C0A0A] font-cinzel shadow-xs'
+                    : 'border-purple-600 text-purple-900 bg-white font-pixel shadow-xs'
+                  : isGow
+                  ? 'border-transparent text-stone-400 hover:text-rose-200 font-cinzel'
+                  : 'border-transparent text-slate-500 hover:text-slate-800 font-pixel'
               }`}
             >
               <ListOrdered className="w-4 h-4 text-emerald-600" />
@@ -424,7 +456,9 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
               <span
                 className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
                   selectedChallenges.length > 0
-                    ? 'bg-emerald-100 text-emerald-800'
+                    ? isGow
+                      ? 'bg-amber-950 text-amber-300 border border-amber-700'
+                      : 'bg-emerald-100 text-emerald-800'
                     : 'bg-slate-200 text-slate-600'
                 }`}
               >
@@ -865,18 +899,24 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
           </div>
 
           {/* Modal Footer */}
-          <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+          <div
+            className={`p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 ${
+              isGow
+                ? 'bg-[#120505] border-red-900/60 text-stone-300'
+                : 'bg-slate-50 border-slate-200'
+            }`}
+          >
             <div className="text-[11px] text-slate-500">
               {isLocked ? (
-                <span className="text-amber-700 font-medium">
+                <span className="text-amber-500 font-medium">
                   🔒 Battle is {battleToEdit?.effective_status}. Questions and parameters cannot be altered.
                 </span>
               ) : selectedChallenges.length === 0 ? (
-                <span className="text-slate-500">
+                <span className={isGow ? 'text-stone-400' : 'text-slate-500'}>
                   Select at least 1 exercise before publishing this battle.
                 </span>
               ) : (
-                <span className="text-emerald-700 font-medium">
+                <span className="text-emerald-400 font-medium">
                   ✓ {selectedChallenges.length} coding challenge{selectedChallenges.length > 1 ? 's' : ''} locked in deterministic sequence.
                 </span>
               )}
@@ -887,7 +927,9 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200/60 font-bold transition-all cursor-pointer"
+                className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+                  isGow ? 'text-stone-300 hover:bg-[#250E0E]' : 'text-slate-600 hover:bg-slate-200/60'
+                }`}
               >
                 Cancel
               </button>
@@ -898,7 +940,11 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
                     type="button"
                     onClick={() => handleSubmit('draft')}
                     disabled={isSubmitting}
-                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-pixel uppercase font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                    className={`px-4 py-2 rounded-xl uppercase font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 ${
+                      isGow
+                        ? 'bg-[#220B0B] hover:bg-[#321010] text-amber-300 border border-red-900/70 font-cinzel'
+                        : 'bg-slate-200 hover:bg-slate-300 text-slate-800 font-pixel'
+                    }`}
                   >
                     {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                     <span>Save Draft</span>
@@ -908,10 +954,14 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
                     type="button"
                     onClick={() => handleSubmit('upcoming')}
                     disabled={isSubmitting}
-                    className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-pixel uppercase font-bold text-[11px] flex items-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                    className={`px-5 py-2 text-white rounded-xl uppercase font-bold text-[11px] flex items-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50 ${
+                      isGow
+                        ? 'bg-gradient-to-r from-red-700 to-amber-600 hover:from-red-600 hover:to-amber-500 border border-amber-400 shadow-[0_2px_0_#7f1d1d] font-cinzel'
+                        : 'bg-emerald-600 hover:bg-emerald-700 font-pixel'
+                    }`}
                   >
                     {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                    <span>{isEditing && battleToEdit.status !== 'draft' ? 'Save & Update' : 'Publish Battle'}</span>
+                    <span>{isEditing && battleToEdit.status !== 'draft' ? 'Save & Update' : (isGow ? 'Publish War Trial' : 'Publish Battle')}</span>
                   </button>
                 </>
               )}

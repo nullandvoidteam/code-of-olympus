@@ -176,8 +176,20 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
       {/* ========================================================================= */}
       <div
         onClick={() => (onNavigateTab ? onNavigateTab('learn') : undefined)}
-        className="w-full rounded-3xl overflow-hidden border border-[#ece7df] shadow-xs cursor-pointer hover:shadow-md transition-all relative min-h-[150px] bg-[#faf7f2] flex items-center justify-between p-6 sm:p-7"
+        className="w-full rounded-3xl overflow-hidden border border-[#ece7df] shadow-xs cursor-pointer hover:shadow-md transition-all relative min-h-[160px] sm:min-h-[185px] bg-[#faf7f2] flex items-center justify-between p-6 sm:p-8 group"
       >
+        {/* Full Banner Canvas Image Background */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+          <img
+            src="/extracted/hero2_art_clean.png"
+            alt="Hero Banner Canvas"
+            className="w-full h-full object-cover object-right sm:object-[85%_center] select-none transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+          {/* Subtle gradient scrim to guarantee optimal text contrast and readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#faf7f2] via-[#faf7f2]/85 to-transparent sm:via-[#faf7f2]/65" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#faf7f2]/30 via-transparent to-transparent" />
+        </div>
+
         <div className="flex flex-col gap-1.5 z-10 max-w-xl">
           <div className="flex items-center gap-1.5 text-emerald-700 font-pixel text-[10px] font-bold tracking-wider uppercase">
             <span className="text-amber-400">✦</span>
@@ -202,15 +214,6 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
               {currentStreak}d STREAK
             </span>
           </div>
-        </div>
-
-        {/* Right Hero Illustration */}
-        <div className="absolute right-0 top-0 bottom-0 w-3/5 hidden md:flex items-center justify-end overflow-hidden pointer-events-none">
-          <img
-            src="/extracted/hero2_art_clean.png"
-            alt=""
-            className="h-full w-auto object-contain object-right"
-          />
         </div>
       </div>
 
