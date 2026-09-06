@@ -621,7 +621,7 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
               {/* Scrollable Stage Navigation Tree */}
               <div className="max-h-[580px] overflow-y-auto space-y-1.5 pr-0.5 scrollbar-thin">
                 {stages.map((st) => {
-                  const isSelected = activeStage?.id === st.id
+                  const isSelected = false
                   const isCompleted = st.is_completed
                   const isUnlocked = st.is_unlocked
 
@@ -685,7 +685,7 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
         )}
 
         {/* ── LEARNING WORKSPACE ────────── */}
-        {activeStage && (
+        {activeStage && stageGuide && (
           <div className="col-span-1 flex flex-col gap-4 w-full">
 
             {/* A. STAGE BRIEFING & INSTRUCTIONS CARD */}
