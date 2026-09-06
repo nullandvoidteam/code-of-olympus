@@ -258,6 +258,17 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaViewProps> = ({ onStartCha
     return matchSearch && matchTech
   })
 
+  const sortedCards = [...filtered].sort((a, b) => {
+    if (sortBy === 'Difficulty') {
+      const diffOrder: Record<string, number> = { Easy: 1, Medium: 2, Hard: 3 }
+      return (diffOrder[a.difficulty] ?? 1) - (diffOrder[b.difficulty] ?? 1)
+    }
+    if (sortBy === 'XP Reward (High to Low)') {
+      return b.xp - a.xp
+    }
+    return 0
+  })
+
   return (
     <div className="w-full max-w-[1400px] mx-auto flex flex-col gap-6 text-left pb-20 select-none animate-in fade-in duration-300">
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
