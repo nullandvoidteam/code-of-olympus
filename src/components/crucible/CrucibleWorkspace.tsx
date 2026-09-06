@@ -398,6 +398,7 @@ export const CrucibleWorkspace: React.FC<CrucibleWorkspaceProps> = ({
             language={lang}
             isRunning={isRunning}
             isSubmitting={isSubmitting}
+            isCompleted={isCompleted}
             themeKey={theme}
             onCodeChange={setCode}
             onRun={handleRun}

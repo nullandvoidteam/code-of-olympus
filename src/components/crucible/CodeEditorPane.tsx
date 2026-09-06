@@ -26,6 +26,7 @@ interface CodeEditorPaneProps {
   language: string
   isRunning: boolean
   isSubmitting?: boolean
+  isCompleted?: boolean
   themeKey?: string
   onCodeChange: (code: string) => void
   onRun: () => void
@@ -38,6 +39,7 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
   language,
   isRunning,
   isSubmitting = false,
+  isCompleted = false,
   themeKey = 'classic',
   onCodeChange,
   onRun,
@@ -191,38 +193,48 @@ export const CodeEditorPane: React.FC<CodeEditorPaneProps> = ({
           </button>
 
           {/* Submit Solution */}
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={isRunning || isSubmitting}
-            className="flex items-center gap-2 px-5 py-1.5 rounded-lg font-black tracking-wide text-xs uppercase text-white transition-all hover:brightness-110 active:scale-[0.97] disabled:opacity-60 shadow-lg"
-            style={{
-              background: isGow
-                ? 'linear-gradient(135deg, #DC2626 0%, #EA580C 50%, #D97706 100%)'
-                : isSpiderman
-                ? 'linear-gradient(135deg, #E11D48 0%, #2563EB 100%)'
-                : 'linear-gradient(135deg, #059669 0%, #10B981 50%, #06B6D4 100%)',
-              boxShadow: isGow
-                ? '0 0 20px rgba(220, 38, 38, 0.45)'
-                : isSpiderman
-                ? '0 0 20px rgba(225, 29, 72, 0.45)'
-                : '0 0 20px rgba(16, 185, 129, 0.45)',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-            }}
-            title="Submit solution and record XP to Supabase"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
-                <span>Submitting...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                <span>Submit Solution</span>
-              </>
-            )}
-          </button>
+          {isCompleted ? (
+            <div
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg font-bold text-xs bg-emerald-950/70 border border-emerald-500/40 text-emerald-400 cursor-not-allowed select-none shadow-sm"
+              title="This challenge is already completed and recorded"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Solved (Closed)</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onSubmit}
+              disabled={isRunning || isSubmitting}
+              className="flex items-center gap-2 px-5 py-1.5 rounded-lg font-black tracking-wide text-xs uppercase text-white transition-all hover:brightness-110 active:scale-[0.97] disabled:opacity-60 shadow-lg"
+              style={{
+                background: isGow
+                  ? 'linear-gradient(135deg, #DC2626 0%, #EA580C 50%, #D97706 100%)'
+                  : isSpiderman
+                  ? 'linear-gradient(135deg, #E11D48 0%, #2563EB 100%)'
+                  : 'linear-gradient(135deg, #059669 0%, #10B981 50%, #06B6D4 100%)',
+                boxShadow: isGow
+                  ? '0 0 20px rgba(220, 38, 38, 0.45)'
+                  : isSpiderman
+                  ? '0 0 20px rgba(225, 29, 72, 0.45)'
+                  : '0 0 20px rgba(16, 185, 129, 0.45)',
+                border: '1px solid rgba(255, 255, 255, 0.25)',
+              }}
+              title="Submit solution and record XP to Supabase"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                  <span>Submitting...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  <span>Submit Solution</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 

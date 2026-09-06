@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Sidebar, type NavItemKey } from './Sidebar'
 import { CrucibleHeader } from './CrucibleHeader'
 import { LumiAIFloatingButton } from './LumiAIFloatingButton'
@@ -21,6 +22,7 @@ import { LearnerDashboard } from '../dashboard/LearnerDashboard'
 import { ThemeStudioView } from '../theme/ThemeStudioView'
 import { ProfileView, type ProfileSubTab } from '../profile/ProfileView'
 import { SettingsView } from '../settings/SettingsView'
+import { GlobalRankingView } from '../ranking/GlobalRankingView'
 import { LearningPathView } from '../learn/LearningPathView'
 import { LevelProgressionView } from '../levels/LevelProgressionView'
 import { GameToaster } from '../ui/GameToast'
@@ -250,7 +252,9 @@ export const AppShell: React.FC = () => {
                   : practiceBriefingId
                     ? 'Practice / Challenge Arena / Challenge Briefing'
                     : null
-                : null
+                : activeTab === 'ranking'
+                  ? 'Global Ranking / Hall of Immortals'
+                  : null
           }
           onOpenLumi={() => {
             const btn = document.querySelector('button[title="Ask Lumi AI Mentor"]') as HTMLButtonElement | null
@@ -361,8 +365,18 @@ export const AppShell: React.FC = () => {
                 challengeId={practiceBriefingId}
                 onBack={() => setPracticeBriefingId(null)}
                 onStartChallenge={() => {
-                  setCrucibleChallengeId(practiceBriefingId)
-                  setPracticeBriefingId(null)
+                  if (practiceBriefingId) {
+                    try {
+                      const raw = localStorage.getItem('olympus_completed_challenges') || '[]'
+                      const list: string[] = JSON.parse(raw)
+                      if (list.includes(practiceBriefingId)) {
+                        toast('This challenge is already solved and closed!', { icon: '✅' })
+                        return
+                      }
+                    } catch {}
+                    setCrucibleChallengeId(practiceBriefingId)
+                    setPracticeBriefingId(null)
+                  }
                 }}
                 onPreviousChallenge={() => setPracticeBriefingId(null)}
               />
@@ -370,6 +384,14 @@ export const AppShell: React.FC = () => {
               <PracticeArenaView
                 onStartChallenge={(id?: string) => {
                   if (id) {
+                    try {
+                      const raw = localStorage.getItem('olympus_completed_challenges') || '[]'
+                      const list: string[] = JSON.parse(raw)
+                      if (list.includes(id)) {
+                        toast('This challenge is already solved and closed!', { icon: '✅' })
+                        return
+                      }
+                    } catch {}
                     setCrucibleChallengeId(id)
                   }
                 }}
@@ -407,6 +429,8 @@ export const AppShell: React.FC = () => {
           )}
 
           {activeTab === 'arcade' && <TeamArcadePage />}
+
+          {activeTab === 'ranking' && <GlobalRankingView />}
 
           {activeTab === 'community' && <CommunityPage />}
 
