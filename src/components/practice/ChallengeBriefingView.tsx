@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  CheckCircle2,
   Clock,
   BarChart2,
   Star,
@@ -17,6 +18,7 @@ import {
 import { LumiPixelBot, PixelPythonIcon } from '../brand/PixelArtAvatars'
 import { useAuth } from '../../context/AuthContext'
 import { checkIsChallengeSaved, saveChallenge, unsaveChallenge, fetchChallengeById, type Challenge } from '../../lib/challenges'
+import { supabase } from '../../lib/supabase'
 import { getCrucibleChallenge } from '../crucible/challengeData'
 
 interface ChallengeBriefingViewProps {
@@ -42,13 +44,48 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
   const [hintRevealed, setHintRevealed] = useState(false)
   const [lumiOpen, setLumiOpen] = useState(false)
   const [activeLumiBtn, setActiveLumiBtn] = useState<'hint' | 'explain' | 'debug' | null>(null)
+  const [isCompleted, setIsCompleted] = useState(false)
 
   useEffect(() => {
     let isMounted = true
     if (challengeId) {
+      // 1. Check saved status
       checkIsChallengeSaved(user?.id || '', challengeId).then((res) => {
         if (isMounted) setSaved(res)
       })
+
+      // 2. Check completed status from local storage
+      try {
+        const raw = localStorage.getItem('olympus_completed_challenges') || '[]'
+        const localList: string[] = JSON.parse(raw)
+        if (localList.includes(challengeId)) {
+          if (isMounted) setIsCompleted(true)
+        }
+      } catch {}
+
+      // 3. Check completed status from Supabase
+      if (user?.id) {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(challengeId)
+        const checkSupabase = async () => {
+          let targetUuid = challengeId
+          if (!isUuid) {
+            const ch = await fetchChallengeById(challengeId)
+            if (ch?.id) targetUuid = ch.id
+          }
+          const { data } = await supabase
+            .from('challenge_progress')
+            .select('is_completed')
+            .eq('user_id', user.id)
+            .eq('challenge_id', targetUuid)
+            .maybeSingle()
+          if (data?.is_completed && isMounted) {
+            setIsCompleted(true)
+          }
+        }
+        checkSupabase()
+      }
+
+      // 4. Fetch challenge details
       fetchChallengeById(challengeId).then((data) => {
         if (isMounted) {
           if (data) {
@@ -118,7 +155,7 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight gamified-shaky-title">
                 {challenge?.title || 'Reverse the String'}
               </h1>
               <p className="text-sm text-slate-600 leading-relaxed max-w-lg">
@@ -178,21 +215,32 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
                 <Shield className="w-5 h-5 text-emerald-600" />
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="font-bold text-sm text-slate-900">Ready to take on the challenge?</span>
+                <span className="font-bold text-sm text-slate-900">
+                  {isCompleted ? 'Trial already conquered!' : 'Ready to take on the challenge?'}
+                </span>
                 <span className="text-xs text-slate-500 leading-snug">
-                  Read the requirements below, then enter the coding workspace and put your skills to work. You can leave and return anytime. Your progress will be saved.
+                  {isCompleted
+                    ? 'You have already solved this challenge and earned its rewards. This trial is closed to prevent duplicate completions.'
+                    : 'Read the requirements below, then enter the coding workspace and put your skills to work. You can leave and return anytime. Your progress will be saved.'}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={onStartChallenge}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md cursor-pointer transition-all active:scale-95"
-              >
-                Start Challenge
-                <Sparkles className="w-4 h-4" />
-              </button>
+              {isCompleted ? (
+                <div className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm cursor-not-allowed select-none shadow-sm">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Solved (Closed)</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onStartChallenge}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md cursor-pointer transition-all active:scale-95"
+                >
+                  Start Challenge
+                  <Sparkles className="w-4 h-4" />
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleToggleSave}
@@ -532,14 +580,21 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={onStartChallenge}
-              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
-            >
-              Start Challenge
-              <Sparkles className="w-4 h-4" />
-            </button>
+            {isCompleted ? (
+              <div className="w-full py-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm cursor-not-allowed select-none shadow-sm flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>Solved (Closed)</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onStartChallenge}
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
+              >
+                Start Challenge
+                <Sparkles className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -559,14 +614,21 @@ export const ChallengeBriefingView: React.FC<ChallengeBriefingViewProps> = ({
 
         <span className="text-xs text-slate-400 font-medium">Challenge 1 of 12</span>
 
-        <button
-          type="button"
-          onClick={onStartChallenge}
-          className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95"
-        >
-          Start Challenge
-          <Sparkles className="w-4 h-4" />
-        </button>
+        {isCompleted ? (
+          <div className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 font-bold text-sm cursor-not-allowed select-none shadow-sm">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Solved (Closed)</span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onStartChallenge}
+            className="flex items-center gap-2 px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm cursor-pointer transition-all shadow-md active:scale-95"
+          >
+            Start Challenge
+            <Sparkles className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Lumi modal (when opened via Ask Lumi button) */}

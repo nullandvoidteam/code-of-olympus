@@ -331,7 +331,7 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
               <span className="text-[11px] font-extrabold text-emerald-600 uppercase tracking-wider font-mono">
                 DAILY CODING ADVENTURE
               </span>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight tracking-tight gamified-shaky-title">
                 Sharpen Your<br />Coding Skills.
               </h1>
               <p className="text-sm text-slate-600 leading-relaxed max-w-md">
@@ -411,14 +411,21 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                   </div>
                   <span className="text-[10px] text-slate-400 font-medium">{dailyChallenge?.isCompleted ? '1 / 1' : '0 / 1'}</span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onStartChallenge?.(dailyChallenge?.id)}
-                  className="btn-gamified-3d btn-gamified-3d-primary px-6 py-3 rounded-xl text-sm font-extrabold text-white flex items-center gap-2 cursor-pointer"
-                >
-                  <span>Start Challenge</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                {dailyChallenge?.isCompleted ? (
+                  <div className="px-6 py-3 rounded-xl text-sm font-extrabold text-emerald-700 bg-emerald-100 border border-emerald-300 flex items-center gap-2 cursor-not-allowed select-none shadow-sm">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Solved Today</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => onStartChallenge?.(dailyChallenge?.id)}
+                    className="btn-gamified-3d btn-gamified-3d-primary px-6 py-3 rounded-xl text-sm font-extrabold text-white flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>Start Challenge</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               <span className="text-[11px] text-slate-500 flex items-center gap-1">
                 🛡️ Complete today&apos;s challenge to protect your {userProfile?.streak ?? 0}-day streak.
@@ -474,21 +481,33 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
 
           {/* Challenge Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filtered.map((item) => (
+            {sortedCards.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between gap-4 hover:border-emerald-500 hover:shadow-md transition-all group"
+                className={`rounded-2xl p-5 border shadow-sm flex flex-col justify-between gap-4 transition-all group ${
+                  item.isCompleted
+                    ? 'bg-slate-50/70 border-emerald-300/80 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-emerald-500 hover:shadow-md'
+                }`}
               >
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                      {item.difficulty}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                        {item.difficulty}
+                      </span>
+                      {item.isCompleted && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-extrabold flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                          SOLVED
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs font-bold text-amber-600 flex items-center gap-1">
                       <Sparkles className="w-3 h-3" /> +{item.xp} XP
                     </span>
                   </div>
-                  <h3 className="font-bold text-base text-slate-900 group-hover:text-emerald-600 transition-colors">
+                  <h3 className={`font-bold text-base transition-colors ${item.isCompleted ? 'text-slate-700' : 'text-slate-900 group-hover:text-emerald-600'}`}>
                     {item.title}
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
@@ -502,14 +521,21 @@ const ClassicPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                     <span>•</span>
                     <span>{item.time}</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => onStartChallenge?.(item.id)}
-                    className="btn-gamified-3d btn-gamified-3d-primary px-4 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1 cursor-pointer"
-                  >
-                    <span>Solve</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  {item.isCompleted ? (
+                    <span className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-100/90 border border-emerald-300 flex items-center gap-1 cursor-not-allowed select-none shadow-xs">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Solved (Closed)</span>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onStartChallenge?.(item.id)}
+                      className="btn-gamified-3d btn-gamified-3d-primary px-4 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Solve</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -707,7 +733,7 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
               </div>
               <h1
                 style={{ fontFamily: "'Cinzel', serif" }}
-                className="text-2xl md:text-4xl font-black text-[#F5E8E8] leading-tight tracking-wider uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+                className="text-2xl md:text-4xl font-black text-[#F5E8E8] leading-tight tracking-wider uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)] gamified-shaky-title"
               >
                 Hone Your Blades<br />In Battle.
               </h1>
@@ -831,14 +857,21 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onStartChallenge?.(dailyChallenge?.id)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#8B0000] to-[#550A0A] hover:from-[#A81010] hover:to-[#730E0E] text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all active:scale-95 border border-[#8C2828]"
-                  >
-                    <span style={{ fontFamily: "'Cinzel', serif" }}>ENTER ARENA</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  {dailyChallenge?.isCompleted ? (
+                    <div className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-400 font-bold text-xs sm:text-sm shadow-md cursor-not-allowed select-none">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span style={{ fontFamily: "'Cinzel', serif" }}>TRIAL CONQUERED (SOLVED)</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onStartChallenge?.(dailyChallenge?.id)}
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#8B0000] to-[#550A0A] hover:from-[#A81010] hover:to-[#730E0E] text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all active:scale-95 border border-[#8C2828]"
+                    >
+                      <span style={{ fontFamily: "'Cinzel', serif" }}>ENTER ARENA</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1C0A0A] border border-[#8C2828] text-[11px] text-[#FF8A80] font-medium">
                     <Flame className="w-3.5 h-3.5 text-[#FF3D00] animate-pulse" />
                     Slay today&apos;s trial to sustain your {userProfile?.streak ?? 0}-day war streak.
@@ -978,7 +1011,12 @@ const GodOfWarPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                       <Sparkles className="w-3.5 h-3.5" />
                       +{c.xp} XP
                     </span>
-                    {c.locked ? (
+                    {c.isCompleted ? (
+                      <span className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-950/50 text-emerald-400 text-xs font-bold border border-emerald-500/40 cursor-not-allowed select-none shadow-sm">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span style={{ fontFamily: "'Cinzel', serif" }}>SOLVED</span>
+                      </span>
+                    ) : c.locked ? (
                       <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#180A0A] text-[#6E5A5A] text-xs font-bold border border-[#2D1414]">
                         Rune-Locked
                       </span>
@@ -1226,7 +1264,7 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                   SPIDER-VERSE SIMULATOR • DAILY PATROL
                 </span>
               </div>
-              <h1 className="text-2xl md:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+              <h1 className="text-2xl md:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] gamified-shaky-title">
                 Calibrate Web-Shooters<br />& Algorithms.
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-md">
@@ -1331,14 +1369,21 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onStartChallenge?.(dailyChallenge?.id)}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all active:scale-95 border border-[#FF2A34]"
-                  >
-                    <span>ENGAGE PATROL</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  {dailyChallenge?.isCompleted ? (
+                    <div className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-emerald-400 font-bold text-xs sm:text-sm shadow-md cursor-not-allowed select-none">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>PATROL SECURED (SOLVED)</span>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => onStartChallenge?.(dailyChallenge?.id)}
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs sm:text-sm shadow-md cursor-pointer transition-all active:scale-95 border border-[#FF2A34]"
+                    >
+                      <span>ENGAGE PATROL</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )}
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#101730] border border-[#2A3A65] text-[11px] text-slate-300 font-medium">
                     <Flame className="w-3.5 h-3.5 text-[#FF2A34] animate-pulse" />
                     Solve today to sustain your {userProfile?.streak ?? 0}-day Spider web streak.
@@ -1516,14 +1561,21 @@ const SpiderManPracticeArenaView: React.FC<PracticeArenaSharedProps> = ({
                   </div>
 
                   <div className="pt-4 mt-2 border-t border-[#2A3A65] flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => onStartChallenge?.(card.id)}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs transition-all cursor-pointer border border-[#FF2A34]/50 shadow-sm active:scale-95"
-                    >
-                      <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>LAUNCH PATROL</span>
-                    </button>
+                    {card.isCompleted ? (
+                      <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-950/50 text-emerald-400 font-bold text-xs border border-emerald-500/40 shadow-sm cursor-not-allowed select-none">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <span>PATROL CONQUERED (SOLVED)</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onStartChallenge?.(card.id)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#FF1744] to-[#1E3A8A] hover:brightness-110 text-white font-bold text-xs transition-all cursor-pointer border border-[#FF2A34]/50 shadow-sm active:scale-95"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>LAUNCH PATROL</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

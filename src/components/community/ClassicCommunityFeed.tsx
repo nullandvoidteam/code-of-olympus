@@ -692,7 +692,7 @@ export const ClassicCommunityFeed: React.FC = () => {
             <span>✦</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-stone-900 tracking-tight font-pixel">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-stone-900 tracking-tight font-pixel gamified-shaky-title">
             Community Hub ✨
           </h1>
 

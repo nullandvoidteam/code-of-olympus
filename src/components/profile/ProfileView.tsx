@@ -397,7 +397,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <div className="flex flex-col gap-1">
                 <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
                   <h1
-                    className="text-2xl sm:text-3xl font-extrabold tracking-wide"
+                    className="text-2xl sm:text-3xl font-extrabold tracking-wide gamified-shaky-title"
                     style={{
                       fontFamily: isMythic
                         ? 'var(--theme-font-heading, "Cinzel", serif)'

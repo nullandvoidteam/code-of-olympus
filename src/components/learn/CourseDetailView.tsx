@@ -131,7 +131,7 @@ const ClassicCourseDetailView: React.FC<CourseDetailViewProps> = ({
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight gamified-shaky-title">
               {course.title}
             </h1>
 

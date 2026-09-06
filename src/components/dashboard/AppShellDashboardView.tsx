@@ -185,7 +185,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
             <span className="text-amber-400">✦</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight flex items-center gap-2 gamified-shaky-title">
             <span>{greeting}, {userName}</span>
             <span className="text-2xl sm:text-3xl inline-block transition-transform hover:rotate-12 cursor-default">{emoji}</span>
           </h1>
