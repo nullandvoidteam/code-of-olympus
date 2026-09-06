@@ -204,22 +204,7 @@ export const TeamArcadePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Mascot Artwork */}
-          <div className="relative z-10 shrink-0 hidden sm:flex items-center justify-center">
-            <div className="relative animate-bounce duration-1000">
-              <div className="absolute inset-0 rounded-full bg-emerald-400/30 blur-2xl scale-95" />
-              <img
-                src="/questbot.png"
-                alt="Arcade Mascot"
-                className="w-40 sm:w-48 md:w-56 h-auto object-contain relative z-10 drop-shadow-[0_16px_28px_rgba(16,185,129,0.35)] transition-transform hover:scale-105"
-              />
-              <div className="absolute -bottom-2 -left-2 px-3 py-1 rounded-xl shadow-md border-2 border-emerald-400 bg-white flex items-center gap-1.5 z-20">
-                <span className="text-[11px] font-black tracking-widest text-emerald-700 font-mono">
-                  SQUAD READY 🔥
-                </span>
-              </div>
-            </div>
-          </div>
+
         </div>
       )}
 
