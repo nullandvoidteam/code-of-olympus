@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { COURSE_CHAPTERS } from './courseData/chapters'
 
 export interface CourseProgress {
   courseId: string
@@ -30,56 +31,8 @@ export interface DynamicCourseProgress {
   lastAccessedAt?: string
 }
 
-export const PYTHON_CHAPTERS: Array<Omit<ChapterItem, 'status'>> = [
-  {
-    num: '01',
-    title: 'Python Setup & Syntax Fundamentals',
-    subtitle: 'Chapter 01: Setup & Variables',
-    description: 'Learn variables, console output, primitive data types, and the Zen of Python.',
-    xp: 250,
-    lessonId: 'ch1-lesson1',
-  },
-  {
-    num: '02',
-    title: 'Variables, Strings & Number Operations',
-    subtitle: 'Chapter 02: Operations & Expressions',
-    description: 'Master arithmetic operations, string concatenation, f-strings, and type casting.',
-    xp: 350,
-    lessonId: 'ch2-lesson1',
-  },
-  {
-    num: '03',
-    title: 'Conditionals, Boolean Logic & Decisions',
-    subtitle: 'Chapter 03: Decision Gates',
-    description: 'Branch your code using if, elif, else statements and logical comparisons.',
-    xp: 400,
-    lessonId: 'ch3-lesson1',
-  },
-  {
-    num: '04',
-    title: 'While & For Loops: Iterations & Patterns',
-    subtitle: 'Chapter 04: Loops & Logic',
-    description: 'Construct repeating execution loops, while loops, range iterators, and loop controls.',
-    xp: 450,
-    lessonId: 'ch4-lesson3',
-  },
-  {
-    num: '05',
-    title: 'Lists, Tuples & Key-Value Dictionaries',
-    subtitle: 'Chapter 05: Data Structures',
-    description: 'Organize data using ordered lists, immutable tuples, and key-value dictionaries.',
-    xp: 500,
-    lessonId: 'ch5-lesson1',
-  },
-  {
-    num: '06',
-    title: 'Functions, Modules & Capstone Project',
-    subtitle: 'Chapter 06: Functions & Mastery',
-    description: 'Write modular reusable functions, import libraries, and build an interactive CLI adventure.',
-    xp: 600,
-    lessonId: 'ch6-lesson1',
-  },
-]
+// Exported for backward compatibility in parts of the app that haven't been updated yet
+export const PYTHON_CHAPTERS: Array<Omit<ChapterItem, 'status'>> = COURSE_CHAPTERS['python'] || []
 
 export async function saveCourseProgress(
   userId: string | undefined,
@@ -157,7 +110,7 @@ export async function getDetailedCourseProgress(
   userId: string | undefined,
   courseId: string
 ): Promise<DynamicCourseProgress> {
-  const baseChapters = PYTHON_CHAPTERS
+  const baseChapters = COURSE_CHAPTERS[courseId] || COURSE_CHAPTERS['python']
   const total = baseChapters.length
 
   let progressPercent = 0

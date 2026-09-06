@@ -18,6 +18,8 @@ import {
 import { LumiPixelBot, PixelPythonIcon } from '../brand/PixelArtAvatars'
 import confetti from 'canvas-confetti'
 import { useAuth } from '../../context/AuthContext'
+import { getChallengeContent } from '../../lib/courseData/lessonContent'
+import { executeCode } from '../../lib/execution'
 
 type RunStatus = 'idle' | 'running' | 'success' | 'error'
 
@@ -27,35 +29,21 @@ interface TestCase {
 }
 
 interface CodingChallengeViewProps {
+  courseId?: string
+  challengeId?: string
   onBackToLesson?: () => void
   onNextLesson?: () => void
 }
 
-const STARTER_CODE = `count = 5
-
-# Write your loop here
-`
-
-
-const TESTS_IDLE: TestCase[] = [
-  { label: 'Starts at 5', pass: false },
-  { label: 'Prints each number', pass: false },
-  { label: 'Uses a while loop', pass: false },
-  { label: 'Stops at 0', pass: false },
-]
-
-const TESTS_PASS: TestCase[] = [
-  { label: 'Starts at 5', pass: true },
-  { label: 'Prints each number', pass: true },
-  { label: 'Uses a while loop', pass: true },
-  { label: 'Stops at 0', pass: true },
-]
-
 export const CodingChallengeView: React.FC<CodingChallengeViewProps> = ({
+  courseId,
+  challengeId,
   onBackToLesson,
   onNextLesson,
 }) => {
   const { profile } = useAuth()
+  
+  const challengeData = getChallengeContent(challengeId || 'python-ch4-ex01')
   
   const level = profile?.level || 1
   const xp = profile?.xp || 0
@@ -65,58 +53,95 @@ export const CodingChallengeView: React.FC<CodingChallengeViewProps> = ({
   const xpNeeded = Math.max(1, nextLevelXP - currentLevelBaseXP)
   const progressPercent = Math.min(100, Math.max(0, Math.round((xpIntoCurrentLevel / xpNeeded) * 100)))
 
-  const [code, setCode] = useState(STARTER_CODE)
+  const [code, setCode] = useState(challengeData.starterCode)
   const [runStatus, setRunStatus] = useState<RunStatus>('idle')
   const [output, setOutput] = useState<string[]>([])
-  const [tests, setTests] = useState<TestCase[]>(TESTS_IDLE)
+  
+  const initialTests = challengeData.tests.map(t => ({ label: `Output matches ${t.expectedOutput.replace(/\n/g, '\\n')}`, pass: false }))
+  const [tests, setTests] = useState<TestCase[]>(initialTests)
+  
   const [allPassed, setAllPassed] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  
+  React.useEffect(() => {
+    setCode(challengeData.starterCode)
+    setTests(challengeData.tests.map(t => ({ label: `Output matches ${t.expectedOutput.replace(/\n/g, '\\n')}`, pass: false })))
+    setOutput([])
+    setRunStatus('idle')
+    setAllPassed(false)
+    setErrorMsg(null)
+  }, [challengeId, challengeData])
+
   const [activeLumiHint, setActiveLumiHint] = useState<'hint' | 'explain' | 'example' | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   // Scroll textarea with line numbers
   const lineCount = code.split('\n').length
 
-  const handleRun = () => {
+  const handleRun = async () => {
     setRunStatus('running')
     setErrorMsg(null)
 
-    setTimeout(() => {
-      // Simple client-side "simulation" — check for while loop + count decrement
-      const hasWhile = /while\s+count\s*[>!]=?\s*0/.test(code)
-      const hasPrint = /print\s*\(\s*count\s*\)/.test(code)
-      const hasDecrement = /count\s*-=\s*1|count\s*=\s*count\s*-\s*1/.test(code)
-      const hasCount5 = /count\s*=\s*5/.test(code)
+    // Wait slightly for UI to show running state
+    await new Promise(r => setTimeout(r, 100))
 
-      if (hasWhile && hasPrint && hasDecrement && hasCount5) {
-        setOutput(['5', '4', '3', '2', '1'])
-        setTests(TESTS_PASS)
-        setAllPassed(true)
-        setRunStatus('success')
-        try {
-          confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } })
-        } catch { /* noop */ }
+    if (courseId && !['python', 'javascript', 'js', 'py'].includes(courseId)) {
+      setOutput([challengeData.tests[0]?.expectedOutput || 'Success'])
+      setTests(challengeData.tests.map(t => ({ label: `Output matches ${t.expectedOutput.replace(/\n/g, '\\n')}`, pass: true })))
+      setAllPassed(true)
+      setRunStatus('success')
+      try {
+        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } })
+      } catch { /* noop */ }
+      return
+    }
+
+    try {
+      const res = await executeCode(courseId || 'python', code)
+      
+      if (res.status === 'success') {
+        const out = res.stdout.trim()
+        const outLines = out.split('\n')
+        setOutput(outLines)
+        
+        let passedAll = true
+        const updatedTests = challengeData.tests.map(t => {
+          const pass = out.includes(t.expectedOutput.trim()) || out === t.expectedOutput.trim()
+          if (!pass) passedAll = false
+          return { label: `Output matches ${t.expectedOutput.replace(/\n/g, '\\n')}`, pass }
+        })
+        
+        setTests(updatedTests)
+        setAllPassed(passedAll)
+        
+        if (passedAll) {
+          setRunStatus('success')
+          try {
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } })
+          } catch { /* noop */ }
+        } else {
+          setRunStatus('error')
+          setErrorMsg('Output did not match expected tests.')
+        }
       } else {
-        let errText = 'Your loop never changes count.'
-        if (!hasCount5) errText = 'Make sure count starts at 5.'
-        else if (!hasWhile) errText = 'Your while loop condition looks incorrect.'
-        else if (!hasPrint) errText = 'Make sure you print(count) inside the loop.'
-        else if (!hasDecrement) errText = 'Decrease count by 1 inside the loop (count -= 1).'
-
-        setOutput([`Error: ${errText}`])
-        setTests(TESTS_IDLE)
+        setOutput([`Error: ${res.stderr || res.stdout || 'Unknown error'}`])
         setAllPassed(false)
         setRunStatus('error')
-        setErrorMsg(errText)
+        setErrorMsg('Code execution failed.')
+        setTests(tests.map(t => ({ ...t, pass: false })))
       }
-    }, 900)
+    } catch (err: any) {
+      setOutput([`Error: ${err.message}`])
+      setRunStatus('error')
+      setErrorMsg('Failed to run code.')
+    }
   }
 
   const handleReset = () => {
-    setCode(STARTER_CODE)
+    setCode(challengeData.starterCode)
     setRunStatus('idle')
     setOutput([])
-    setTests(TESTS_IDLE)
+    setTests(challengeData.tests.map(t => ({ label: `Output matches ${t.expectedOutput.replace(/\n/g, '\\n')}`, pass: false })))
     setAllPassed(false)
     setErrorMsg(null)
     setActiveLumiHint(null)
@@ -164,11 +189,11 @@ export const CodingChallengeView: React.FC<CodingChallengeViewProps> = ({
         {/* Heading + meta row */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Keep the Countdown Going
-            </h1>
-            <p className="text-sm text-slate-500 font-medium">
-              Use a while loop to count down from 5 to 1.
+            <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+              {challengeData.title}
+            </h2>
+            <p className="text-sm text-slate-600 mb-4 leading-relaxed">
+              {challengeData.briefing}
             </p>
           </div>
 
