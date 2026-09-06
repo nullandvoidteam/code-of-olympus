@@ -39,7 +39,7 @@ import { COURSE_CATALOG } from '../../lib/courseData'
 import type { DashboardMode } from './CrucibleHeader'
 
 export const AppShell: React.FC = () => {
-  const { user, profile, isAdmin } = useAuth()
+  const { user, profile, isAdmin, refreshProfile } = useAuth()
   const { theme } = useTheme()
   const [activeTab, setActiveTab] = useState<NavItemKey>(isAdmin ? 'admin' : 'dashboard')
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
@@ -344,8 +344,17 @@ export const AppShell: React.FC = () => {
               <CrucibleWorkspace
                 challengeId={crucibleChallengeId}
                 userId={user?.id}
-                onBack={() => setCrucibleChallengeId(null)}
-                onNextChallenge={() => setCrucibleChallengeId(null)}
+                onBack={() => {
+                  setCrucibleChallengeId(null)
+                  refreshProfile()
+                }}
+                onNextChallenge={() => {
+                  setCrucibleChallengeId(null)
+                  refreshProfile()
+                }}
+                onCompleted={() => {
+                  refreshProfile()
+                }}
               />
             ) : practiceBriefingId ? (
               <ChallengeBriefingView
