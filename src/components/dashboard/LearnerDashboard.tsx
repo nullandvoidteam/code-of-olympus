@@ -100,7 +100,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 flex flex-col gap-6">
               <div className="h-64 rounded-3xl animate-pulse bg-white border border-[#ece7df]" />
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3.5">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="h-28 rounded-2xl animate-pulse bg-white border border-[#ece7df]" />
                 ))}
@@ -129,7 +129,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
             className="h-28 rounded-2xl animate-pulse"
             style={{ background: 'linear-gradient(135deg, #151E3A, #0B1021)', border: '1px solid #2A3A65' }}
           />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
               <div
                 key={i}
@@ -164,7 +164,7 @@ export const LearnerDashboard: React.FC<LearnerDashboardProps> = ({
         <div className="h-28 rounded-2xl animate-pulse"
           style={{ background: 'linear-gradient(135deg, #0E0A0A, #1a0808)', border: '1px solid #3D1C1C' }}
         />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-28 rounded-2xl animate-pulse"
               style={{ background: '#130909', border: '1px solid #2a1010', animationDelay: `${i * 0.1}s` }}

@@ -81,6 +81,7 @@ export const ThemeCursor: React.FC<{ theme: ThemeKey }> = ({ theme }) => {
     <div
       ref={containerRef}
       aria-hidden="true"
+      className="hidden sm:block"
       style={{
         position: 'fixed',
         top: 0,

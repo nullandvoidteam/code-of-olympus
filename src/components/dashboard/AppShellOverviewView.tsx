@@ -81,7 +81,7 @@ export const AppShellOverviewView: React.FC<AppShellOverviewViewProps> = ({
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-center">
             {/* Badge 1: First Steps */}
             <div className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-stone-50 transition-colors">
               <img src="/extracted/badge_first_steps.png" alt="First Steps" className="w-12 h-12 object-contain" />

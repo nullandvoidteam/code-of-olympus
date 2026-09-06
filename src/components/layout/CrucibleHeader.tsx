@@ -266,7 +266,7 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
           {showNotifications && (
             <div
               id="crucible-notifications-panel"
-              className="absolute right-0 mt-2 w-80 rounded-2xl p-3 z-50 text-left animate-in fade-in shadow-2xl border"
+              className="fixed sm:absolute top-[64px] sm:top-auto sm:mt-2 left-4 right-4 sm:left-auto sm:-right-4 sm:w-80 rounded-2xl p-3 z-50 text-left animate-in fade-in shadow-2xl border"
               style={{
                 background: 'var(--theme-surface-card, #0E0606)',
                 borderColor: 'var(--theme-border-default, rgba(61,28,28,0.9))',
@@ -386,11 +386,11 @@ export const CrucibleHeader: React.FC<CrucibleHeaderProps> = ({
             <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ color: 'var(--theme-text-muted, #8C7A7A)' }} />
           </button>
 
-          {/* Profile Dropdown */}
+          {/* Profile Dropdown Panel */}
           {showProfileMenu && (
             <div
               id="crucible-profile-dropdown"
-              className="absolute right-0 mt-2 w-56 rounded-2xl p-2 z-50 text-left animate-in fade-in shadow-2xl border"
+              className="fixed sm:absolute top-[64px] sm:top-auto sm:mt-2 left-4 right-4 sm:left-auto sm:right-0 sm:w-56 rounded-2xl p-2 z-50 text-left animate-in fade-in shadow-2xl border"
               style={{
                 background: 'var(--theme-surface-card, #0E0606)',
                 borderColor: 'var(--theme-border-default, rgba(61,28,28,0.9))',

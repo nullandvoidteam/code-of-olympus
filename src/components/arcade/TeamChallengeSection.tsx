@@ -530,7 +530,7 @@ export const TeamChallengeSection: React.FC<TeamChallengeSectionProps> = ({
                   <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Language
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {[
                       { key: 'javascript', label: 'JavaScript' },
                       { key: 'python', label: 'Python' },
@@ -560,7 +560,7 @@ export const TeamChallengeSection: React.FC<TeamChallengeSectionProps> = ({
                   <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     Difficulty Tier
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     {['Easy', 'Medium', 'Hard'].map((d) => (
                       <button
                         key={d}

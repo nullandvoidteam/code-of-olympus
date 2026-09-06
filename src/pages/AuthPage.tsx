@@ -45,7 +45,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
       </div>
 
       {/* Top Header Branding & Auth Mode Controls */}
-      <header className="relative z-20 w-full max-w-7xl mx-auto px-6 sm:px-10 pt-6 flex items-center justify-between">
+      <header className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-10 pt-4 sm:pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button
             type="button"
@@ -90,7 +90,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onOpenOnboarding }) => {
       </header>
 
       {/* Main Split-Screen Canvas Layout */}
-      <main className="relative z-10 w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center px-6 sm:px-10 py-8">
+      <main className="relative z-10 w-full max-w-7xl mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center px-4 sm:px-10 py-6 sm:py-8">
         {authView === 'register' ? (
           <>
             {/* Left Column on Register: RPG Trailhead Scene */}

@@ -342,7 +342,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
               <h3 className="font-bold text-base text-stone-900">Your Progress</h3>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3.5">
               {/* Card 01: LEVEL */}
               <div className="bg-white rounded-2xl p-4 border border-[#ece7df] shadow-xs flex flex-col justify-between gap-2">
                 <div className="flex items-center justify-between">
@@ -785,7 +785,7 @@ export const AppShellDashboardView: React.FC<AppShellDashboardViewProps> = ({
             </div>
 
             {unlockedAchievements.length > 0 || recentBadges.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {unlockedAchievements.map((ach, idx) => (
                   <div key={ach.id} className="p-3 rounded-2xl bg-[#faf8f4] border border-[#ece7df] flex items-center gap-2.5 min-w-0">
                     <img

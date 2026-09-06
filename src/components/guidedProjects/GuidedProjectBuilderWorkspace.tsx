@@ -1056,7 +1056,7 @@ export const GuidedProjectBuilderWorkspace: React.FC<GuidedProjectBuilderWorkspa
                           )}
 
                           {!tr.isHidden && !tr.passed && (
-                            <div className="grid grid-cols-2 gap-2 mt-1 text-[10px] bg-white p-2 rounded-lg border border-rose-200">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-1 text-[10px] bg-white p-2 rounded-lg border border-rose-200">
                               <div>
                                 <span className="text-stone-500 block font-bold">Expected:</span>
                                 <span className="text-emerald-700 font-bold">

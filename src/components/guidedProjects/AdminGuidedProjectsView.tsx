@@ -163,7 +163,7 @@ export const AdminGuidedProjectsView: React.FC = () => {
       </div>
 
       {/* KPI Stats Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-[#ece7df] shadow-xs flex items-center gap-3">
           <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
             <Layers className="w-5 h-5" />

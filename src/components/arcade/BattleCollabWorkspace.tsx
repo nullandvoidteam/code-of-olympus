@@ -354,7 +354,7 @@ export const BattleCollabWorkspace: React.FC<BattleCollabWorkspaceProps> = ({
                 <span className="text-[10px] font-pixel font-bold uppercase text-slate-500">
                   Scoring Model
                 </span>
-                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-center text-xs">
                   <div className="p-2 rounded-xl bg-purple-50 border border-purple-100">
                     <span className="text-[10px] text-purple-600 font-pixel">BASE</span>
                     <div className="font-bold text-purple-900 font-mono mt-0.5">100 pts</div>

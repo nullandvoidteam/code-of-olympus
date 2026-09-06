@@ -549,7 +549,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
           </div>
 
           {/* Match Specs */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center">
               <span className="text-[10px] uppercase font-bold text-slate-400">Language</span>
               <span className="font-bold text-sm capitalize">{match.language}</span>
@@ -1435,7 +1435,7 @@ export const TeamMatchLobbyModal: React.FC<TeamMatchLobbyModalProps> = ({
             </div>
 
             {/* Score summary */}
-            <div className="grid grid-cols-2 gap-2 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center">
               <div className="p-2.5 rounded-xl bg-blue-950/40 border border-blue-800/40 flex flex-col gap-0.5">
                 <span className="text-[10px] uppercase font-bold text-blue-300 block truncate">
                   {match.team_a?.name || 'Squad A'}

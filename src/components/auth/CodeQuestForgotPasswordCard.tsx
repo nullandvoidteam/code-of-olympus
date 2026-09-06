@@ -37,7 +37,7 @@ export const CodeQuestForgotPasswordCard: React.FC<CodeQuestForgotPasswordCardPr
   }
 
   return (
-    <div className="w-full max-w-[480px] bg-white rounded-3xl p-8 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.06)] flex flex-col transition-all text-left">
+    <div className="w-full max-w-[480px] bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.06)] flex flex-col transition-all text-left">
       <button
         type="button"
         onClick={onBackToLogin}

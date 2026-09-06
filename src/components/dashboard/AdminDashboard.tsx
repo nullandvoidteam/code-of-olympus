@@ -2586,7 +2586,7 @@ A comprehensive explanation of the solution logic.`
             </div>
 
             <form onSubmit={handleUpdateLanguage} className="p-6 flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Language Name</label>
                   <input
@@ -2676,7 +2676,7 @@ A comprehensive explanation of the solution logic.`
             </div>
 
             <form onSubmit={handleUpdatePath} className="p-6 flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Path Title</label>
                   <input
@@ -2795,7 +2795,7 @@ A comprehensive explanation of the solution logic.`
               </div>
 
               {/* Stats Matrix */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
                   <div className="text-[10px] font-pixel text-slate-400 font-bold uppercase">XP</div>
                   <div className="text-sm font-black text-amber-600 font-pixel mt-0.5">{inspectedUser.xp}</div>

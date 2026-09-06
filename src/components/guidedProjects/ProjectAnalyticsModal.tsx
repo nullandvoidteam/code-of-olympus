@@ -69,7 +69,7 @@ export const ProjectAnalyticsModal: React.FC<ProjectAnalyticsModalProps> = ({
           {/* Body */}
           <div className="p-6 space-y-6 overflow-y-auto flex-1 font-sans">
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 bg-stone-50 rounded-2xl border border-stone-200 space-y-1">
                 <div className="flex items-center gap-1.5 text-stone-500 text-xs">
                   <Users className="w-3.5 h-3.5 text-indigo-500" />

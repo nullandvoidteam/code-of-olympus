@@ -150,8 +150,8 @@ export const LumiAIFloatingButton: React.FC = () => {
 
   return (
     <>
-      {/* 1. Global Floating Pill Trigger Button */}
-      <div className="fixed bottom-6 right-6 z-40 select-none">
+      {/* 1. Floating Trigger Button */}
+      <div className={cn("fixed bottom-20 md:bottom-6 right-6 z-40 select-none", isOpen ? "hidden sm:block" : "block")}>
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
@@ -176,7 +176,7 @@ export const LumiAIFloatingButton: React.FC = () => {
 
       {/* 2. Slide-out Interactive AI Mentor Drawer */}
       {isOpen && (
-        <div className="fixed bottom-20 right-6 z-50 w-96 max-w-[calc(100vw-32px)] h-[540px] bg-white rounded-3xl border-2 border-[#ece7df] shadow-2xl flex flex-col overflow-hidden text-left animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed inset-0 z-[60] w-full h-[100dvh] bg-white shadow-2xl flex flex-col overflow-hidden text-left animate-in fade-in slide-in-from-bottom-5 duration-200 sm:bottom-20 sm:right-6 sm:w-96 sm:h-[540px] sm:inset-auto sm:z-50 sm:rounded-3xl sm:border-2 sm:border-[#ece7df]">
           {/* Drawer Header */}
           <div className="px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5">

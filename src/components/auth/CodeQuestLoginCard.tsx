@@ -37,7 +37,7 @@ export const CodeQuestLoginCard: React.FC<CodeQuestLoginCardProps> = ({
   }
 
   return (
-    <div className="w-full max-w-[480px] bg-white rounded-3xl p-8 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.06)] flex flex-col transition-all">
+    <div className="w-full max-w-[480px] bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-[0_20px_50px_rgba(15,23,42,0.06)] flex flex-col transition-all">
       {/* Small emerald header tag */}
       <div className="flex items-center gap-1.5 text-emerald-600 font-extrabold text-[10.5px] uppercase tracking-[0.18em] mb-2">
         <span>✦</span>

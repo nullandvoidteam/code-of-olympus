@@ -176,7 +176,7 @@ export const AdminTeamArcadeView: React.FC = () => {
       </div>
 
       {/* KPI Matrix */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
         <GamifiedCard className="p-4 flex items-center gap-3 border-l-4 border-l-purple-500">
           <div className="p-2 rounded-xl bg-purple-50 text-purple-600">
             <Swords className="w-5 h-5" />

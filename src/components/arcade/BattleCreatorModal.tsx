@@ -557,7 +557,7 @@ export const BattleCreatorModal: React.FC<BattleCreatorModalProps> = ({
                     <span>Scoring & Competitive Mechanics</span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="flex flex-col gap-1">
                       <label className="font-bold text-slate-700 flex items-center gap-1">
                         <Award className="w-3 h-3 text-purple-500" />

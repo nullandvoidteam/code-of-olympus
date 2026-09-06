@@ -13,18 +13,20 @@ export const AdminShell: React.FC = () => {
   return (
     <div className="min-h-screen w-full bg-[#faf8f4] text-stone-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white antialiased">
       {/* Top Header */}
-      <header className="h-16 px-4 sm:px-6 bg-white border-b border-[#ece7df] flex items-center justify-between sticky top-0 z-20 shadow-xs">
-        <div className="flex items-center gap-4 sm:gap-6">
-          <div className="flex items-center gap-2.5 text-purple-700 font-black text-base sm:text-lg">
+      <header className="min-h-[4rem] px-4 sm:px-6 py-3 sm:py-0 bg-white border-b border-[#ece7df] flex flex-col sm:flex-row gap-3 sm:gap-0 items-center justify-between sticky top-0 z-20 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 w-full sm:w-auto">
+          <div className="flex items-center justify-between w-full sm:w-auto">
+            <div className="flex items-center gap-2.5 text-purple-700 font-black text-base sm:text-lg">
             <div className="p-1.5 bg-purple-100 rounded-lg">
               <ShieldCheck className="w-5 h-5 text-purple-600" />
             </div>
             <span className="hidden sm:inline">CodeQuest Admin Realm</span>
             <span className="sm:hidden">Admin</span>
           </div>
+          </div>
 
           {/* Admin Navigation Tabs */}
-          <nav className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-2xl">
+          <nav className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-2xl overflow-x-auto w-full sm:w-auto pb-1 sm:pb-1">
             <button
               type="button"
               onClick={() => setActiveAdminTab('dashboard')}
@@ -66,8 +68,7 @@ export const AdminShell: React.FC = () => {
             </button>
           </nav>
         </div>
-        
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-end">
           <div className="hidden sm:flex items-center gap-3">
             <div className="text-right">
               <div className="font-bold text-xs text-stone-900">Administrator</div>
