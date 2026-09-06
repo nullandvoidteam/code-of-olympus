@@ -2,7 +2,7 @@ import React from 'react'
 
 export const CodeQuestTrailheadScene: React.FC = () => {
   return (
-    <div className="relative w-full h-[620px] lg:h-[760px] rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-900/10 bg-slate-900 select-none group">
+    <div className="relative w-full h-[500px] lg:h-[580px] xl:h-[630px] max-h-[calc(100vh-95px)] rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-900/10 bg-slate-900 select-none group">
       {/* 16-Bit Pixel Art Background Scene */}
       <div className="relative w-full h-full">
         <img
@@ -14,7 +14,7 @@ export const CodeQuestTrailheadScene: React.FC = () => {
       </div>
 
       {/* HUD OVERLAY 1: NEW ADVENTURER PLAYER PROFILE (Top Left) */}
-      <div className="absolute top-6 left-6 z-20 bg-[#191535]/95 border-2 border-[#382f6b] rounded-2xl p-3.5 shadow-2xl backdrop-blur-md min-w-[190px] animate-float">
+      <div className="absolute top-5 left-5 z-20 bg-[#191535]/95 border-2 border-[#382f6b] rounded-2xl p-3 shadow-2xl backdrop-blur-md min-w-[175px] animate-float">
         <div className="flex items-center gap-2.5 mb-2">
           <div className="w-8 h-8 rounded-lg bg-emerald-700/80 border-2 border-emerald-400 flex items-center justify-center text-sm shadow-inner">
             🧑‍💻
@@ -23,7 +23,7 @@ export const CodeQuestTrailheadScene: React.FC = () => {
             <div className="font-pixel text-[8px] text-[#fcd34d] uppercase tracking-wider font-bold">
               NEW ADVENTURER
             </div>
-            <div className="font-pixel text-[10px] text-white font-bold tracking-wider">
+            <div className="font-pixel text-[9.5px] text-white font-bold tracking-wider">
               LEVEL 01
             </div>
           </div>
@@ -40,42 +40,42 @@ export const CodeQuestTrailheadScene: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex items-center justify-between text-[9px] font-pixel text-[#94a3b8]">
+        <div className="flex items-center justify-between text-[8.5px] font-pixel text-[#94a3b8]">
           <span className="text-[#fcd34d]">⭐ 0 XP</span>
           <span>NEXT: 100 XP</span>
         </div>
       </div>
 
       {/* HUD OVERLAY 2: QUEST CARD (Top Right) */}
-      <div className="absolute top-6 right-6 z-20 bg-[#251c38]/95 border-2 border-[#d97706] rounded-2xl p-3.5 shadow-2xl backdrop-blur-md min-w-[200px] animate-float-delayed">
-        <div className="flex items-center gap-1.5 mb-1.5">
+      <div className="absolute top-5 right-5 z-20 bg-[#251c38]/95 border-2 border-[#d97706] rounded-2xl p-3 shadow-2xl backdrop-blur-md min-w-[185px] animate-float-delayed">
+        <div className="flex items-center gap-1.5 mb-1">
           <span className="text-xs">🚩</span>
           <span className="font-pixel text-[8.5px] text-[#fcd34d] uppercase font-black tracking-wider">
             FIRST QUEST
           </span>
         </div>
-        <div className="font-pixel text-[9.5px] text-white font-bold leading-tight mb-2">
+        <div className="font-pixel text-[9px] text-white font-bold leading-tight mb-1.5">
           Learn Your First Language
         </div>
-        <div className="flex items-center justify-between text-[8px] font-pixel text-emerald-400 border-t border-amber-900/50 pt-1.5">
+        <div className="flex items-center justify-between text-[8px] font-pixel text-emerald-400 border-t border-amber-900/50 pt-1">
           <span>REWARD:</span>
           <span className="font-bold text-amber-300">+100 XP ⭐</span>
         </div>
       </div>
 
       {/* HUD OVERLAY 3: BLUE COMPANION BOT & SPEECH BUBBLE */}
-      <div className="absolute top-[145px] left-[32%] z-20 flex flex-col items-center animate-float-slow">
-        <div className="relative mb-2 bg-white/95 border-2 border-slate-300 rounded-2xl px-3 py-2 shadow-lg backdrop-blur-sm text-center">
+      <div className="absolute top-[120px] left-[32%] z-20 flex flex-col items-center animate-float-slow">
+        <div className="relative mb-1.5 bg-white/95 border-2 border-slate-300 rounded-2xl px-3 py-1.5 shadow-lg backdrop-blur-sm text-center">
           <p className="font-pixel text-[8.5px] text-slate-800 leading-tight font-bold tracking-tight">
             Let&apos;s build
             <br />
             something amazing!
           </p>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white/95 border-b-2 border-r-2 border-slate-300 rotate-45" />
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white/95 border-b-2 border-r-2 border-slate-300 rotate-45" />
         </div>
 
         {/* Blue Robot Companion Sprite */}
-        <div className="relative w-14 h-14 mt-1 filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.4)]">
+        <div className="relative w-12 h-12 filter drop-shadow-[0_8px_12px_rgba(0,0,0,0.4)]">
           <svg
             viewBox="0 0 48 48"
             className="w-full h-full"
@@ -98,24 +98,24 @@ export const CodeQuestTrailheadScene: React.FC = () => {
       </div>
 
       {/* HUD OVERLAY 4: WAYPOINT MILESTONE BADGES */}
-      <div className="absolute top-[280px] left-8 z-20 flex flex-col gap-2.5">
-        <div className="bg-[#452714]/90 border-2 border-[#b45309] text-[#fef08a] font-pixel text-[8.5px] px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-2 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
+      <div className="absolute top-[230px] left-7 z-20 flex flex-col gap-2">
+        <div className="bg-[#452714]/90 border-2 border-[#b45309] text-[#fef08a] font-pixel text-[8.5px] px-3 py-1.5 rounded-xl shadow-md flex items-center gap-2 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
           <span className="text-xs">⚙</span>
           <span>BUILD</span>
         </div>
-        <div className="bg-[#452714]/90 border-2 border-[#b45309] text-[#fef08a] font-pixel text-[8.5px] px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-2 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
+        <div className="bg-[#452714]/90 border-2 border-[#b45309] text-[#fef08a] font-pixel text-[8.5px] px-3 py-1.5 rounded-xl shadow-md flex items-center gap-2 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
           <span className="text-xs">💡</span>
           <span>CREATE</span>
         </div>
-        <div className="bg-[#452714]/90 border-2 border-[#b45309] text-[#fef08a] font-pixel text-[8.5px] px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-2 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
+        <div className="bg-[#452714]/90 border-2 border-[#b45309] text-[#fef08a] font-pixel text-[8.5px] px-3 py-1.5 rounded-xl shadow-md flex items-center gap-2 backdrop-blur-sm hover:scale-105 transition-transform cursor-default">
           <span className="text-xs">🏆</span>
           <span>MASTER</span>
         </div>
       </div>
 
       {/* HUD OVERLAY 5: GLOWING PURPLE MYSTIC PORTAL */}
-      <div className="absolute bottom-20 right-10 z-20 flex flex-col items-center animate-float-delayed">
-        <div className="bg-[#3b0764]/90 border-2 border-[#c084fc] px-3 py-1.5 rounded-2xl shadow-[0_0_25px_rgba(192,132,252,0.8)] font-pixel text-[10px] text-purple-200 font-black tracking-wider flex items-center gap-1.5 backdrop-blur-md">
+      <div className="absolute bottom-8 right-8 z-20 flex flex-col items-center animate-float-delayed">
+        <div className="bg-[#3b0764]/90 border-2 border-[#c084fc] px-3 py-1.5 rounded-2xl shadow-[0_0_22px_rgba(192,132,252,0.8)] font-pixel text-[9.5px] text-purple-200 font-black tracking-wider flex items-center gap-1.5 backdrop-blur-md">
           <span>&lt;/&gt;</span>
           <span className="text-[8px] text-purple-300">PORTAL</span>
         </div>

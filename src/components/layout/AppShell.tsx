@@ -35,6 +35,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import { SpiderNetDecal, SpiderEmblemIcon } from '../ui/SpiderNetDecal'
 import { saveCourseProgress } from '../../lib/courseProgress'
+import { COURSE_CATALOG } from '../../lib/courseData'
 import type { DashboardMode } from './CrucibleHeader'
 
 export const AppShell: React.FC = () => {
@@ -63,17 +64,10 @@ export const AppShell: React.FC = () => {
       return
     }
     setActiveTab(tab as NavItemKey)
-    if (tab !== 'learn') {
-      setSelectedCourseId(null)
-      setSelectedLessonId(null)
-      setSelectedChallengeId(null)
-      setSelectedQuestId(null)
-    } else {
-      setSelectedCourseId(null)
-      setSelectedLessonId(null)
-      setSelectedChallengeId(null)
-      setSelectedQuestId(null)
-    }
+    setSelectedCourseId(null)
+    setSelectedLessonId(null)
+    setSelectedChallengeId(null)
+    setSelectedQuestId(null)
   }
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null)
@@ -190,20 +184,7 @@ export const AppShell: React.FC = () => {
       <div className="hidden md:block shrink-0">
         <Sidebar
           activeTab={activeTab}
-          onSelectTab={(tab) => {
-            setActiveTab(tab)
-            if (tab !== 'learn') {
-              setSelectedCourseId(null)
-              setSelectedLessonId(null)
-              setSelectedChallengeId(null)
-              setSelectedQuestId(null)
-            } else {
-              setSelectedCourseId('python')
-              setSelectedLessonId(null)
-              setSelectedChallengeId(null)
-              setSelectedQuestId(null)
-            }
-          }}
+          onSelectTab={handleSelectTab}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           onContinueQuest={() => {
@@ -259,9 +240,9 @@ export const AppShell: React.FC = () => {
                 : selectedChallengeId
                   ? 'Loops & Logic / Exercise 03'
                   : selectedLessonId
-                    ? 'Python Adventure / Chapter 04 / Lesson 03'
+                    ? `${COURSE_CATALOG.find((c) => c.id === selectedCourseId)?.title || 'Course'} / Lesson`
                     : selectedCourseId
-                      ? 'Course / Python Adventure'
+                      ? `Course / ${COURSE_CATALOG.find((c) => c.id === selectedCourseId)?.title || 'Course Details'}`
                       : null
               : activeTab === 'practice' && practiceBriefingId
                 ? 'Practice / Challenge Arena / Reverse the String'
@@ -481,7 +462,7 @@ export const AppShell: React.FC = () => {
       <LumiAIFloatingButton />
 
       {/* 4. MOBILE BOTTOM NAVIGATION */}
-      <MobileBottomNav activeTab={activeTab} onSelectTab={setActiveTab} />
+      <MobileBottomNav activeTab={activeTab} onSelectTab={handleSelectTab} />
 
       {/* 5. GLOBAL GAME TOASTER FOR AUDIO-VISUAL FEEDBACK */}
       <GameToaster />
